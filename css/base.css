@@ -1,0 +1,47 @@
+:root{
+  --bg:#050707;
+  --p:#101515;
+  --p2:#171d1d;
+  --line:rgba(255,255,255,.12);
+  --red:#d71920;
+  --txt:#f4f7f6;
+  --mut:#8c9696;
+  --green:#3bd15f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{
+  background:
+    radial-gradient(circle at 18% 8%,rgba(255,255,255,.05),transparent 25%),
+    radial-gradient(circle at 80% 72%,rgba(215,25,32,.09),transparent 36%),
+    radial-gradient(circle at 46% 42%,rgba(255,255,255,.025),transparent 44%),
+    linear-gradient(135deg,#020303 0%,#081010 44%,#030505 100%);
+  color:var(--txt);
+  font-family:Segoe UI,Arial,sans-serif;
+}
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 22% 18%,rgba(215,25,32,.13),transparent 19%),
+    radial-gradient(circle at 78% 82%,rgba(215,25,32,.08),transparent 24%),
+    linear-gradient(90deg,rgba(255,255,255,.035),transparent 18%,transparent 82%,rgba(255,255,255,.025));
+  opacity:.85;
+}
+button,input{font:inherit}
+button{cursor:pointer;color:var(--txt);border:0}
+input{
+  height:42px;
+  background:rgba(255,255,255,.045);
+  border:1px solid var(--line);
+  border-radius:11px;
+  color:var(--txt);
+  padding:0 12px;
+  outline:none;
+}
+.hidden{display:none!important}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes pulse{50%{transform:scale(1.05);filter:drop-shadow(0 0 16px rgba(215,25,32,.5))}}
