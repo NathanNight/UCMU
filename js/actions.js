@@ -27,7 +27,7 @@ function globalClick(e){
   const member=e.target.closest('.member');if(member){show($('#members'));show($('#private'));return}
   const candidate=e.target.closest('.candidate');if(candidate){$$('#private .candidate').forEach(x=>x.classList.remove('active'));candidate.classList.add('active');return}
   const ctxAction=e.target.closest('.ctxAction,.reactBtn');if(ctxAction){handleContextAction(ctxAction);return}
-  const color=e.target.closest('[data-folder-color]');if(color){const f=findFolder(state.selectedFolderId);if(f){f.color=color.datasetFolderColor;renderChats()}return}
+  const color=e.target.closest('[data-folder-color]');if(color){const f=findFolder(state.selectedFolderId);if(f){f.color=color.dataset.folderColor;renderChats()}return}
   if(!e.target.closest('.float,.hbtn,#stickerBtn,#membersBtn,#newChat,#folderBtn'))$$('.ctx').forEach(hide);
 }
 function globalContext(e){
@@ -53,13 +53,13 @@ function finalDelete(p,node){clearTimeout(state.undoTimer);state.undoTimer=null;
 function showUndo(type){const t=type==='message'?'Сообщение удаляется':type==='chat'?'Чат удаляется':'Папка и её чаты удаляются';$('#undoText').textContent=t;const u=$('#undoToast');u.classList.remove('run');show(u);void u.offsetWidth;u.classList.add('run')}
 function updateChatLast(text){const c=findChat(state.activeChat);if(c){c.last=state.user+': '+text;c.time='сейчас';renderChats()}}
 function formatSize(size){if(!size)return'0 MB';const mb=size/1024/1024;return mb<1?Math.ceil(size/1024)+' KB':mb.toFixed(1)+' MB'}
-function bindDrag(){let dragged=null,slot=null,dropFolderId=null;
+function bindDrag(){let dragged=null,slot=null,dropFolderId=null,lastTarget=null,lastAfter=null;
   const selector='[data-chat-id]';
-  function makeSlot(){const el=document.createElement('div');el.className='drag-slot';return el}
-  function cleanup(){dragged?.classList.remove('dragging','chat-source-hidden');slot?.remove();slot=null;dragged=null;state.drag=null;document.body.classList.remove('drag-live');$$('.folder-drop-target').forEach(x=>x.classList.remove('folder-drop-target'))}
+  function makeSlot(from){const el=document.createElement('div');el.className='drag-slot';el.style.height=(from?.offsetHeight||58)+'px';return el}
+  function cleanup(){dragged?.classList.remove('dragging','chat-source-hidden');slot?.remove();slot=null;dragged=null;lastTarget=null;lastAfter=null;state.drag=null;document.body.classList.remove('drag-live');$$('.folder-drop-target').forEach(x=>x.classList.remove('folder-drop-target'))}
   function markFolder(folder){if(dropFolderId===folder?.dataset?.folderId)return;$$('.folder-drop-target').forEach(x=>x.classList.remove('folder-drop-target'));dropFolderId=null;if(folder){folder.classList.add('folder-drop-target');dropFolderId=folder.dataset.folderId}}
-  function moveSlot(over,e){if(!slot||!over||over===dragged)return;const list=over.parentElement;if(!list)return;const r=over.getBoundingClientRect();const after=(e?.clientY||0)>r.top+r.height/2;list.insertBefore(slot,after?over.nextSibling:over)}
-  document.addEventListener('dragstart',e=>{const item=e.target.closest(selector);if(!item)return;dragged=item;state.drag=item.dataset.chatId;slot=makeSlot();document.body.classList.add('drag-live');item.classList.add('dragging');item.parentElement.insertBefore(slot,item.nextSibling);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',state.drag);setTimeout(()=>item.classList.add('chat-source-hidden'),0)});
+  function moveSlot(over,e){if(!slot||!over||over===dragged)return;const list=over.parentElement;if(!list)return;const r=over.getBoundingClientRect();const after=(e?.clientY||0)>r.top+r.height/2;if(lastTarget===over&&lastAfter===after)return;lastTarget=over;lastAfter=after;slot.style.transition='transform .24s cubic-bezier(.16,.86,.22,1)';over.style.transition='transform .24s cubic-bezier(.16,.86,.22,1)';list.insertBefore(slot,after?over.nextSibling:over)}
+  document.addEventListener('dragstart',e=>{const item=e.target.closest(selector);if(!item)return;dragged=item;state.drag=item.dataset.chatId;slot=makeSlot(item);document.body.classList.add('drag-live');item.classList.add('dragging');item.parentElement.insertBefore(slot,item);e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',state.drag);setTimeout(()=>item.classList.add('chat-source-hidden'),0)});
   document.addEventListener('dragend',cleanup);
   document.addEventListener('dragover',e=>{if(!state.drag)return;const overChat=e.target.closest(selector);const overFolder=e.target.closest('[data-folder-id]');if(!overChat&&!overFolder)return;e.preventDefault();if(overFolder&&!overChat)markFolder(overFolder);else markFolder(null);if(overChat)moveSlot(overChat,e)});
   document.addEventListener('drop',e=>{if(!state.drag)return;e.preventDefault();const folder=e.target.closest('[data-folder-id]');const from=state.drag;if(folder&&!e.target.closest(selector)){addChatToFolder(from,folder.dataset.folderId)}else{reorderChatsFromDom(from)}cleanup();renderChats()})}
