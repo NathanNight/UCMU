@@ -7,14 +7,10 @@
   100%{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}
 }
 @keyframes ucmuGlassFlash{
-  0%{opacity:0;transform:translateX(-18%) scaleX(.82)}
-  10%{opacity:.92;transform:translateX(0) scaleX(1)}
+  0%{opacity:0;transform:translateX(-10%) scaleX(.96)}
+  8%{opacity:.88;transform:translateX(0) scaleX(1)}
   38%{opacity:.55;transform:translateX(3%) scaleX(1.02)}
   100%{opacity:0;transform:translateX(12%) scaleX(1.06)}
-}
-@keyframes ucmuPending{
-  from{opacity:1;filter:none;transform:translateY(0) scale(1)}
-  to{opacity:.48;filter:none;transform:translateY(0) scale(1)}
 }
 @keyframes ucmuRestore{
   from{opacity:.48;filter:none;transform:translateY(0) scale(1)}
@@ -26,7 +22,7 @@
 }
 
 .ucmu-enter{animation:ucmuEnter .98s var(--ease) both!important;will-change:opacity,filter,transform!important}
-.ucmu-delete-pending{animation:ucmuPending 3s linear forwards!important;pointer-events:none!important;will-change:opacity!important}
+.ucmu-delete-pending{opacity:.48!important;filter:none!important;transform:none!important;transition:none!important;pointer-events:none!important}
 .ucmu-delete-restored{animation:ucmuRestore .42s ease-out both!important}
 .ucmu-remove{pointer-events:none!important;overflow:hidden!important;animation:ucmuRemove .9s cubic-bezier(.16,.86,.22,1) forwards!important;will-change:opacity,filter,transform,max-height!important}
 
@@ -42,9 +38,11 @@
   pointer-events:none;
   z-index:3;
   background:
-    radial-gradient(ellipse at 18% 82%,rgba(255,255,255,.38) 0%,rgba(255,255,255,.22) 22%,rgba(255,255,255,0) 58%),
-    linear-gradient(105deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.08) 25%,rgba(255,255,255,.46) 46%,rgba(255,255,255,.18) 58%,rgba(255,255,255,0) 82%),
-    linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 46%);
+    linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.16) 14%,rgba(255,255,255,.34) 31%,rgba(255,255,255,.11) 58%,rgba(255,255,255,0) 88%),
+    radial-gradient(ellipse at 26% 82%,rgba(255,255,255,.30) 0%,rgba(255,255,255,.19) 26%,rgba(255,255,255,0) 66%),
+    linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,0) 48%);
+  mask-image:linear-gradient(90deg,transparent 0%,black 16%,black 100%);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,black 16%,black 100%);
   mix-blend-mode:screen;
   animation:ucmuGlassFlash 1.18s cubic-bezier(.16,1,.24,1) both!important;
 }
@@ -57,7 +55,9 @@
   inset:0;
   pointer-events:none;
   z-index:2;
-  background:radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.16),rgba(255,255,255,0) 62%);
+  background:radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.14),rgba(255,255,255,0) 64%);
+  mask-image:linear-gradient(90deg,transparent 0%,black 12%,black 100%);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,black 12%,black 100%);
   mix-blend-mode:screen;
   animation:ucmuGlassFlash 1.05s ease-out both!important;
 }
