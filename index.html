@@ -3,100 +3,43 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>U.C.M.U. Chat v101 auth hardfix</title>
-  <link rel="stylesheet" href="css/base.css?v=101">
-  <link rel="stylesheet" href="css/layout.css?v=101">
-  <link rel="stylesheet" href="css/components.css?v=101">
-  <link rel="stylesheet" href="css/animations.css?v=101">
-  <link rel="stylesheet" href="css/splash.css?v=101">
-  <link rel="stylesheet" href="css/responsive.css?v=101">
-  <style id="ucmu-v101-auth-hardfix">
+  <title>U.C.M.U. Chat v106 drag polish</title>
+  <link rel="stylesheet" href="css/base.css?v=106">
+  <link rel="stylesheet" href="css/layout.css?v=106">
+  <link rel="stylesheet" href="css/components.css?v=106">
+  <link rel="stylesheet" href="css/animations.css?v=106">
+  <link rel="stylesheet" href="css/splash.css?v=106">
+  <link rel="stylesheet" href="css/responsive.css?v=106">
+  <style id="ucmu-v106-overrides">
     html body #appRoot .auth input.auth-input,
     html body #appRoot .auth .pass-wrap input.auth-input,
-    html body .auth input.auth-input {
-      appearance: none !important;
-      -webkit-appearance: none !important;
-      background: #1b1d20 !important;
-      background-color: #1b1d20 !important;
-      background-image: linear-gradient(180deg,#2b2e33,#17191d) !important;
-      color: #f4f7f6 !important;
-      -webkit-text-fill-color: #f4f7f6 !important;
-      border: 1px solid rgba(255,255,255,.18) !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08) !important;
-      caret-color: #ff5a5a !important;
-    }
-    html body #appRoot .auth input.auth-input::placeholder,
-    html body .auth input.auth-input::placeholder {
-      color: rgba(235,240,242,.46) !important;
-      -webkit-text-fill-color: rgba(235,240,242,.46) !important;
-    }
-    html body #appRoot .auth input.auth-input:-webkit-autofill,
-    html body #appRoot .auth input.auth-input:-webkit-autofill:hover,
-    html body #appRoot .auth input.auth-input:-webkit-autofill:focus,
-    html body .auth input.auth-input:-webkit-autofill {
-      -webkit-text-fill-color: #f4f7f6 !important;
-      box-shadow: 0 0 0 1000px #1b1d20 inset, inset 0 1px 0 rgba(255,255,255,.08) !important;
-      border: 1px solid rgba(255,255,255,.18) !important;
-      transition: background-color 999999s ease-in-out 0s !important;
-    }
-    html body #appRoot .auth .pass-eye,
-    html body .auth .pass-eye {
-      color: #fff !important;
-      background: rgba(0,0,0,.45) !important;
-      border: 1px solid rgba(255,255,255,.28) !important;
-      opacity: 1 !important;
-      z-index: 5 !important;
-    }
-    html body #appRoot .auth .pass-eye svg,
-    html body .auth .pass-eye svg {
-      stroke: currentColor !important;
-      fill: none !important;
-      opacity: 1 !important;
-    }
-    html body #appRoot .auth .pass-eye.active,
-    html body .auth .pass-eye.active {
-      background: rgba(215,25,32,.32) !important;
-      border-color: rgba(255,95,95,.75) !important;
-      box-shadow: 0 0 16px rgba(255,0,0,.28) !important;
-    }
+    html body .auth input.auth-input{appearance:none!important;-webkit-appearance:none!important;background:#1b1d20!important;background-color:#1b1d20!important;background-image:linear-gradient(180deg,#2b2e33,#17191d)!important;color:#f4f7f6!important;-webkit-text-fill-color:#f4f7f6!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;caret-color:#ff5a5a!important}
+    html body #appRoot .auth input.auth-input::placeholder,html body .auth input.auth-input::placeholder{color:rgba(235,240,242,.46)!important;-webkit-text-fill-color:rgba(235,240,242,.46)!important}
+    html body #appRoot .auth input.auth-input:-webkit-autofill,html body #appRoot .auth input.auth-input:-webkit-autofill:hover,html body #appRoot .auth input.auth-input:-webkit-autofill:focus,html body .auth input.auth-input:-webkit-autofill{-webkit-text-fill-color:#f4f7f6!important;box-shadow:0 0 0 1000px #1b1d20 inset,inset 0 1px 0 rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.18)!important;transition:background-color 999999s ease-in-out 0s!important}
+    html body #appRoot .auth .pass-eye,html body .auth .pass-eye{color:#fff!important;background:rgba(0,0,0,.45)!important;border:1px solid rgba(255,255,255,.28)!important;opacity:1!important;z-index:5!important}
+    html body #appRoot .auth .pass-eye svg,html body .auth .pass-eye svg{stroke:currentColor!important;fill:none!important;opacity:1!important}
+    html body #appRoot .auth .pass-eye.active,html body .auth .pass-eye.active{background:rgba(215,25,32,.32)!important;border-color:rgba(255,95,95,.75)!important;box-shadow:0 0 16px rgba(255,0,0,.28)!important}
+
+    .side{padding-left:0!important;padding-right:0!important}
+    .side .profile,.side .search,.side .cap,.side .folderBtn{margin-left:14px!important;margin-right:14px!important}
+    .side .scrollList{padding-right:0!important}
+    .chat{width:100%!important;margin:0!important;padding:10px 14px!important;background:rgba(255,255,255,.035)!important;border:0!important;border-top:1px solid rgba(255,255,255,.045)!important;border-bottom:1px solid rgba(0,0,0,.28)!important;box-shadow:none!important;transition:transform .24s cubic-bezier(.16,.86,.22,1),background .16s ease,opacity .16s ease!important}
+    .chat:hover,.chat.active{background:rgba(255,255,255,.055)!important;border-left:0!important;border-right:0!important;box-shadow:none!important}
+    .chat.active::before{content:none!important;display:none!important}
+    .chat .ava,.chat .logo,.ava,.logo{border-radius:50%!important;overflow:hidden!important}
+    .chat.dragging{opacity:1!important;background:rgba(25,31,31,.98)!important;box-shadow:0 18px 36px rgba(0,0,0,.5)!important}
+    .drag-live .chat{will-change:transform!important}
+    .folder-drop-target>.folder-item{background:linear-gradient(90deg,rgba(255,255,255,.13),rgba(255,255,255,.035))!important;border-color:rgba(255,255,255,.42)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 0 24px rgba(255,255,255,.10)!important}
+    .folder-chat-list{margin-left:0!important;padding-left:18px!important}
+    .drag-slot{height:58px;margin:4px 10px;border:1px dashed rgba(255,255,255,.38);background:rgba(255,255,255,.035);display:grid;place-items:center;color:rgba(255,255,255,.66);font-size:22px;pointer-events:none;box-shadow:inset 0 0 18px rgba(255,255,255,.04)}
+    .drag-slot::before{content:'+'}
   </style>
 </head>
 <body>
   <div id="appRoot"></div>
-  <script type="module" src="js/app.js?v=101"></script>
+  <script type="module" src="js/app.js?v=106"></script>
   <script>
-    (() => {
-      function forceAuthInputSkin(){
-        document.querySelectorAll('#auth input.auth-input, .auth input.auth-input').forEach(el => {
-          el.style.setProperty('appearance','none','important');
-          el.style.setProperty('-webkit-appearance','none','important');
-          el.style.setProperty('background','#1b1d20','important');
-          el.style.setProperty('background-color','#1b1d20','important');
-          el.style.setProperty('background-image','linear-gradient(180deg,#2b2e33,#17191d)','important');
-          el.style.setProperty('color','#f4f7f6','important');
-          el.style.setProperty('-webkit-text-fill-color','#f4f7f6','important');
-          el.style.setProperty('border','1px solid rgba(255,255,255,.18)','important');
-          el.style.setProperty('box-shadow','inset 0 1px 0 rgba(255,255,255,.08)','important');
-          el.style.setProperty('caret-color','#ff5a5a','important');
-        });
-        document.querySelectorAll('#auth .pass-eye, .auth .pass-eye').forEach(btn => {
-          btn.style.setProperty('color','#fff','important');
-          btn.style.setProperty('background','rgba(0,0,0,.45)','important');
-          btn.style.setProperty('border','1px solid rgba(255,255,255,.28)','important');
-          btn.style.setProperty('opacity','1','important');
-        });
-      }
-      document.addEventListener('DOMContentLoaded', () => {
-        forceAuthInputSkin();
-        setTimeout(forceAuthInputSkin, 100);
-        setTimeout(forceAuthInputSkin, 500);
-        setTimeout(forceAuthInputSkin, 1500);
-        setTimeout(forceAuthInputSkin, 2500);
-        document.addEventListener('input', forceAuthInputSkin, true);
-        document.addEventListener('focusin', forceAuthInputSkin, true);
-        new MutationObserver(forceAuthInputSkin).observe(document.body, {childList:true, subtree:true});
-      });
-    })();
+    (()=>{function forceAuthInputSkin(){document.querySelectorAll('#auth input.auth-input,.auth input.auth-input').forEach(el=>{el.style.setProperty('appearance','none','important');el.style.setProperty('-webkit-appearance','none','important');el.style.setProperty('background','#1b1d20','important');el.style.setProperty('background-color','#1b1d20','important');el.style.setProperty('background-image','linear-gradient(180deg,#2b2e33,#17191d)','important');el.style.setProperty('color','#f4f7f6','important');el.style.setProperty('-webkit-text-fill-color','#f4f7f6','important');el.style.setProperty('border','1px solid rgba(255,255,255,.18)','important');el.style.setProperty('box-shadow','inset 0 1px 0 rgba(255,255,255,.08)','important');el.style.setProperty('caret-color','#ff5a5a','important')});document.querySelectorAll('#auth .pass-eye,.auth .pass-eye').forEach(btn=>{btn.style.setProperty('color','#fff','important');btn.style.setProperty('background','rgba(0,0,0,.45)','important');btn.style.setProperty('border','1px solid rgba(255,255,255,.28)','important');btn.style.setProperty('opacity','1','important')})}document.addEventListener('DOMContentLoaded',()=>{forceAuthInputSkin();setTimeout(forceAuthInputSkin,100);setTimeout(forceAuthInputSkin,500);setTimeout(forceAuthInputSkin,1500);setTimeout(forceAuthInputSkin,2500);document.addEventListener('input',forceAuthInputSkin,true);document.addEventListener('focusin',forceAuthInputSkin,true);new MutationObserver(forceAuthInputSkin).observe(document.body,{childList:true,subtree:true})})})();
   </script>
 </body>
 </html>
