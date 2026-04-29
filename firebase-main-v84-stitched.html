@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>U.C.M.U. Chat stitched v84</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000}
+</style>
+</head>
+<body>
+<iframe id="shell" src="firebase-main-v83-stitched.html" title="U.C.M.U. Chat v84"></iframe>
+<script>
+(()=>{
+const shell=document.getElementById('shell');
+function safeDoc(f){try{return f.contentDocument||f.contentWindow.document}catch(e){return null}}
+function safeWin(f){try{return f.contentWindow}catch(e){return null}}
+function findFrame(rootDoc,id,depth=0){if(!rootDoc||depth>8)return null;const direct=rootDoc.getElementById(id);if(direct)return direct;for(const f of Array.from(rootDoc.querySelectorAll('iframe'))){const found=findFrame(safeDoc(f),id,depth+1);if(found)return found}return null}
+function chatFrame(){return findFrame(safeDoc(shell),'chatFrame')}function chatDoc(){const f=chatFrame();return f?safeDoc(f):null}function chatWin(){const f=chatFrame();return f?safeWin(f):null}
+function patch(){const d=chatDoc(),w=chatWin();if(!d||!w||d.__ucmuV84Patched)return;d.__ucmuV84Patched=true;
+const style=d.createElement('style');style.id='ucmuV84Patch';style.textContent=`
+#folders [class*="arrow"],#folders [class*="Arrow"],#folders [class*="chevron"],#folders [class*="Chevron"],#folders .caret,#folders .toggle,#folders summary::marker{display:none!important;opacity:0!important;width:0!important;margin:0!important}#folders summary{list-style:none!important}#folders summary::-webkit-details-marker{display:none!important}
+body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="content"],body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="Content"],body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="body"],body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="Body"],body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="list"],body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="List"],body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="chats"],body.ucmu-v84-dragging #folders [data-ucmu-was-open="0"] [class*="Chats"]{display:none!important;max-height:0!important;opacity:0!important;pointer-events:none!important}
+.ucmu-v84-restored{opacity:1!important;filter:none!important;pointer-events:auto!important;animation:none!important}
+`;d.head.appendChild(style);
+patchUndoHard(d,w);patchFolderStrict(d,w)}
+function patchUndoHard(d,w){let watch=[];function clean(el){if(!el)return;el.classList.remove('ucmu-delete-pending','ucmu-delete-final','ucmu-v82-delete-preview','ucmu-v80-delete','ucmu-removing');el.classList.add('ucmu-v84-restored');el.style.opacity='';el.style.filter='';el.style.transform='';el.style.maxHeight='';el.style.marginTop='';el.style.marginBottom='';el.style.paddingTop='';el.style.paddingBottom='';el.style.pointerEvents=''}
+function protect(el){if(!el||el.__ucmuV84Protected)return;const parent=el.parentNode,next=el.nextSibling,clone=el.cloneNode(true);el.__ucmuV84Protected=true;clean(el);watch.push({el,parent,next,clone,aliveUntil:Date.now()+8000});}
+function onUndoClick(btn){const pending=Array.from(d.querySelectorAll('.ucmu-delete-pending,.ucmu-delete-final,.ucmu-v82-delete-preview,.ucmu-removing,.chat.ucmu-delete-pending,.msg.ucmu-delete-pending,#folders .ucmu-delete-pending'));pending.forEach(protect);d.querySelectorAll('.ucmuUndoToast,.undoToast').forEach(t=>t.remove());}
+d.addEventListener('click',ev=>{const btn=ev.target.closest?.('.ucmuUndoBtn,#undoDelete,.undoToast button');if(!btn)return;onUndoClick(btn);},true);
+new w.MutationObserver(()=>{const now=Date.now();watch=watch.filter(item=>{if(now>item.aliveUntil)return false;if(!item.el.isConnected){const restored=item.clone.cloneNode(true);clean(restored);item.parent?.insertBefore(restored,item.next&&item.next.isConnected?item.next:null);item.el=restored;return false}clean(item.el);return true})}).observe(d.body,{childList:true,subtree:true});}
+function patchFolderStrict(d,w){const root=d.getElementById('folders');if(!root)return;const sel='[data-folder-id],.folderItem,.folder-item,.folderRow,.folder-row,.folderCard,.folder-card,.folder,details';let dragging=false;
+function folders(){return Array.from(root.querySelectorAll(sel)).filter(f=>f.id!=='folderBtn'&&!f.closest('#folderModal,#folderStyleModal,#folderCtx'))}
+function isChat(el){return!!el?.closest?.('.chat,[data-chat],.folderChat,.folder-chat')}
+function isFolder(el){const f=el?.closest?.(sel);return f&&root.contains(f)?f:null}
+function contentNodes(f){const arr=Array.from(f.querySelectorAll('[class*="content"],[class*="Content"],[class*="body"],[class*="Body"],[class*="list"],[class*="List"],[class*="chats"],[class*="Chats"]'));const n=f.nextElementSibling;if(n&&root.contains(n)&&/folder|chat|list|body|content/i.test(n.className||''))arr.push(n);return arr}
+function isOpen(f){if(!f)return false;if(f.open===true)return true;if(f.getAttribute('aria-expanded')==='true')return true;if(f.dataset?.open==='true'||f.dataset?.expanded==='true')return true;if(/\b(open|opened|expanded|is-open|folderOpen|folder-open|show|shown)\b/i.test(String(f.className||'')))return true;return contentNodes(f).some(c=>!c.classList.contains('hidden')&&c.offsetHeight>6&&getComputedStyle(c).display!=='none')}
+function closeFolder(f){if(!f)return;f.open=false;f.setAttribute('aria-expanded','false');f.dataset.open='false';f.dataset.expanded='false';f.className=String(f.className||'').replace(/\b(open|opened|expanded|is-open|folderOpen|folder-open|show|shown)\b/gi,'');contentNodes(f).forEach(c=>{c.classList.add('hidden');c.style.display='none';c.style.maxHeight='0px';c.style.opacity='0';c.style.pointerEvents='none'})}
+function snap(){folders().forEach(f=>{if(!f.dataset.ucmuUserOpen)f.dataset.ucmuUserOpen='0';f.dataset.ucmuWasOpen=(f.dataset.ucmuUserOpen==='1'&&isOpen(f))?'1':'0';if(f.dataset.ucmuUserOpen!=='1')closeFolder(f)})}
+function enforceNoAutoOpen(){folders().forEach(f=>{if(dragging&&f.dataset.ucmuWasOpen==='0')closeFolder(f);else if(!dragging&&f.dataset.ucmuUserOpen!=='1')closeFolder(f)})}
+function startDrag(ev){if(!isChat(ev.target))return;dragging=true;d.body.classList.add('ucmu-v84-dragging');snap();enforceNoAutoOpen()}
+function moveDrag(ev){if(!dragging)return;const f=isFolder(ev.target);if(f&&f.dataset.ucmuWasOpen==='0'){closeFolder(f);ev.preventDefault();ev.stopImmediatePropagation()}enforceNoAutoOpen()}
+function endDrag(){if(!dragging)return;dragging=false;d.body.classList.remove('ucmu-v84-dragging');folders().forEach(f=>delete f.dataset.ucmuWasOpen);enforceNoAutoOpen()}
+d.addEventListener('click',ev=>{const f=isFolder(ev.target);if(!f||dragging)return;f.dataset.ucmuUserOpen=f.dataset.ucmuUserOpen==='1'?'0':'1';w.setTimeout(()=>{if(f.dataset.ucmuUserOpen==='0')closeFolder(f)},30)},true);
+d.addEventListener('dragstart',startDrag,true);d.addEventListener('dragenter',moveDrag,true);d.addEventListener('dragover',moveDrag,true);d.addEventListener('drop',()=>w.setTimeout(endDrag,80),true);d.addEventListener('dragend',endDrag,true);
+new w.MutationObserver(()=>{enforceNoAutoOpen()}).observe(root,{attributes:true,subtree:true,childList:true,attributeFilter:['class','style','open','aria-expanded']});w.setTimeout(enforceNoAutoOpen,300);w.setTimeout(enforceNoAutoOpen,900)}
+shell.addEventListener('load',()=>{const timer=setInterval(()=>{patch();if(chatDoc()?.__ucmuV84Patched)clearInterval(timer)},300);setTimeout(()=>clearInterval(timer),12000)});
+})();
+</script>
+</body>
+</html>
