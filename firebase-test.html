@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>U.C.M.U Firebase Test</title>
+<style>
+:root{--red:#d71920;--red2:#761014;--bg:#050707;--panel:rgba(12,16,16,.92);--line:rgba(255,255,255,.12);--txt:#f4f7f6;--mut:#8c9696;--green:#3bd15f}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:#020303;color:var(--txt);font-family:Segoe UI,Arial,sans-serif;overflow:hidden}body{background:radial-gradient(circle at 18% 8%,rgba(255,255,255,.05),transparent 25%),radial-gradient(circle at 80% 72%,rgba(215,25,32,.09),transparent 36%),linear-gradient(135deg,#020303,#081010 45%,#030505)}body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px);opacity:.8}button,input{font:inherit;color:inherit}button{border:0;cursor:pointer}.app{height:100vh;display:grid;grid-template-columns:320px 1fr;position:relative;z-index:1}.side{padding:18px;border-right:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(0,0,0,.18)),rgba(8,11,11,.9)}.brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.logo{width:44px;height:44px;border-radius:50%;background:conic-gradient(from 22deg,var(--red) 0 45deg,#eee 45deg 90deg,var(--red) 90deg 135deg,#eee 135deg 180deg,var(--red) 180deg 225deg,#eee 225deg 270deg,var(--red) 270deg 315deg,#eee 315deg);box-shadow:0 0 20px rgba(215,25,32,.25)}.brand b{font-size:24px}.brand small{display:block;color:#ff4048;font-size:10px;letter-spacing:.18em}.card{background:var(--panel);border:1px solid var(--line);padding:16px;margin-bottom:12px}.card h3{margin:0 0 12px}.mut{color:var(--mut);font-size:13px;line-height:1.35}.field{width:100%;height:42px;background:rgba(255,255,255,.055);border:1px solid var(--line);outline:0;padding:0 12px;margin-bottom:9px}.btn{height:42px;padding:0 14px;background:linear-gradient(135deg,var(--red),var(--red2));font-weight:900}.btn2{height:42px;padding:0 14px;background:rgba(255,255,255,.06);border:1px solid var(--line)}.row{display:flex;gap:8px;flex-wrap:wrap}.userLine{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--mut)}.status{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(59,209,95,.8);margin-right:6px}.main{display:grid;grid-template-rows:74px 1fr 76px;min-width:0}.head{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.025)}.title{font-size:22px;font-weight:900}.feed{overflow:auto;padding:24px 28px 40px;display:flex;flex-direction:column;gap:14px}.msg{display:grid;grid-template-columns:42px minmax(0,720px);gap:12px;animation:in .25s ease both}.ava{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#151c1c;border:1px solid rgba(255,255,255,.14);font-weight:900;position:relative}.ava:after{content:"";position:absolute;right:0;bottom:0;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(59,209,95,.8)}.bubble{background:rgba(18,24,24,.76);border:1px solid rgba(255,255,255,.08);padding:12px 14px;box-shadow:0 10px 24px rgba(0,0,0,.18)}.mine .bubble{border-color:rgba(215,25,32,.32);background:linear-gradient(180deg,rgba(215,25,32,.12),rgba(18,24,24,.76))}.meta{font-weight:900}.time{color:var(--mut);font-size:12px;margin-left:5px}.text{margin-top:6px;line-height:1.35}.compose{display:flex;gap:10px;align-items:center;padding:12px 18px;border-top:1px solid var(--line);background:rgba(6,9,9,.9)}.compose input{flex:1;height:46px;background:rgba(255,255,255,.055);border:1px solid var(--line);outline:0;padding:0 14px}.send{width:72px;height:46px;background:linear-gradient(135deg,var(--red),var(--red2));font-size:22px}.disabled{opacity:.45;pointer-events:none}@keyframes in{from{opacity:0;filter:blur(8px);transform:translateY(8px)}to{opacity:1;filter:blur(0);transform:none}}@media(max-width:760px){.app{grid-template-columns:1fr}.side{position:absolute;left:0;right:0;top:0;z-index:5;max-height:48vh;overflow:auto}.main{padding-top:290px;height:100vh}.head{height:60px}.feed{padding:16px 12px}.msg{grid-template-columns:36px 1fr}.ava{width:36px;height:36px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo"></div><div><b>U.C.M.U</b><small>FIREBASE REALTIME TEST</small></div></div>
+    <div class="card" id="authCard">
+      <h3>Аккаунт</h3>
+      <input class="field" id="displayName" placeholder="Имя / позывной" value="Director" />
+      <input class="field" id="email" placeholder="Email" />
+      <input class="field" id="password" placeholder="Пароль" type="password" />
+      <div class="row">
+        <button class="btn" id="loginBtn">ВОЙТИ</button>
+        <button class="btn2" id="registerBtn">РЕГИСТРАЦИЯ</button>
+      </div>
+      <div class="userLine" id="authStatus">Не вошли</div>
+    </div>
+    <div class="card">
+      <h3>Тест</h3>
+      <div class="mut">Открой эту страницу в двух браузерах/вкладках, войди под двумя аккаунтами и отправь сообщение. Оно должно появиться сразу без обновления.</div>
+      <div class="row" style="margin-top:12px"><button class="btn2" id="logoutBtn">ВЫЙТИ</button></div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="head"><div class="title"># Общий чат</div><div id="rtStatus" class="mut">Realtime: ожидание</div></header>
+    <section class="feed" id="feed"></section>
+    <form class="compose disabled" id="form"><input id="msgInput" placeholder="Сообщение..." autocomplete="off" /><button class="send">➤</button></form>
+  </main>
+</div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyD4d15nd3HJDJCMoi99yjxsBrGWNQ999Y8',
+  authDomain: 'ucmu-63f74.firebaseapp.com',
+  projectId: 'ucmu-63f74',
+  storageBucket: 'ucmu-63f74.firebasestorage.app',
+  messagingSenderId: '475838060478',
+  appId: '1:475838060478:web:af492a673cbffb9e304bef',
+  measurementId: 'G-3M5EFPS2RE'
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+const feed = $('feed');
+const form = $('form');
+let currentUser = null;
+let unsubMessages = null;
+
+function clean(s){return String(s||'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
+function fmt(ts){try{const d=ts?.toDate?ts.toDate():new Date();return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}catch{return 'сейчас';}}
+function drawMessage(data){
+  const mine = currentUser && data.uid === currentUser.uid;
+  const name = data.name || 'Unknown';
+  const initial = clean(name.slice(0,1).toUpperCase() || '?');
+  return `<article class="msg ${mine?'mine':''}"><div class="ava">${initial}</div><div class="bubble"><div class="meta"><span style="color:${mine?'#ff4a50':'#75e893'}">${clean(name)}</span><span class="time">${fmt(data.createdAt)}</span></div><div class="text">${clean(data.text)}</div></div></article>`;
+}
+function watchMessages(){
+  if(unsubMessages) unsubMessages();
+  const q = query(collection(db,'chats','general','messages'), orderBy('createdAt','asc'), limit(100));
+  unsubMessages = onSnapshot(q, snap => {
+    $('rtStatus').innerHTML = '<span class="status"></span>Realtime: online';
+    feed.innerHTML = snap.docs.map(d=>drawMessage(d.data())).join('');
+    feed.scrollTop = feed.scrollHeight;
+  }, err => {
+    $('rtStatus').textContent = 'Realtime error: ' + err.message;
+  });
+}
+async function saveUserProfile(user){
+  await setDoc(doc(db,'users',user.uid), { uid:user.uid, name:user.displayName || $('displayName').value || 'User', email:user.email, online:true, updatedAt:serverTimestamp() }, { merge:true });
+}
+
+$('registerBtn').onclick = async () => {
+  try{
+    const name = $('displayName').value.trim() || 'User';
+    const cred = await createUserWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+    await updateProfile(cred.user, { displayName:name });
+    await saveUserProfile(cred.user);
+  }catch(e){ alert(e.message); }
+};
+$('loginBtn').onclick = async () => {
+  try{ await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value); }
+  catch(e){ alert(e.message); }
+};
+$('logoutBtn').onclick = () => signOut(auth);
+form.onsubmit = async (e) => {
+  e.preventDefault();
+  if(!currentUser) return alert('Сначала войди');
+  const text = $('msgInput').value.trim();
+  if(!text) return;
+  $('msgInput').value = '';
+  await addDoc(collection(db,'chats','general','messages'), { text, uid:currentUser.uid, name:currentUser.displayName || $('displayName').value || currentUser.email, createdAt:serverTimestamp() });
+};
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if(user){
+    $('authStatus').innerHTML = '<span class="status"></span>Вошли: ' + clean(user.displayName || user.email);
+    form.classList.remove('disabled');
+    await saveUserProfile(user);
+    watchMessages();
+  } else {
+    $('authStatus').textContent = 'Не вошли';
+    form.classList.add('disabled');
+    feed.innerHTML = '<div class="mut">Войди или зарегистрируйся, чтобы увидеть сообщения.</div>';
+    $('rtStatus').textContent = 'Realtime: ожидание входа';
+    if(unsubMessages) unsubMessages();
+  }
+});
+</script>
+</body>
+</html>
