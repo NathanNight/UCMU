@@ -1,13 +1,30 @@
-# U.C.M.U. Chat v98 modular
+# U.C.M.U. Chat v99 modular auth
 
-Запуск: открыть `index.html` или залить всю папку `ucmu-modular-v98` на GitHub Pages.
+Чистая модульная версия.
 
-Структура:
-- `index.html` — только входная точка.
-- `css/` — база, сетка, компоненты, анимации, адаптив.
-- `js/data.js` — тестовые чаты/люди/сообщения.
-- `js/state.js` — состояние приложения.
-- `js/templates.js` — HTML-шелл.
-- `js/render.js` — рендер чатов, папок, участников, сообщений.
-- `js/actions.js` — действия, контекстные меню, удаление, undo, drag/drop.
-- `js/animations.js` — enter/remove/pending/restore.
+## Файлы
+
+- `index.html` — точка входа.
+- `css/splash.css` — отдельная стартовая заставка/регистрация/вход, вынесена из `firebase-main-v63.html`.
+- `js/auth.js` — логика заставки, переключение вход/регистрация, проверка пароля.
+- `js/app.js`, `js/actions.js`, `js/render.js` — чат.
+
+## Тестовый пароль
+
+```txt
+umbrella
+```
+
+Регистрация сейчас локальная: сохраняется в `localStorage` браузера. Это не Firebase-авторизация, а безопасный тестовый слой, чтобы не ломать чат.
+
+## Заливка
+
+В корень репозитория должны попасть:
+
+```txt
+index.html
+assets/
+css/
+js/
+README.md
+```

@@ -1,7 +1,6 @@
 import {state,uid,activeMessages,findChat,findFolder} from './state.js';import {$,$$,show,hide,toggle,placeMenu} from './dom.js';import {renderAll,renderChats,renderFeed,appendMessage} from './render.js';import {pending,restore,removeAnimated} from './animations.js';
 let selectedFile=null;
 export function bindActions(){
-  $('#loginBtn').onclick=()=>hide($('#auth'));$('#codeLogin').onclick=()=>hide($('#auth'));
   $('#collapse').onclick=()=>{const app=$('#app');app.classList.toggle('collapsed');$('#collapse').textContent=app.classList.contains('collapsed')?'›':'‹'};
   $('#menu').onclick=()=>$('#app').classList.toggle('mobile');$('#membersBtn').onclick=()=>toggle($('#members'));$('#closeMembers').onclick=()=>hide($('#members'));
   $('#newChat').onclick=()=>{show($('#members'));show($('#private'))};$('#closePrivate').onclick=()=>hide($('#private'));

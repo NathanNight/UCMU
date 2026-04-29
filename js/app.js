@@ -1,4 +1,8 @@
-import {shell} from './templates.js';import {bindActions} from './actions.js';
+import {shell} from './templates.js';
+import {bindActions} from './actions.js';
+import {initAuth} from './auth.js';
+
 document.getElementById('appRoot').innerHTML=shell();
 bindActions();
-window.UCMU={version:'v98-modular',note:'single-file patch chain rebuilt as modules'};
+initAuth();
+window.UCMU={version:'v99-modular-auth',note:'auth/splash extracted from v63 into separate module'};
