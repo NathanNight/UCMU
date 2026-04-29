@@ -127,3 +127,59 @@
 @keyframes authShake{0%,100%{transform:translateY(0)}25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
 @media(max-height:820px){.home-topbar{top:26px}.home-top-line{top:53px}.home-logo{top:62px;transform:translateX(-50%) scale(.86)}.home-title{top:312px}.home-subtitle{top:358px}.home-holo{top:365px}.auth-form{top:500px;min-height:244px}.auth-form.register{top:410px;min-height:360px}}
 @media(max-width:520px){.home-logo{top:74px;transform:translateX(-50%) scale(.92)}.home-title{top:342px}.home-subtitle{top:392px}.home-holo{top:405px}.auth-form{top:600px;left:24px;right:24px}.auth-form.register{top:492px;min-height:386px}}
+
+
+/* v100 auth polish: dark inputs, visible toggle eye, real crossfade */
+body:not(.ucmu-unlocked) .app{
+  opacity:0 !important;
+  pointer-events:none !important;
+  filter:blur(14px) brightness(.55) !important;
+  transform:scale(1.012) !important;
+}
+body.ucmu-unlocked .app{
+  opacity:1 !important;
+  pointer-events:auto !important;
+  filter:none !important;
+  transform:none !important;
+}
+.app{
+  transition:opacity .72s ease,filter .72s ease,transform .72s cubic-bezier(.16,1,.24,1),grid-template-columns .25s ease !important;
+}
+.auth.hidden{
+  opacity:0 !important;
+  pointer-events:none !important;
+  filter:blur(18px) brightness(.65) !important;
+  transform:scale(1.018) !important;
+  transition:opacity .72s ease,filter .72s ease,transform .72s cubic-bezier(.16,1,.24,1) !important;
+}
+.auth-input,
+.auth input,
+.pass-wrap .auth-input{
+  background:linear-gradient(180deg,rgba(42,45,49,.72),rgba(22,24,27,.78)) !important;
+  color:#f4f7f6 !important;
+  -webkit-text-fill-color:#f4f7f6 !important;
+  border:1px solid rgba(255,255,255,.13) !important;
+  caret-color:#ff5a5a !important;
+}
+.auth-input::placeholder{color:rgba(235,240,242,.46) !important;-webkit-text-fill-color:rgba(235,240,242,.46) !important}
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus{
+  -webkit-text-fill-color:#f4f7f6 !important;
+  box-shadow:0 0 0 1000px #24272b inset !important;
+  transition:background-color 9999s ease-in-out 0s !important;
+}
+.pass-eye{
+  color:rgba(255,255,255,.86) !important;
+  background:rgba(0,0,0,.28) !important;
+  border-color:rgba(255,255,255,.18) !important;
+  opacity:.95 !important;
+}
+.pass-eye:hover,
+.pass-eye.active{
+  color:#fff !important;
+  border-color:rgba(255,80,80,.55) !important;
+  background:rgba(215,25,32,.22) !important;
+  box-shadow:0 0 14px rgba(255,0,0,.22) !important;
+}
+.pass-eye.active svg{filter:drop-shadow(0 0 5px rgba(255,90,90,.55))}

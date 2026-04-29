@@ -28,3 +28,6 @@ css/
 js/
 README.md
 ```
+
+
+v100: fixed dark auth inputs, password eye toggle, crossfade into app, remembered login screen restored for password login.

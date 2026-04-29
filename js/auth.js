@@ -57,10 +57,12 @@ function saveLocalUser(user){
 }
 
 function openApp(user){
-  state.user = user?.name || user?.username || value('email') || 'Director';
+  const safeUser = user || {name:value('email') || 'Director', username:normalizeUsername(value('email')) || 'director'};
+  state.user = safeUser.name || safeUser.username || 'Director';
   const profileName = document.querySelector('.profile .name');
   if(profileName) profileName.textContent = state.user;
-  $('#auth')?.classList.add('hidden');
+  document.body.classList.add('ucmu-unlocked');
+  requestAnimationFrame(() => $('#auth')?.classList.add('hidden'));
 }
 
 function showError(text){
@@ -116,20 +118,33 @@ function submitAuth(e){
 
   if(pass !== ACCESS_PASSWORD) return showError('Неверный пароль доступа.');
   const saved = currentSavedUser();
-  openApp(saved || {name:value('email') || 'Director', username:'director'});
+  const typedName = value('email') || saved?.name || 'Director';
+  const loginUser = saved || {name:typedName, username:normalizeUsername(typedName) || 'director', email:typedName};
+  saveLocalUser(loginUser);
+  openApp(loginUser);
 }
 
 function bindPasswordEyes(){
+  let visible = false;
+  function apply(){
+    ['password','password2'].forEach(id=>{
+      const el = $('#'+id);
+      if(el) el.type = visible ? 'text' : 'password';
+    });
+    document.querySelectorAll('.pass-eye').forEach(btn=>{
+      btn.classList.toggle('active', visible);
+      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+      btn.setAttribute('aria-label', visible ? 'Скрыть пароль' : 'Показать пароль');
+    });
+  }
   document.querySelectorAll('.pass-eye').forEach(btn=>{
-    const show = e => { e.preventDefault(); ['password','password2'].forEach(id=>{ const el=$('#'+id); if(el) el.type='text'; }); };
-    const hide = e => { e.preventDefault(); ['password','password2'].forEach(id=>{ const el=$('#'+id); if(el) el.type='password'; }); };
-    btn.addEventListener('mousedown', show);
-    btn.addEventListener('mouseup', hide);
-    btn.addEventListener('mouseleave', hide);
-    btn.addEventListener('touchstart', show, {passive:false});
-    btn.addEventListener('touchend', hide, {passive:false});
-    btn.addEventListener('touchcancel', hide, {passive:false});
+    btn.addEventListener('click', e=>{
+      e.preventDefault();
+      visible = !visible;
+      apply();
+    });
   });
+  apply();
 }
 
 export function initAuth(){
