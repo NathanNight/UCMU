@@ -1,1 +1,0 @@
-v27: stable drag original, transparent placeholder without flicker, FLIP reorder, fly animation cross-container, folder overlay no longer blocks clicks, folder icon/name layout fixed, muted icon, badge blink, row soft pulse.
