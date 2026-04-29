@@ -2,7 +2,6 @@ import {state,activeMessages} from './state.js';
 import {renderFeed} from './render.js';
 
 const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 function normalizeReactions(m){
@@ -25,6 +24,7 @@ function openProfile(name='Профиль'){
 }
 
 function closeProfile(){ $('#profileModal')?.classList.add('hidden'); }
+function hideReactionUsers(){ $('#reactionUsers')?.classList.add('hidden'); }
 
 function openReactionUsers(m, emoji, x, y){
   const pop = $('#reactionUsers');
@@ -37,17 +37,36 @@ function openReactionUsers(m, emoji, x, y){
   pop.classList.remove('hidden');
 }
 
-function hideReactionUsers(){ $('#reactionUsers')?.classList.add('hidden'); }
+function setOnlyMyReaction(m, emoji){
+  const reactions = normalizeReactions(m);
+  const already = (reactions[emoji] || []).includes(state.user);
+  Object.keys(reactions).forEach(key => {
+    reactions[key] = reactions[key].filter(u => u !== state.user);
+    if(!reactions[key].length) delete reactions[key];
+  });
+  if(!already){
+    reactions[emoji] ||= [];
+    reactions[emoji].push(state.user);
+    m.lastReactEmoji = emoji;
+    window.__ucmuLastReact = {msgId:m.id, emoji, t:Date.now()};
+  } else {
+    delete m.lastReactEmoji;
+    window.__ucmuLastReact = {msgId:m.id, emoji:null, t:Date.now()};
+  }
+}
 
-function toggleReaction(emoji){
+function reactionFromPicker(emoji){
   const m = activeMessages().find(x => x.id === state.selectedMessageId);
   if(!m) return;
-  const reactions = normalizeReactions(m);
-  reactions[emoji] ||= [];
-  const i = reactions[emoji].indexOf(state.user);
-  if(i >= 0) reactions[emoji].splice(i, 1);
-  else reactions[emoji].push(state.user);
-  if(!reactions[emoji].length) delete reactions[emoji];
+  setOnlyMyReaction(m, emoji);
+  renderFeed();
+}
+
+function reactionFromChip(chip){
+  const msg = chip.closest('[data-msg-id]');
+  const m = activeMessages().find(x => x.id === msg?.dataset.msgId);
+  if(!m) return;
+  setOnlyMyReaction(m, chip.dataset.emoji);
   renderFeed();
 }
 
@@ -56,23 +75,16 @@ export function initUiPatch(){
     const reactBtn = e.target.closest('.reactBtn');
     if(reactBtn){
       e.preventDefault(); e.stopImmediatePropagation();
-      toggleReaction(reactBtn.dataset.react);
+      reactionFromPicker(reactBtn.dataset.react);
       $('#ctx')?.classList.add('hidden');
       return;
     }
 
     const reaction = e.target.closest('.reactChip');
     if(reaction){
-      const msg = reaction.closest('[data-msg-id]');
-      const m = activeMessages().find(x => x.id === msg?.dataset.msgId);
-      if(!m) return;
-      const emoji = reaction.dataset.emoji;
-      const reactions = normalizeReactions(m);
-      const arr = reactions[emoji] || [];
-      const i = arr.indexOf(state.user);
-      if(i >= 0) arr.splice(i, 1); else arr.push(state.user);
-      if(!arr.length) delete reactions[emoji];
-      renderFeed();
+      e.preventDefault(); e.stopImmediatePropagation();
+      $('#ctx')?.classList.add('hidden');
+      reactionFromChip(reaction);
       return;
     }
 
@@ -100,6 +112,7 @@ export function initUiPatch(){
     const reaction = e.target.closest('.reactChip');
     if(reaction){
       e.preventDefault(); e.stopImmediatePropagation();
+      $('#ctx')?.classList.add('hidden');
       const msg = reaction.closest('[data-msg-id]');
       const m = activeMessages().find(x => x.id === msg?.dataset.msgId);
       if(m) openReactionUsers(m, reaction.dataset.emoji, e.clientX, e.clientY);
