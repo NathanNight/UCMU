@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>U.C.M.U. Chat stitched v77</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#f4f7f6;font-family:Arial,Helvetica,sans-serif}
+  .ucmu-frame{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
+  #chatFrame{opacity:0;pointer-events:none;transition:opacity .42s ease}
+  #authFrame{opacity:1;pointer-events:auto;transition:opacity .42s ease,filter .42s ease,transform .42s ease}
+  body.chat-open #chatFrame{opacity:1;pointer-events:auto}
+  body.chat-open #authFrame{opacity:0;pointer-events:none;filter:blur(10px);transform:scale(1.012)}
+</style>
+</head>
+<body>
+  <iframe id="authFrame" class="ucmu-frame" src="firebase-main-v63.html" title="U.C.M.U. start screen"></iframe>
+  <iframe id="chatFrame" class="ucmu-frame" src="firebase-main-v42.html" title="U.C.M.U. chat"></iframe>
+
+<script>
+(() => {
+  const authFrame = document.getElementById('authFrame');
+  const chatFrame = document.getElementById('chatFrame');
+  let opened = false;
+
+  function safeDoc(frame){
+    try { return frame.contentDocument || frame.contentWindow.document; }
+    catch(e){ return null; }
+  }
+
+  function openChat(){
+    if(opened) return;
+    opened = true;
+    document.body.classList.add('chat-open');
+    unlockChatFrame();
+  }
+
+  function unlockChatFrame(){
+    const doc = safeDoc(chatFrame);
+    if(!doc) return;
+
+    if(!doc.getElementById('ucmuStitchPatch')){
+      const style = doc.createElement('style');
+      style.id = 'ucmuStitchPatch';
+      style.textContent = `
+        .login{display:none!important;opacity:0!important;pointer-events:none!important}
+        body{overflow:hidden!important}
+      `;
+      doc.head.appendChild(style);
+    }
+
+    const login = doc.getElementById('login');
+    if(login) login.classList.add('off');
+
+    patchChatFrame();
+  }
+
+  function patchChatFrame(){
+    const doc = safeDoc(chatFrame);
+    if(!doc || doc.__ucmuV77Patched) return;
+    doc.__ucmuV77Patched = true;
+    const win = chatFrame.contentWindow;
+
+    const style = doc.createElement('style');
+    style.id = 'ucmuV77ChatFixes';
+    style.textContent = `
+      .feed{scroll-behavior:smooth!important;overflow-anchor:none!important}
+      #chatList.ucmu-stable .chat,
+      #folders.ucmu-stable .chat,
+      #folders.ucmu-stable [class*="folder"],
+      #chatList.ucmu-stable [class*="chat"]{animation:none!important}
+      #chatList .chat,#folders .chat,#folders [class*="folder"],#chatList [class*="chat"]{
+        transition:transform .22s ease,top .22s ease,margin .22s ease,background .18s ease,border-color .18s ease,opacity .18s ease!important;
+      }
+      .msg.added{animation:ucmuMsgSoftIn .22s ease both!important}
+      @keyframes ucmuMsgSoftIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+      .ucmu-folder-drag-lock,.ucmu-folder-drag-lock *{animation:none!important;transition:transform .18s ease, margin .18s ease, opacity .12s ease!important}
+      .ucmu-folder-no-open{pointer-events:auto!important}
+    `;
+    doc.head.appendChild(style);
+
+    win.setTimeout(() => {
+      doc.getElementById('chatList')?.classList.add('ucmu-stable');
+      doc.getElementById('folders')?.classList.add('ucmu-stable');
+    }, 900);
+
+    patchSafeSending(doc, win);
+    patchFolderDragging(doc, win);
+    patchSmoothFeed(doc, win);
+  }
+
+  function activeChatKey(doc){
+    const active = doc.querySelector('.chat.active,[data-chat].active,.folderChat.active,.folder-chat.active');
+    const raw = active?.dataset?.chat || active?.dataset?.id || active?.textContent || 'default-chat';
+    return String(raw).trim().replace(/\s+/g,' ').slice(0,80) || 'default-chat';
+  }
+
+  function patchSafeSending(doc, win){
+    const input = doc.getElementById('input') || doc.querySelector('.msginput, textarea, .compose input');
+    const send = doc.getElementById('send') || doc.querySelector('.send');
+    const feed = doc.getElementById('feed');
+    if(!input || !send || !feed) return;
+
+    const sentMap = new Map();
+    let lock = false;
+
+    function scrollBottom(){
+      const last = feed.querySelector('.msg:last-of-type');
+      if(last?.scrollIntoView) last.scrollIntoView({behavior:'smooth', block:'end', inline:'nearest'});
+      else feed.scrollTo({top:feed.scrollHeight, behavior:'smooth'});
+    }
+
+    function safeSend(ev){
+      if(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.stopImmediatePropagation();
+      }
+      if(lock) return;
+      const text = (input.value || '').trim();
+      if(!text) return;
+      lock = true;
+
+      const key = activeChatKey(doc);
+      const stamp = Date.now().toString(36);
+      if(!sentMap.has(key)) sentMap.set(key, []);
+      sentMap.get(key).push({author:'Director', text, t:stamp});
+
+      feed.insertAdjacentHTML('beforeend', `
+        <article class="msg added" data-ucmu-safe-msg="${stamp}">
+          <div class="ava s"></div>
+          <div class="bubble">
+            <div class="meta"><span class="red">Director</span><span class="time">сейчас</span></div>
+            <div class="txt"></div>
+          </div>
+        </article>`);
+      const msg = feed.querySelector(`[data-ucmu-safe-msg="${stamp}"] .txt`);
+      if(msg) msg.textContent = text;
+      input.value = '';
+      input.dispatchEvent(new win.Event('input', {bubbles:true}));
+      scrollBottom();
+
+      win.setTimeout(() => { lock = false; }, 80);
+    }
+
+    send.addEventListener('click', safeSend, true);
+    input.addEventListener('keydown', ev => {
+      if(ev.key === 'Enter' && !ev.shiftKey) safeSend(ev);
+    }, true);
+  }
+
+  function patchSmoothFeed(doc, win){
+    const feed = doc.getElementById('feed');
+    if(!feed) return;
+    let scrollTimer = 0;
+    new win.MutationObserver(muts => {
+      if(!muts.some(m => Array.from(m.addedNodes).some(n => n.nodeType === 1 && (n.classList?.contains('msg') || n.querySelector?.('.msg'))))) return;
+      win.clearTimeout(scrollTimer);
+      scrollTimer = win.setTimeout(() => {
+        const last = feed.querySelector('.msg:last-of-type');
+        if(last?.scrollIntoView) last.scrollIntoView({behavior:'smooth', block:'end', inline:'nearest'});
+        else feed.scrollTo({top:feed.scrollHeight, behavior:'smooth'});
+      }, 32);
+    }).observe(feed, {childList:true, subtree:false});
+  }
+
+  function patchFolderDragging(doc, win){
+    let draggingChat = false;
+
+    function isChatDragSource(el){
+      return !!el?.closest?.('.chat,[data-chat],.folderChat,.folder-chat');
+    }
+
+    function closestFolder(el){
+      if(!el?.closest) return null;
+      const folder = el.closest('[data-folder-id],.folderItem,.folder-item,.folderRow,.folder-row,.folderCard,.folder-card,.folder,.folderBtn');
+      if(!folder) return null;
+      if(folder.id === 'folderBtn' || folder.id === 'folderModal' || folder.closest('#folderModal,#folderStyleModal,#folderCtx')) return null;
+      return folder;
+    }
+
+    function isOpenFolder(folder){
+      if(!folder) return false;
+      const cls = String(folder.className || '');
+      if(/\b(open|opened|expanded|active|is-open|folderOpen|folder-open|show|shown)\b/i.test(cls)) return true;
+      if(folder.getAttribute('aria-expanded') === 'true') return true;
+      if(folder.dataset?.open === 'true' || folder.dataset?.expanded === 'true') return true;
+      const next = folder.nextElementSibling;
+      if(next && /folder|chat/i.test(next.className || '') && !next.classList.contains('hidden') && next.offsetHeight > 4) return true;
+      if(folder.querySelector('.folderChats:not(.hidden),.folderContent:not(.hidden),.folder-content:not(.hidden),.folderBody:not(.hidden),.folder-body:not(.hidden),.folderList:not(.hidden),.folder-list:not(.hidden)')) return true;
+      return false;
+    }
+
+    function freezeFolder(folder){
+      if(!folder) return;
+      folder.classList.add('ucmu-folder-drag-lock');
+      const beforeClass = folder.className;
+      const beforeExpanded = folder.getAttribute('aria-expanded');
+      win.requestAnimationFrame(() => {
+        if(!draggingChat) return;
+        if(!isOpenFolder(folder)){
+          folder.className = beforeClass;
+          if(beforeExpanded === null) folder.removeAttribute('aria-expanded');
+          else folder.setAttribute('aria-expanded', beforeExpanded);
+        }
+      });
+    }
+
+    doc.addEventListener('dragstart', ev => { draggingChat = isChatDragSource(ev.target); }, true);
+    doc.addEventListener('dragend', () => {
+      draggingChat = false;
+      doc.querySelectorAll('.ucmu-folder-drag-lock').forEach(el => el.classList.remove('ucmu-folder-drag-lock'));
+    }, true);
+    doc.addEventListener('drop', () => {
+      win.setTimeout(() => {
+        draggingChat = false;
+        doc.querySelectorAll('.ucmu-folder-drag-lock').forEach(el => el.classList.remove('ucmu-folder-drag-lock'));
+      }, 120);
+    }, true);
+
+    ['pointerenter','mouseenter','mouseover','dragenter','dragover'].forEach(type => {
+      doc.addEventListener(type, ev => {
+        if(!draggingChat && !['dragenter','dragover'].includes(type)) return;
+        const folder = closestFolder(ev.target);
+        if(!folder) return;
+        const open = isOpenFolder(folder);
+        folder.classList.add('ucmu-folder-drag-lock');
+        if(!open){
+          freezeFolder(folder);
+          if(type === 'dragover') ev.preventDefault();
+          ev.stopImmediatePropagation();
+        }else{
+          // Открытая папка ведёт себя как обычный список: без анимации "улёта в папку".
+          folder.dataset.ucmuOpenDrop = '1';
+        }
+      }, true);
+    });
+  }
+
+  function patchAuthFrame(){
+    const doc = safeDoc(authFrame);
+    if(!doc) return;
+
+    if(!doc.getElementById('ucmuAuthOnlyPatch')){
+      const style = doc.createElement('style');
+      style.id = 'ucmuAuthOnlyPatch';
+      style.textContent = `
+        .app,.modal{display:none!important;opacity:0!important;pointer-events:none!important}
+        .auth{display:grid!important}
+        html,body{overflow:hidden!important;background:#000!important}
+      `;
+      doc.head.appendChild(style);
+    }
+
+    const buttons = Array.from(doc.querySelectorAll('button'));
+    buttons.forEach(btn => {
+      const text = (btn.textContent || '').trim().toUpperCase();
+      if(text.includes('ВОЙТИ')) btn.addEventListener('click', () => setTimeout(openChat, 260), {once:false});
+    });
+
+    const observer = new MutationObserver(() => {
+      const auth = doc.querySelector('.auth');
+      const app = doc.querySelector('.app');
+      if((auth && auth.classList.contains('hidden')) || (app && app.classList.contains('active'))) openChat();
+    });
+    observer.observe(doc.documentElement, {attributes:true, subtree:true, attributeFilter:['class']});
+  }
+
+  authFrame.addEventListener('load', patchAuthFrame);
+  chatFrame.addEventListener('load', unlockChatFrame);
+  setTimeout(patchAuthFrame, 500);
+  setTimeout(unlockChatFrame, 500);
+})();
+</script>
+</body>
+</html>
