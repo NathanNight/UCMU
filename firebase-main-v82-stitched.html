@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>U.C.M.U. Chat stitched v82</title>
+<style>
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000}
+</style>
+</head>
+<body>
+<iframe id="shell" src="firebase-main-v81-stitched.html" title="U.C.M.U. Chat v82"></iframe>
+<script>
+(() => {
+  const shell = document.getElementById('shell');
+
+  function safeDoc(frame){try{return frame.contentDocument || frame.contentWindow.document}catch(e){return null}}
+  function safeWin(frame){try{return frame.contentWindow}catch(e){return null}}
+
+  function findFrameById(rootDoc, id, depth = 0){
+    if(!rootDoc || depth > 8) return null;
+    const direct = rootDoc.getElementById(id);
+    if(direct) return direct;
+    for(const f of Array.from(rootDoc.querySelectorAll('iframe'))){
+      const d = safeDoc(f);
+      const found = findFrameById(d, id, depth + 1);
+      if(found) return found;
+    }
+    return null;
+  }
+
+  function chatFrame(){ return findFrameById(safeDoc(shell), 'chatFrame'); }
+  function chatDoc(){ const f = chatFrame(); return f ? safeDoc(f) : null; }
+  function chatWin(){ const f = chatFrame(); return f ? safeWin(f) : null; }
+
+  function patch(){
+    const doc = chatDoc();
+    const win = chatWin();
+    if(!doc || !win || doc.__ucmuV82Patched) return;
+    doc.__ucmuV82Patched = true;
+
+    const style = doc.createElement('style');
+    style.id = 'ucmuV82DeleteAnimPatch';
+    style.textContent = `
+      .msg.ucmu-v82-delete-preview{
+        pointer-events:none!important;
+        overflow:hidden!important;
+        animation:ucmuV82MsgDelete .44s cubic-bezier(.22,.9,.24,1) forwards!important;
+        transform-origin:center!important;
+      }
+      @keyframes ucmuV82MsgDelete{
+        0%{opacity:1;filter:blur(0);transform:translateY(0) translateX(0) scale(1);max-height:160px}
+        45%{opacity:.78;filter:blur(1.5px);transform:translateY(-2px) translateX(12px) scale(.985);max-height:160px}
+        100%{opacity:0;filter:blur(8px);transform:translateY(-7px) translateX(38px) scale(.94);max-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+      }
+    `;
+    doc.head.appendChild(style);
+
+    let lastMsgTarget = null;
+
+    function rememberMsg(ev){
+      const msg = ev.target.closest?.('.msg');
+      if(msg) lastMsgTarget = msg;
+    }
+
+    doc.addEventListener('contextmenu', rememberMsg, true);
+    doc.addEventListener('pointerdown', rememberMsg, true);
+
+    doc.addEventListener('click', ev => {
+      const confirm = ev.target.closest?.('#confirmDelete');
+      if(!confirm || confirm.dataset.ucmuV82Pass === '1') return;
+
+      const modal = doc.getElementById('deleteModal');
+      if(!modal || modal.classList.contains('hidden')) return;
+
+      const msg = lastMsgTarget || doc.querySelector('.msg:hover,.msg.selected,.msg.active');
+      if(!msg) return;
+
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+
+      msg.classList.add('ucmu-v82-delete-preview');
+
+      win.setTimeout(() => {
+        confirm.dataset.ucmuV82Pass = '1';
+        confirm.click();
+        win.setTimeout(() => {
+          delete confirm.dataset.ucmuV82Pass;
+          lastMsgTarget = null;
+        }, 80);
+      }, 430);
+    }, true);
+  }
+
+  shell.addEventListener('load', () => {
+    const timer = setInterval(() => {
+      patch();
+      if(chatDoc()?.__ucmuV82Patched) clearInterval(timer);
+    }, 300);
+    setTimeout(() => clearInterval(timer), 12000);
+  });
+})();
+</script>
+</body>
+</html>
