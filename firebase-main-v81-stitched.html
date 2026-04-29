@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>U.C.M.U. Chat stitched v81</title>
+<style>
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000}
+</style>
+</head>
+<body>
+<iframe id="shell" src="firebase-main-v79-stitched.html" title="U.C.M.U. Chat v81"></iframe>
+<script>
+(() => {
+  const shell = document.getElementById('shell');
+
+  function safeDoc(frame){try{return frame.contentDocument || frame.contentWindow.document}catch(e){return null}}
+  function safeWin(frame){try{return frame.contentWindow}catch(e){return null}}
+  function shellDoc(){return safeDoc(shell)}
+  function chatFrame(){return shellDoc()?.getElementById('chatFrame') || null}
+  function chatDoc(){const f=chatFrame(); return f ? safeDoc(f) : null}
+  function chatWin(){const f=chatFrame(); return f ? safeWin(f) : null}
+
+  function patch(){
+    const doc = chatDoc();
+    const win = chatWin();
+    if(!doc || !win || doc.__ucmuV81Patched) return;
+    doc.__ucmuV81Patched = true;
+
+    const style = doc.createElement('style');
+    style.id = 'ucmuV81Patch';
+    style.textContent = `
+      /* меньше радиус белой подсветки */
+      .msg.added,
+      .msg.ucmu-new-glow{
+        animation:ucmuV81MsgAppear .42s cubic-bezier(.18,1.1,.28,1) both, ucmuV81SmallGlow 1.55s ease-out both!important;
+      }
+      .msg.added .bubble,
+      .msg.ucmu-new-glow .bubble{
+        animation:ucmuV81BubbleGlow 1.55s ease-out both!important;
+      }
+      @keyframes ucmuV81MsgAppear{
+        0%{opacity:0;filter:blur(9px);transform:translateY(10px) scale(.985)}
+        70%{opacity:1;filter:blur(0);transform:translateY(-1px) scale(1.002)}
+        100%{opacity:1;filter:blur(0);transform:none}
+      }
+      @keyframes ucmuV81SmallGlow{
+        0%{filter:drop-shadow(0 0 7px rgba(255,255,255,.34))}
+        100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}
+      }
+      @keyframes ucmuV81BubbleGlow{
+        0%{box-shadow:0 0 0 1px rgba(255,255,255,.22),0 0 10px rgba(255,255,255,.16),0 10px 24px rgba(0,0,0,.18)}
+        100%{box-shadow:0 0 0 1px rgba(255,255,255,0),0 0 0 rgba(255,255,255,0),0 10px 24px rgba(0,0,0,.18)}
+      }
+
+      /* анимация удаления чата, но не сообщений */
+      .chat.ucmu-chat-delete-anim{
+        pointer-events:none!important;
+        overflow:hidden!important;
+        animation:ucmuV81ChatDelete .42s cubic-bezier(.22,.9,.24,1) forwards!important;
+      }
+      @keyframes ucmuV81ChatDelete{
+        0%{opacity:1;filter:blur(0);transform:translateX(0) scale(1);max-height:90px}
+        48%{opacity:.78;filter:blur(1px);transform:translateX(14px) scale(.985);max-height:90px}
+        100%{opacity:0;filter:blur(8px);transform:translateX(38px) scale(.94);max-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+      }
+
+      /* если папка была закрыта в начале drag — визуально не даём ей раскрыться */
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="content"],
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="Content"],
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="body"],
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="Body"],
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="list"],
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="List"],
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="chats"],
+      body.ucmu-folder-dragging #folders [data-ucmu-was-open="0"] [class*="Chats"]{
+        display:none!important;
+        max-height:0!important;
+        opacity:0!important;
+      }
+    `;
+    doc.head.appendChild(style);
+
+    patchMessageGlow(doc, win);
+    patchChatDeleteOnly(doc, win);
+    patchFolderNoOpenWhileDrag(doc, win);
+  }
+
+  function patchMessageGlow(doc, win){
+    const feed = doc.getElementById('feed');
+    if(!feed) return;
+    new win.MutationObserver(muts => {
+      muts.forEach(m => Array.from(m.addedNodes).forEach(n => {
+        if(n.nodeType !== 1) return;
+        const items = n.classList?.contains('msg') ? [n] : Array.from(n.querySelectorAll?.('.msg') || []);
+        items.forEach(el => {
+          el.classList.remove('ucmu-new-glow');
+          void el.offsetWidth;
+          el.classList.add('ucmu-new-glow');
+          win.setTimeout(() => el.classList.remove('ucmu-new-glow'), 1650);
+        });
+      }));
+    }).observe(feed,{childList:true,subtree:false});
+  }
+
+  function patchChatDeleteOnly(doc, win){
+    let lastChatTarget = null;
+
+    doc.addEventListener('contextmenu', ev => {
+      const chat = ev.target.closest?.('.chat');
+      if(chat) lastChatTarget = chat;
+    }, true);
+
+    doc.addEventListener('pointerdown', ev => {
+      const chat = ev.target.closest?.('.chat');
+      if(chat) lastChatTarget = chat;
+    }, true);
+
+    doc.addEventListener('click', ev => {
+      const btn = ev.target.closest?.('.chatAction.danger,[data-a="delete"]');
+      if(!btn) return;
+
+      const chatCtx = doc.getElementById('chatCtx');
+      const isChatDelete = btn.classList?.contains('chatAction') || (chatCtx && !chatCtx.classList.contains('hidden'));
+      if(!isChatDelete) return; // сообщения не трогаем: оставляем старый запрос/таймер
+
+      const target = lastChatTarget || doc.querySelector('.chat:hover') || doc.querySelector('.chat.active');
+      if(!target) return;
+
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+
+      target.classList.add('ucmu-chat-delete-anim');
+      chatCtx?.classList.add('hidden');
+      win.setTimeout(() => {
+        target.remove();
+        lastChatTarget = null;
+      }, 430);
+    }, true);
+  }
+
+  function patchFolderNoOpenWhileDrag(doc, win){
+    const foldersRoot = doc.getElementById('folders');
+    if(!foldersRoot) return;
+    const folderSelector = '[data-folder-id],.folderItem,.folder-item,.folderRow,.folder-row,.folderCard,.folder-card,.folder,details';
+    let dragging = false;
+
+    function folders(){
+      return Array.from(foldersRoot.querySelectorAll(folderSelector)).filter(f => f.id !== 'folderBtn' && !f.closest('#folderModal,#folderStyleModal,#folderCtx'));
+    }
+    function isChat(el){return !!el?.closest?.('.chat,[data-chat],.folderChat,.folder-chat')}
+    function isOpen(f){
+      if(!f) return false;
+      if(f.open === true) return true;
+      if(f.getAttribute('aria-expanded') === 'true') return true;
+      if(f.dataset?.open === 'true' || f.dataset?.expanded === 'true') return true;
+      if(/\b(open|opened|expanded|is-open|folderOpen|folder-open|show|shown)\b/i.test(String(f.className || ''))) return true;
+      const content = f.querySelector('[class*="content"],[class*="Content"],[class*="body"],[class*="Body"],[class*="list"],[class*="List"],[class*="chats"],[class*="Chats"]');
+      return !!(content && !content.classList.contains('hidden') && content.offsetHeight > 6);
+    }
+    function snapshot(){
+      folders().forEach(f => {
+        f.dataset.ucmuWasOpen = isOpen(f) ? '1' : '0';
+        f.dataset.ucmuClassBefore = String(f.className || '');
+        f.dataset.ucmuAriaBefore = f.getAttribute('aria-expanded') || '';
+        if(f.open !== undefined) f.dataset.ucmuOpenBefore = f.open ? '1' : '0';
+      });
+    }
+    function keepClosed(){
+      folders().forEach(f => {
+        if(f.dataset.ucmuWasOpen !== '0') return;
+        f.className = f.dataset.ucmuClassBefore || f.className;
+        f.setAttribute('aria-expanded','false');
+        if(f.open !== undefined) f.open = false;
+        const content = f.querySelector('[class*="content"],[class*="Content"],[class*="body"],[class*="Body"],[class*="list"],[class*="List"],[class*="chats"],[class*="Chats"]');
+        if(content){
+          content.classList.add('hidden');
+          content.style.display = 'none';
+          content.style.maxHeight = '0px';
+          content.style.opacity = '0';
+        }
+      });
+    }
+    function start(ev){
+      if(!isChat(ev.target)) return;
+      dragging = true;
+      doc.body.classList.add('ucmu-folder-dragging');
+      snapshot();
+    }
+    function move(){ if(dragging) keepClosed(); }
+    function end(){
+      if(!dragging) return;
+      dragging = false;
+      doc.body.classList.remove('ucmu-folder-dragging');
+      folders().forEach(f => delete f.dataset.ucmuWasOpen);
+    }
+
+    doc.addEventListener('dragstart', start, true);
+    doc.addEventListener('dragenter', move, true);
+    doc.addEventListener('dragover', move, true);
+    doc.addEventListener('drop', () => win.setTimeout(end, 80), true);
+    doc.addEventListener('dragend', end, true);
+
+    new win.MutationObserver(() => { if(dragging) keepClosed(); }).observe(foldersRoot, {attributes:true, subtree:true, childList:true, attributeFilter:['class','style','open','aria-expanded']});
+  }
+
+  shell.addEventListener('load', () => {
+    const timer = setInterval(() => {
+      patch();
+      if(chatDoc()?.__ucmuV81Patched) clearInterval(timer);
+    }, 300);
+    setTimeout(() => clearInterval(timer), 12000);
+  });
+})();
+</script>
+</body>
+</html>
