@@ -4,13 +4,13 @@
 
 @keyframes ucmuEnter{
   0%{opacity:0;filter:blur(13px);transform:translateY(18px) scale(.965)}
-  72%{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}
   100%{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}
 }
-@keyframes ucmuNewFlash{
-  0%{box-shadow:0 0 0 rgba(255,255,255,0),0 0 0 rgba(255,255,255,0)}
-  16%{box-shadow:0 0 0 1px rgba(255,255,255,.72),0 0 28px rgba(255,255,255,.36),0 0 52px rgba(255,255,255,.18)}
-  100%{box-shadow:0 0 0 rgba(255,255,255,0),0 0 0 rgba(255,255,255,0)}
+@keyframes ucmuGlassFlash{
+  0%{opacity:0;transform:translateX(-18%) scaleX(.82)}
+  10%{opacity:.92;transform:translateX(0) scaleX(1)}
+  38%{opacity:.55;transform:translateX(3%) scaleX(1.02)}
+  100%{opacity:0;transform:translateX(12%) scaleX(1.06)}
 }
 @keyframes ucmuPending{
   from{opacity:1;filter:none;transform:translateY(0) scale(1)}
@@ -26,13 +26,41 @@
 }
 
 .ucmu-enter{animation:ucmuEnter .98s var(--ease) both!important;will-change:opacity,filter,transform!important}
-.ucmu-new-flash .bubble,
-.ucmu-new-flash.chat,
-.ucmu-new-flash.folder-wrap>.folder-item,
-.ucmu-new-flash.folder-item{animation:ucmuNewFlash 1.05s ease-out both!important}
 .ucmu-delete-pending{animation:ucmuPending 3s linear forwards!important;pointer-events:none!important;will-change:opacity!important}
 .ucmu-delete-restored{animation:ucmuRestore .42s ease-out both!important}
 .ucmu-remove{pointer-events:none!important;overflow:hidden!important;animation:ucmuRemove .9s cubic-bezier(.16,.86,.22,1) forwards!important;will-change:opacity,filter,transform,max-height!important}
+
+.msg,.bubble,.chat,.folder-wrap,.folder-item{position:relative}
+.bubble,.chat,.folder-item{overflow:hidden}
+.ucmu-new-flash .bubble::after,
+.ucmu-new-flash.chat::after,
+.ucmu-new-flash.folder-wrap>.folder-item::after,
+.ucmu-new-flash.folder-item::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:3;
+  background:
+    radial-gradient(ellipse at 18% 82%,rgba(255,255,255,.38) 0%,rgba(255,255,255,.22) 22%,rgba(255,255,255,0) 58%),
+    linear-gradient(105deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.08) 25%,rgba(255,255,255,.46) 46%,rgba(255,255,255,.18) 58%,rgba(255,255,255,0) 82%),
+    linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 46%);
+  mix-blend-mode:screen;
+  animation:ucmuGlassFlash 1.18s cubic-bezier(.16,1,.24,1) both!important;
+}
+.ucmu-new-flash .bubble::before,
+.ucmu-new-flash.chat::before,
+.ucmu-new-flash.folder-wrap>.folder-item::before,
+.ucmu-new-flash.folder-item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  background:radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.16),rgba(255,255,255,0) 62%);
+  mix-blend-mode:screen;
+  animation:ucmuGlassFlash 1.05s ease-out both!important;
+}
 .undoToast.run .undoBar{animation:undoBar 3s linear forwards}
 @keyframes undoBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
