@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>U.C.M.U. Chat stitched v96 smooth reverse anim</title>
+<style>
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000}
+</style>
+</head>
+<body>
+<iframe id="shell" src="firebase-main-v95-stitched.html" title="U.C.M.U. Chat v96"></iframe>
+<script>
+(() => {
+  const shell = document.getElementById('shell');
+
+  function safeDoc(frame){
+    try { return frame.contentDocument || frame.contentWindow.document; }
+    catch(e){ return null; }
+  }
+
+  function findChatFrame(rootDoc, depth = 0){
+    if(!rootDoc || depth > 8) return null;
+    const direct = rootDoc.getElementById('chatFrame');
+    if(direct) return direct;
+    for(const frame of Array.from(rootDoc.querySelectorAll('iframe'))){
+      const found = findChatFrame(safeDoc(frame), depth + 1);
+      if(found) return found;
+    }
+    return null;
+  }
+
+  function patch(){
+    const root = safeDoc(shell);
+    const chatFrame = findChatFrame(root);
+    const doc = chatFrame ? safeDoc(chatFrame) : null;
+    const win = chatFrame?.contentWindow;
+    if(!doc || !win || doc.__ucmuV96Patched) return;
+    doc.__ucmuV96Patched = true;
+
+    const style = doc.createElement('style');
+    style.id = 'ucmuV96SmoothReverseAnim';
+    style.textContent = `
+      /* One continuous move: no mid-stop, no staged deblur */
+      .msg.ucmu-msg-in,
+      .feed .msg.ucmu-anim-enter,
+      #chatList .chat.ucmu-anim-enter,
+      #folders .ucmu-anim-enter{
+        animation:ucmuV96Appear .9s cubic-bezier(.16,.86,.22,1) both!important;
+        will-change:opacity,filter,transform!important;
+      }
+      .msg.ucmu-msg-in .bubble,
+      .feed .msg.ucmu-anim-enter .bubble,
+      #chatList .chat.ucmu-anim-enter .bubble,
+      #folders .ucmu-anim-enter .bubble{
+        animation:ucmuV96Glow .9s ease-out both!important;
+      }
+      @keyframes ucmuV96Appear{
+        0%{opacity:0;filter:blur(12px);transform:translateY(18px) scale(.965)}
+        100%{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}
+      }
+      @keyframes ucmuV96Glow{
+        0%{box-shadow:0 0 0 1px rgba(255,255,255,.18),0 0 12px rgba(255,255,255,.14),0 10px 24px rgba(0,0,0,.18)}
+        100%{box-shadow:0 0 0 1px rgba(255,255,255,0),0 0 0 rgba(255,255,255,0),0 10px 24px rgba(0,0,0,.18)}
+      }
+
+      .ucmu-delete-pending{
+        opacity:.6!important;
+        filter:none!important;
+        transition:opacity .22s ease!important;
+      }
+
+      /* Same visual pattern as appear, but reversed */
+      .feed .msg.ucmu-anim-remove,
+      #chatList .chat.ucmu-anim-remove,
+      #folders .ucmu-anim-remove{
+        pointer-events:none!important;
+        overflow:hidden!important;
+        animation:ucmuV96Remove .9s cubic-bezier(.16,.86,.22,1) forwards!important;
+        will-change:opacity,filter,transform,max-height!important;
+      }
+      @keyframes ucmuV96Remove{
+        0%{opacity:.6;filter:blur(0);transform:translateY(0) scale(1);max-height:190px;margin-top:var(--ucmu-mt,0);margin-bottom:var(--ucmu-mb,14px);padding-top:var(--ucmu-pt,0);padding-bottom:var(--ucmu-pb,0)}
+        100%{opacity:0;filter:blur(12px);transform:translateY(18px) scale(.965);max-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+      }
+    `;
+    doc.head.appendChild(style);
+
+    function prepRemoveMetrics(el){
+      if(!el || el.__ucmuV96Metrics) return;
+      const cs = win.getComputedStyle(el);
+      el.style.setProperty('--ucmu-mt', cs.marginTop || '0px');
+      el.style.setProperty('--ucmu-mb', cs.marginBottom || '14px');
+      el.style.setProperty('--ucmu-pt', cs.paddingTop || '0px');
+      el.style.setProperty('--ucmu-pb', cs.paddingBottom || '0px');
+      el.__ucmuV96Metrics = true;
+    }
+
+    if(win.UCMUAnim){
+      win.UCMUAnim.appear = function(el){
+        if(!el || el.__ucmuRemoving) return;
+        el.classList.remove('ucmu-anim-enter');
+        void el.offsetWidth;
+        el.classList.add('ucmu-anim-enter');
+        win.setTimeout(() => el.classList.remove('ucmu-anim-enter'), 930);
+      };
+
+      win.UCMUAnim.remove = function(el, done){
+        if(!el || el.__ucmuRemoving) return;
+        el.__ucmuRemoving = true;
+        prepRemoveMetrics(el);
+        el.classList.remove('ucmu-anim-enter');
+        el.classList.remove('ucmu-anim-remove');
+        void el.offsetWidth;
+        el.classList.add('ucmu-anim-remove');
+        win.setTimeout(() => {
+          if(typeof done === 'function') done(el);
+        }, 930);
+      };
+    }
+
+    // If old code already added remove class without metrics, make it smooth too.
+    const obs = new win.MutationObserver(muts => {
+      muts.forEach(m => {
+        if(m.type !== 'attributes') return;
+        const el = m.target;
+        if(el.classList?.contains('ucmu-anim-remove')) prepRemoveMetrics(el);
+      });
+    });
+    obs.observe(doc.body, {subtree:true, attributes:true, attributeFilter:['class']});
+  }
+
+  shell.addEventListener('load', () => {
+    const timer = setInterval(() => {
+      patch();
+      const root = safeDoc(shell);
+      const chat = findChatFrame(root);
+      const doc = chat ? safeDoc(chat) : null;
+      if(doc?.__ucmuV96Patched) clearInterval(timer);
+    }, 300);
+    setTimeout(() => clearInterval(timer), 12000);
+  });
+})();
+</script>
+</body>
+</html>
