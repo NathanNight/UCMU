@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>U.C.M.U. Chat stitched v95 animation tune</title>
+<style>
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000}
+</style>
+</head>
+<body>
+<iframe id="shell" src="firebase-main-v94-stitched.html" title="U.C.M.U. Chat v95"></iframe>
+<script>
+(() => {
+  const shell = document.getElementById('shell');
+
+  function safeDoc(frame){
+    try { return frame.contentDocument || frame.contentWindow.document; }
+    catch(e){ return null; }
+  }
+
+  function findChatFrame(rootDoc, depth = 0){
+    if(!rootDoc || depth > 6) return null;
+    const direct = rootDoc.getElementById('chatFrame');
+    if(direct) return direct;
+    for(const frame of Array.from(rootDoc.querySelectorAll('iframe'))){
+      const found = findChatFrame(safeDoc(frame), depth + 1);
+      if(found) return found;
+    }
+    return null;
+  }
+
+  function patch(){
+    const root = safeDoc(shell);
+    const chatFrame = findChatFrame(root);
+    const doc = chatFrame ? safeDoc(chatFrame) : null;
+    const win = chatFrame?.contentWindow;
+    if(!doc || !win || doc.__ucmuV95Patched) return;
+    doc.__ucmuV95Patched = true;
+
+    const style = doc.createElement('style');
+    style.id = 'ucmuV95AnimTune';
+    style.textContent = `
+      /* появление в 2 раза медленнее */
+      .msg.ucmu-msg-in,
+      .feed .msg.ucmu-anim-enter,
+      #chatList .chat.ucmu-anim-enter,
+      #folders .ucmu-anim-enter{
+        animation:ucmuV95Enter 1.1s cubic-bezier(.16,1,.24,1) both!important;
+      }
+      .msg.ucmu-msg-in .bubble,
+      .feed .msg.ucmu-anim-enter .bubble,
+      #chatList .chat.ucmu-anim-enter .bubble,
+      #folders .ucmu-anim-enter .bubble{
+        animation:ucmuV95Glow 1.8s ease-out both!important;
+      }
+      @keyframes ucmuV95Enter{
+        0%{opacity:0;filter:blur(16px);transform:translateY(18px) scale(.965)}
+        42%{opacity:.72;filter:blur(8px);transform:translateY(6px) scale(.985)}
+        72%{opacity:1;filter:blur(1.5px);transform:translateY(-2px) scale(1.004)}
+        100%{opacity:1;filter:blur(0);transform:none}
+      }
+      @keyframes ucmuV95Glow{
+        0%{box-shadow:0 0 0 1px rgba(255,255,255,.20),0 0 14px rgba(255,255,255,.16),0 10px 24px rgba(0,0,0,.18)}
+        100%{box-shadow:0 0 0 1px rgba(255,255,255,0),0 0 0 rgba(255,255,255,0),0 10px 24px rgba(0,0,0,.18)}
+      }
+
+      /* во время таймера — 60% видимости, но только после подтверждения */
+      .ucmu-delete-pending{
+        opacity:.6!important;
+        filter:grayscale(.08)!important;
+        transition:opacity .22s ease,filter .22s ease!important;
+      }
+
+      /* финальное удаление — заметный fade + blur */
+      .feed .msg.ucmu-anim-remove,
+      #chatList .chat.ucmu-anim-remove,
+      #folders .ucmu-anim-remove{
+        pointer-events:none!important;
+        overflow:hidden!important;
+        animation:ucmuV95Remove .72s cubic-bezier(.22,.9,.24,1) forwards!important;
+      }
+      @keyframes ucmuV95Remove{
+        0%{opacity:.6;filter:blur(0);transform:translateY(0) scale(1);max-height:190px}
+        28%{opacity:.48;filter:blur(3px);transform:translateY(6px) scale(.99);max-height:190px}
+        70%{opacity:.18;filter:blur(12px);transform:translateY(22px) scale(.95);max-height:110px}
+        100%{opacity:0;filter:blur(18px);transform:translateY(34px) scale(.90);max-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+      }
+    `;
+    doc.head.appendChild(style);
+
+    // v94 делает pending слишком рано. Чистим его на простом открытии окна удаления.
+    doc.addEventListener('click', ev => {
+      const opener = ev.target.closest?.('[data-a="delete"]');
+      if(!opener) return;
+      win.setTimeout(() => {
+        doc.querySelectorAll('.ucmu-delete-pending').forEach(el => el.classList.remove('ucmu-delete-pending'));
+      }, 20);
+    }, true);
+
+    // Pending включаем только после фактического подтверждения/старта удаления.
+    doc.addEventListener('click', ev => {
+      const confirm = ev.target.closest?.('#confirmDelete,.dangerPrimary,.chatAction.danger,.folderAction.danger,.selectedAction.danger');
+      if(!confirm) return;
+      win.setTimeout(() => {
+        const target = doc.querySelector('.msg:hover,.msg.selected,.msg.active,.chat:hover,.chat.active,#folders [data-folder-id]:hover,#folders .folder:hover,#folders .folderItem:hover,#folders .folder-item:hover');
+        if(target) target.classList.add('ucmu-delete-pending');
+      }, 20);
+    }, true);
+
+    // Подстраховка: если UCMUAnim уже есть из v94, меняем тайминги под новую CSS-анимацию.
+    if(win.UCMUAnim){
+      const oldAppear = win.UCMUAnim.appear;
+      const oldRemove = win.UCMUAnim.remove;
+      win.UCMUAnim.appear = function(el){
+        if(!el || el.__ucmuRemoving) return;
+        el.classList.remove('ucmu-anim-enter');
+        void el.offsetWidth;
+        el.classList.add('ucmu-anim-enter');
+        win.setTimeout(() => el.classList.remove('ucmu-anim-enter'), 1150);
+      };
+      win.UCMUAnim.remove = function(el, done){
+        if(!el || el.__ucmuRemoving) return;
+        el.__ucmuRemoving = true;
+        el.classList.remove('ucmu-anim-enter');
+        el.classList.remove('ucmu-anim-remove');
+        void el.offsetWidth;
+        el.classList.add('ucmu-anim-remove');
+        win.setTimeout(() => { if(typeof done === 'function') done(el); }, 740);
+      };
+    }
+  }
+
+  shell.addEventListener('load', () => {
+    const timer = setInterval(() => {
+      patch();
+      const root = safeDoc(shell);
+      const chat = findChatFrame(root);
+      const doc = chat ? safeDoc(chat) : null;
+      if(doc?.__ucmuV95Patched) clearInterval(timer);
+    }, 300);
+    setTimeout(() => clearInterval(timer), 12000);
+  });
+})();
+</script>
+</body>
+</html>
