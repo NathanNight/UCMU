@@ -7,11 +7,9 @@ export function appear(el){
   if(!el) return;
   el.classList.remove('ucmu-enter','ucmu-new-flash');
   void el.offsetWidth;
-  el.classList.add('ucmu-enter');
-  setTimeout(()=>{
-    el.classList.remove('ucmu-enter');
-    flash(el);
-  }, ENTER_MS);
+  el.classList.add('ucmu-enter','ucmu-new-flash');
+  setTimeout(()=>el.classList.remove('ucmu-enter'), ENTER_MS);
+  setTimeout(()=>el.classList.remove('ucmu-new-flash'), 1250);
 }
 
 export function flash(el){
@@ -19,7 +17,7 @@ export function flash(el){
   el.classList.remove('ucmu-new-flash');
   void el.offsetWidth;
   el.classList.add('ucmu-new-flash');
-  setTimeout(()=>el.classList.remove('ucmu-new-flash'), 1150);
+  setTimeout(()=>el.classList.remove('ucmu-new-flash'), 1250);
 }
 
 export function removeAnimated(el, done){
