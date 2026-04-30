@@ -3,21 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>U.C.M.U. Chat v132 dust visible test</title>
-  <link rel="stylesheet" href="css/base.css?v=132">
-  <link rel="stylesheet" href="css/layout.css?v=132">
-  <link rel="stylesheet" href="css/components.css?v=132">
-  <link rel="stylesheet" href="css/animations.css?v=132">
-  <link rel="stylesheet" href="css/splash.css?v=132">
-  <link rel="stylesheet" href="css/responsive.css?v=132">
-  <style id="ucmu-v132-overrides">
+  <title>U.C.M.U. Chat v135 contacts settings test</title>
+  <link rel="stylesheet" href="css/base.css?v=135">
+  <link rel="stylesheet" href="css/layout.css?v=135">
+  <link rel="stylesheet" href="css/components.css?v=135">
+  <link rel="stylesheet" href="css/animations.css?v=135">
+  <link rel="stylesheet" href="css/splash.css?v=135">
+  <link rel="stylesheet" href="css/responsive.css?v=135">
+  <style id="ucmu-v135-overrides">
     html body #appRoot .auth input.auth-input,html body #appRoot .auth .pass-wrap input.auth-input,html body .auth input.auth-input{appearance:none!important;-webkit-appearance:none!important;background:#1b1d20!important;background-color:#1b1d20!important;background-image:linear-gradient(180deg,#2b2e33,#17191d)!important;color:#f4f7f6!important;-webkit-text-fill-color:#f4f7f6!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;caret-color:#ff5a5a!important}
     html body #appRoot .auth input.auth-input::placeholder,html body .auth input.auth-input::placeholder{color:rgba(235,240,242,.46)!important;-webkit-text-fill-color:rgba(235,240,242,.46)!important}
     html body #appRoot .auth input.auth-input:-webkit-autofill,html body #appRoot .auth input.auth-input:-webkit-autofill:hover,html body #appRoot .auth input.auth-input:-webkit-autofill:focus,html body .auth input.auth-input:-webkit-autofill{-webkit-text-fill-color:#f4f7f6!important;box-shadow:0 0 0 1000px #1b1d20 inset,inset 0 1px 0 rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.18)!important;transition:background-color 999999s ease-in-out 0s!important}
     html body #appRoot .auth .pass-eye,html body .auth .pass-eye{color:#fff!important;background:rgba(0,0,0,.45)!important;border:1px solid rgba(255,255,255,.28)!important;opacity:1!important;z-index:5!important}
     html body #appRoot .auth .pass-eye svg,html body .auth .pass-eye svg{stroke:currentColor!important;fill:none!important;opacity:1!important}
     html body #appRoot .auth .pass-eye.active,html body .auth .pass-eye.active{background:rgba(215,25,32,.32)!important;border-color:rgba(255,95,95,.75)!important;box-shadow:0 0 16px rgba(255,0,0,.28)!important}
-
     .side{padding-left:0!important;padding-right:0!important;border-right:0!important}.side .profile,.side .search,.side .cap,.side .folderBtn{margin-left:14px!important;margin-right:14px!important}.side .scrollList{padding-right:0!important}
     #chatList,.folder-chat-list{display:flex!important;flex-direction:column!important;gap:2px!important}.folder-chat-list.hidden{display:none!important}
     .head,.compose,.members,.private,.ctx,.float,.folder-item,.auth-form,.auth-card{border:0!important}.ph,.tabs,.reactPicker{border:0!important}.compose{background:transparent!important;box-shadow:none!important}
@@ -31,7 +30,7 @@
 </head>
 <body>
   <div id="appRoot"></div>
-  <script type="module" src="js/app.js?v=132"></script>
+  <script type="module" src="js/app.js?v=135"></script>
   <script>
     (()=>{function forceAuthInputSkin(){document.querySelectorAll('#auth input.auth-input,.auth input.auth-input').forEach(el=>{el.style.setProperty('appearance','none','important');el.style.setProperty('-webkit-appearance','none','important');el.style.setProperty('background','#1b1d20','important');el.style.setProperty('background-color','#1b1d20','important');el.style.setProperty('background-image','linear-gradient(180deg,#2b2e33,#17191d)','important');el.style.setProperty('color','#f4f7f6','important');el.style.setProperty('-webkit-text-fill-color','#f4f7f6','important');el.style.setProperty('border','1px solid rgba(255,255,255,.18)','important');el.style.setProperty('box-shadow','inset 0 1px 0 rgba(255,255,255,.08)','important');el.style.setProperty('caret-color','#ff5a5a','important')});document.querySelectorAll('#auth .pass-eye,.auth .pass-eye').forEach(btn=>{btn.style.setProperty('color','#fff','important');btn.style.setProperty('background','rgba(0,0,0,.45)','important');btn.style.setProperty('border','1px solid rgba(255,255,255,.28)','important');btn.style.setProperty('opacity','1','important')})}document.addEventListener('DOMContentLoaded',()=>{forceAuthInputSkin();setTimeout(forceAuthInputSkin,100);setTimeout(forceAuthInputSkin,500);setTimeout(forceAuthInputSkin,1500);setTimeout(forceAuthInputSkin,2500);document.addEventListener('input',forceAuthInputSkin,true);document.addEventListener('focusin',forceAuthInputSkin,true);new MutationObserver(forceAuthInputSkin).observe(document.body,{childList:true,subtree:true})})})();
   </script>
