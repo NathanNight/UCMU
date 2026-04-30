@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v135-contacts-chat-settings-test',note:'contacts panel, chat menu/settings, active chat header, dust diagnostic overlay'};
+window.UCMU={version:'v136-modal-delete-glass-polish',note:'central modal for chat actions, no message rebound, slightly lighter glass cards'};
