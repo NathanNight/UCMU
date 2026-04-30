@@ -4,8 +4,6 @@ import {initFirebaseAuth} from './authFirebase.js';
 import {initUiPatch} from './uiPatch.js';
 import {initDustParticles} from './dustParticles.js';
 import {initContactsPatch} from './contactsPatch.js';
-import {initV151Patch} from './v151Patch.js';
-import {initV152DebugPatch} from './v152DebugPatch.js';
 
 document.getElementById('appRoot').innerHTML=shell();
 initDustParticles();
@@ -13,6 +11,7 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-initV151Patch();
-initV152DebugPatch();
-window.UCMU={version:'v152-send-diagnostics',note:'diagnostic send patch loaded: logs activeChat/store/user/error and attempts forced send when normal send fails; drag untouched'};
+
+// Clean base: no layered v145-v152 runtime patches.
+// Keep feature work inside the main modules only: actions/render/chatStore/contactsPatch.
+window.UCMU={version:'v153-clean-base-no-runtime-patches',note:'clean startup without stacked runtime patches; drag baseline preserved; fixes should now be made in core files only'};
