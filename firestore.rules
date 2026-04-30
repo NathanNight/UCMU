@@ -74,7 +74,11 @@ service cloud.firestore {
     }
 
     match /chats/{chatId} {
-      allow get, list: if isChatMember(chatId);
+      allow get: if isChatMember(chatId);
+
+      // Нужно для запроса списка чатов: where('members','array-contains', uid).
+      // Чтение сообщений всё равно закрыто отдельно через isChatMember(chatId).
+      allow list: if isActiveUser();
 
       allow create: if isActiveUser()
         && request.auth.uid in request.resource.data.members
