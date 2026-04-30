@@ -2,9 +2,11 @@ import {shell} from './templates.js';
 import {bindActions} from './actions.js';
 import {initFirebaseAuth} from './authFirebase.js';
 import {initUiPatch} from './uiPatch.js';
+import {initDustParticles} from './dustParticles.js';
 
 document.getElementById('appRoot').innerHTML=shell();
+initDustParticles();
 bindActions();
 initFirebaseAuth();
 initUiPatch();
-window.UCMU={version:'v120-firebase-auth-secure-base',note:'v119 stable UI plus Firebase Auth secure registration base'};
+window.UCMU={version:'v129-dust-particles-test',note:'v128 stable Firebase chat plus subtle animated dust background'};
