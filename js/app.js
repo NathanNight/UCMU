@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v137-message-stability-modal-fixes',note:'fixed repeated subscriptions, old new-chat popup, immediate modal close, clear history permissions and borderless glass cards'};
+window.UCMU={version:'v138-undo-cascade-delete-create-form',note:'3s undo for message delete, cascade clear from bottom, plus opens create-chat form'};
