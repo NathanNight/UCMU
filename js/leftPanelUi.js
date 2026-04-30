@@ -1,6 +1,7 @@
-import {state} from './state.js';
+import {state,uid} from './state.js';
 import {$,show,hide} from './dom.js';
 import {listKnownUsers} from './chatStore.js';
+import {renderChats} from './render.js';
 
 const esc=s=>String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));
 const nameOf=u=>u?.displayName||u?.username||u?.email||'User';
@@ -13,6 +14,7 @@ function injectStyles(){
   style.id='ucmu-left-panel-ui-style';
   style.textContent=`
     .sideQuickActions #sideNewChatBtn{display:none!important}
+    #contactsModal{display:none!important}
     .side .search{display:grid!important;grid-template-columns:1fr 44px 44px!important;gap:8px!important;align-items:center!important}
     .side .search input{min-width:0!important;width:100%!important}
     .side .search .plus,#folderBtn.ucmu-folder-icon-btn{width:44px!important;height:44px!important;margin:0!important;display:grid!important;place-items:center!important;padding:0!important;font-size:20px!important;line-height:1!important}
@@ -21,13 +23,13 @@ function injectStyles(){
     .side .folderBtn.ucmu-folder-icon-btn{background:rgba(255,255,255,.045)!important;border:1px solid var(--line)!important;color:#fff!important;position:relative!important}
     .side .folderBtn.ucmu-folder-icon-btn::after{content:'+';position:absolute;right:8px;top:6px;width:14px;height:14px;display:grid;place-items:center;border-radius:50%;background:#d71920;color:#fff;font-size:12px;font-weight:900;line-height:1}
     .chat.ucmu-search-hidden,.folder-wrap.ucmu-search-hidden{display:none!important}
-    #chatCtx .chatAction[data-a="folder"]{display:none!important}
+    #chatCtx .chatAction[data-a="folder"],#contactsModal [data-profile-uid],#contactsModal [data-start-uid]{display:none!important}
     .chat.pinned{cursor:default!important}.chat.pinned::after{content:'';position:absolute;right:10px;top:8px;width:9px;height:9px;border-radius:50%;background:#d71920;box-shadow:0 0 12px rgba(215,25,32,.9);z-index:3}
     #members.ucmu-contacts-mode .ph span{color:#fff}
     #members .realMember span{display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-width:0!important}
     #members .realMember b{font-size:13px;color:#fff;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #members .realMember small{font-size:11px;color:var(--mut);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .main.ucmu-chat-blink::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(215,25,32,.16),transparent 42%);z-index:1;animation:ucmuChatBlink .42s ease-out 1}.main{position:relative}.main>*{position:relative;z-index:2}@keyframes ucmuChatBlink{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+    .main.ucmu-chat-blink .head{animation:ucmuHeadBlink .38s ease-out 1}@keyframes ucmuHeadBlink{0%{box-shadow:inset 3px 0 0 rgba(215,25,32,0),0 0 0 rgba(215,25,32,0)}34%{box-shadow:inset 3px 0 0 rgba(215,25,32,.95),0 0 22px rgba(215,25,32,.22)}100%{box-shadow:inset 3px 0 0 rgba(215,25,32,0),0 0 0 rgba(215,25,32,0)}}
     .ucmuDustLayer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}.ucmuDustLayer i{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.28);box-shadow:0 0 8px rgba(255,255,255,.28);opacity:.22;animation:ucmuDustFloat linear infinite,ucmuDustBlink ease-in-out infinite}.ucmuDustLayer i:nth-child(3n){width:1px;height:1px;opacity:.16}.ucmuDustLayer i:nth-child(4n){background:rgba(215,25,32,.22);box-shadow:0 0 10px rgba(215,25,32,.22)}@keyframes ucmuDustFloat{from{transform:translate3d(0,20px,0)}to{transform:translate3d(38px,-90px,0)}}@keyframes ucmuDustBlink{0%,100%{opacity:.08}45%{opacity:.32}60%{opacity:.14}}
   `;
   document.head.appendChild(style);
@@ -70,6 +72,8 @@ async function openContactsPanel(){
   const list=$('#memberList');
   const title=panel?.querySelector('.ph span');
   if(!panel||!list||!title)return;
+  hide($('#contactsModal'));
+  hide($('#profileModal'));
   panel.classList.add('ucmu-contacts-mode');
   title.textContent='КОНТАКТЫ';
   list.innerHTML='<div class="reactionEmpty">Загрузка контактов...</div>';
@@ -118,6 +122,29 @@ function ensureDust(){
   main.prepend(layer);
 }
 
+function openFolderModal(){
+  const shade=$('#modalShade'),modal=$('#centerModal'),dyn=$('#modalDynamic');
+  if(!shade||!modal||!dyn){
+    const name=prompt('Название папки','Новая папка');
+    if(name===null)return;
+    state.folders.push({id:uid('f'),name:name.trim()||'Новая папка',color:'#d71920',open:false,chatIds:[]});
+    renderChats();
+    return;
+  }
+  $('#modalKicker').textContent='CREATE FOLDER';
+  $('#modalTitle').textContent='Создать папку';
+  $('#modalText').textContent='Название новой папки.';
+  dyn.innerHTML='<input id="newFolderTitleCenter" placeholder="Название папки" value="Новая папка">';
+  dyn.classList.add('show');
+  $('#modalConfirm').textContent='СОЗДАТЬ';
+  state.centerModalConfirm=()=>{
+    const name=$('#newFolderTitleCenter')?.value?.trim()||'Новая папка';
+    state.folders.push({id:uid('f'),name,color:'#d71920',open:false,chatIds:[]});
+    hide(modal);hide(shade);renderChats();
+  };
+  show(shade);show(modal);shade.classList.add('show');modal.classList.add('show','seq-ready');
+}
+
 export function initLeftPanelUi(){
   injectStyles();
   arrangeButtons();
@@ -127,11 +154,11 @@ export function initLeftPanelUi(){
   setTimeout(arrangeButtons,800);
   setTimeout(ensureDust,300);
   document.addEventListener('click',e=>{
+    if(e.target.closest?.('#folderBtn')){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openFolderModal();return;
+    }
     if(e.target.closest?.('#contactsBtn')){
-      e.preventDefault();
-      e.stopPropagation();
-      openContactsPanel();
-      return;
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openContactsPanel();return;
     }
     if(e.target.closest?.('#membersBtn')){
       restoreMembersMode();
