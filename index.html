@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>U.C.M.U. Chat v137 message stability modal fixes</title>
-  <link rel="stylesheet" href="css/base.css?v=137">
-  <link rel="stylesheet" href="css/layout.css?v=137">
-  <link rel="stylesheet" href="css/components.css?v=137">
-  <link rel="stylesheet" href="css/animations.css?v=137">
-  <link rel="stylesheet" href="css/splash.css?v=137">
-  <link rel="stylesheet" href="css/responsive.css?v=137">
-  <style id="ucmu-v137-overrides">
+  <title>U.C.M.U. Chat v138 undo cascade delete create form</title>
+  <link rel="stylesheet" href="css/base.css?v=138">
+  <link rel="stylesheet" href="css/layout.css?v=138">
+  <link rel="stylesheet" href="css/components.css?v=138">
+  <link rel="stylesheet" href="css/animations.css?v=138">
+  <link rel="stylesheet" href="css/splash.css?v=138">
+  <link rel="stylesheet" href="css/responsive.css?v=138">
+  <style id="ucmu-v138-overrides">
     html body #appRoot .auth input.auth-input,html body #appRoot .auth .pass-wrap input.auth-input,html body .auth input.auth-input{appearance:none!important;-webkit-appearance:none!important;background:#1b1d20!important;background-color:#1b1d20!important;background-image:linear-gradient(180deg,#2b2e33,#17191d)!important;color:#f4f7f6!important;-webkit-text-fill-color:#f4f7f6!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;caret-color:#ff5a5a!important}
     html body #appRoot .auth input.auth-input::placeholder,html body .auth input.auth-input::placeholder{color:rgba(235,240,242,.46)!important;-webkit-text-fill-color:rgba(235,240,242,.46)!important}
     html body #appRoot .auth input.auth-input:-webkit-autofill,html body #appRoot .auth input.auth-input:-webkit-autofill:hover,html body #appRoot .auth input.auth-input:-webkit-autofill:focus,html body .auth input.auth-input:-webkit-autofill{-webkit-text-fill-color:#f4f7f6!important;box-shadow:0 0 0 1000px #1b1d20 inset,inset 0 1px 0 rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.18)!important;transition:background-color 999999s ease-in-out 0s!important}
@@ -30,7 +30,7 @@
 </head>
 <body>
   <div id="appRoot"></div>
-  <script type="module" src="js/app.js?v=137"></script>
+  <script type="module" src="js/app.js?v=138"></script>
   <script>
     (()=>{function forceAuthInputSkin(){document.querySelectorAll('#auth input.auth-input,.auth input.auth-input').forEach(el=>{el.style.setProperty('appearance','none','important');el.style.setProperty('-webkit-appearance','none','important');el.style.setProperty('background','#1b1d20','important');el.style.setProperty('background-color','#1b1d20','important');el.style.setProperty('background-image','linear-gradient(180deg,#2b2e33,#17191d)','important');el.style.setProperty('color','#f4f7f6','important');el.style.setProperty('-webkit-text-fill-color','#f4f7f6','important');el.style.setProperty('border','1px solid rgba(255,255,255,.18)','important');el.style.setProperty('box-shadow','inset 0 1px 0 rgba(255,255,255,.08)','important');el.style.setProperty('caret-color','#ff5a5a','important')});document.querySelectorAll('#auth .pass-eye,.auth .pass-eye').forEach(btn=>{btn.style.setProperty('color','#fff','important');btn.style.setProperty('background','rgba(0,0,0,.45)','important');btn.style.setProperty('border','1px solid rgba(255,255,255,.28)','important');btn.style.setProperty('opacity','1','important')})}document.addEventListener('DOMContentLoaded',()=>{forceAuthInputSkin();setTimeout(forceAuthInputSkin,100);setTimeout(forceAuthInputSkin,500);setTimeout(forceAuthInputSkin,1500);setTimeout(forceAuthInputSkin,2500);document.addEventListener('input',forceAuthInputSkin,true);document.addEventListener('focusin',forceAuthInputSkin,true);new MutationObserver(forceAuthInputSkin).observe(document.body,{childList:true,subtree:true})})})();
   </script>
