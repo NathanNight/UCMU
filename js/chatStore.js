@@ -1,43 +1,196 @@
 import {state} from './state.js';
-import {getFirebase} from './firebase.js';
-import {renderChats, renderFeed, renderMembers} from './render.js';
-import {
-  collection, doc, getDoc, getDocs, setDoc, updateDoc,
-  query, where, orderBy, limit, onSnapshot, serverTimestamp, arrayUnion
-} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-let db=null,chatsUnsub=null,messagesUnsub=null,subscribedChatId=null,ready=false;
+import {renderChats,renderFeed,renderMembers} from './render.js';
+
+// DEV BACKEND IS ON BY DEFAULT.
+// Before real online Firebase tests: replace this file with the Firestore backend or switch this flag off in a future wrapper.
+export const UCMU_DEV_LOCAL_BACKEND=true;
+
+const KEY='ucmu_dev_chat_store_v1';
+let ready=false;
 let localSeq=0;
-const pendingMessages=new Map();
-function toast(text){let el=document.getElementById('fireDebugToast');if(!el){el=document.createElement('div');el.id='fireDebugToast';el.style.cssText='position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99999;background:rgba(10,12,12,.96);color:#fff;border:1px solid rgba(255,255,255,.18);padding:10px 14px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:12px system-ui;max-width:min(520px,calc(100vw - 28px));white-space:pre-wrap;pointer-events:none';document.body.appendChild(el)}el.textContent=text;clearTimeout(el._t);el._t=setTimeout(()=>el.remove(),5200)}
+let storageBound=false;
+
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function currentUid(){return state.currentUser?.uid}
-function displayName(){return state.currentUser?.displayName||state.currentUser?.username||state.user||'Operator'}
-function profileForCurrentUser(){return{uid:currentUid(),displayName:displayName(),username:state.currentUser?.username||'',email:state.currentUser?.email||''}}
-function normalizeUsername(v){return String(v||'').trim().toLowerCase().replace(/^@/,'')}
-function messageTime(data){const d=data.createdAt?.toDate?.();if(!d)return'сейчас';return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function chatTime(data){const d=data.updatedAt?.toDate?.()||data.createdAt?.toDate?.();if(!d)return'сейчас';const today=new Date();if(d.toDateString()!==today.toDateString())return'Вчера';return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function mapChat(snap){const d=snap.data();return{id:snap.id,title:d.title||'Чат',description:d.description||d.desc||'',last:d.lastText||'Нет сообщений',time:chatTime(d),unread:0,muted:false,members:d.members||[],memberProfiles:d.memberProfiles||{},ownerId:d.ownerId||d.createdBy||null,createdBy:d.createdBy||d.ownerId||null,type:d.type||'group',styleColor:d.styleColor||d.color||'#d71920'}}
-function mapMessage(snap){const d=snap.data();if(d.deletedForAll===true)return null;const deletedFor=d.deletedFor||[];if(currentUid()&&deletedFor.includes(currentUid()))return null;return{id:snap.id,author:d.authorName||'User',authorId:d.authorId,color:d.authorId===currentUid()?'red':'green',type:d.type||'text',text:d.text||'',file:d.file||'',size:d.size||'',time:messageTime(d),mine:d.authorId===currentUid(),reactions:d.reactions||{},reply:d.replyTo||null,deletingForAll:d.deletingForAll===true,localSeq:d.localSeq||0}}
-function localMessage({id,type='text',text='',file='',size='',replyTo=null,seq=0}={}){return{id,author:displayName(),authorId:currentUid(),color:'red',type,text:text||'',file:file||'',size:size||'',time:'сейчас',mine:true,reactions:{},reply:replyTo||null,deletingForAll:false,pending:true,pendingAt:Date.now(),localSeq:seq}}
+const now=()=>Date.now();
+const uid=(p='id')=>`${p}_${now().toString(36)}_${Math.random().toString(36).slice(2,7)}`;
+const currentUid=()=>state.currentUser?.uid||'dev_user';
+const displayName=()=>state.currentUser?.displayName||state.currentUser?.username||state.user||'Operator';
+const profileForCurrentUser=()=>({uid:currentUid(),displayName:displayName(),username:state.currentUser?.username||'',email:state.currentUser?.email||''});
+
+function toast(text){let el=document.getElementById('fireDebugToast');if(!el){el=document.createElement('div');el.id='fireDebugToast';el.style.cssText='position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99999;background:rgba(10,12,12,.96);color:#fff;border:1px solid rgba(255,255,255,.18);padding:10px 14px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:12px system-ui;max-width:min(580px,calc(100vw - 28px));white-space:pre-wrap;pointer-events:none';document.body.appendChild(el)}el.textContent=text;clearTimeout(el._t);el._t=setTimeout(()=>el.remove(),4600)}
+
+function defaultStore(){
+  const me=profileForCurrentUser();
+  return {
+    chats:[{
+      id:'general',title:'U.C.M.U',description:'ТЕСТ',type:'group',members:[me.uid],memberProfiles:{[me.uid]:me},ownerId:me.uid,createdBy:me.uid,last:'Нет сообщений',lastText:'Нет сообщений',time:'сейчас',styleColor:'#d71920',pinned:true,muted:false,unread:0
+    }],
+    folders:[],
+    messages:{general:[]},
+    users:{[me.uid]:me},
+    updatedAt:now()
+  };
+}
+function loadStore(){
+  try{const raw=localStorage.getItem(KEY);if(raw){const data=JSON.parse(raw);if(data&&Array.isArray(data.chats))return data}}catch(err){console.warn('[UCMU DEV] localStorage read failed',err)}
+  return defaultStore();
+}
+function saveStore(data){
+  data.updatedAt=now();
+  localStorage.setItem(KEY,JSON.stringify(data));
+}
+function ensureMe(data){
+  const me=profileForCurrentUser();
+  data.users||={};data.users[me.uid]={...(data.users[me.uid]||{}),...me};
+  data.chats||=[];data.folders||=[];data.messages||={};
+  let general=data.chats.find(c=>c.id==='general');
+  if(!general){general=defaultStore().chats[0];data.chats.unshift(general)}
+  general.members||=[];if(!general.members.includes(me.uid))general.members.push(me.uid);
+  general.memberProfiles||={};general.memberProfiles[me.uid]={...(general.memberProfiles[me.uid]||{}),...me};
+  general.ownerId||=me.uid;general.createdBy||=general.ownerId;
+  data.messages.general||=[];
+  return data;
+}
+function applyStore(data,{keepActive=true}={}){
+  ensureMe(data);
+  state.chats=data.chats||[];
+  state.folders=data.folders||[];
+  state.messages=data.messages||{};
+  if(!keepActive||!state.activeChat||!state.chats.some(c=>c.id===state.activeChat))state.activeChat=state.chats[0]?.id||'general';
+  renderChats();renderMembers();renderFeed();
+}
+function mutate(fn){
+  const data=ensureMe(loadStore());
+  const out=fn(data)||data;
+  saveStore(out);
+  applyStore(out);
+  return out;
+}
 function previewText(m){if(!m)return'Нет сообщений';if(m.type==='sticker')return `${m.author}: ${m.text||'стикер'}`;if(m.file)return `${m.author}: ${m.file}`;return `${m.author}: ${m.text||'сообщение'}`}
-function syncChatPreview(chatId,messages){const c=state.chats.find(x=>x.id===chatId);if(!c)return;const last=messages[messages.length-1];const next=last?previewText(last):'Нет сообщений';if(c.last!==next){c.last=next;renderChats()}}
-function rememberPending(chatId,msg){if(!chatId||!msg?.id)return;const key=chatId+'::'+msg.id;pendingMessages.set(key,msg);setTimeout(()=>pendingMessages.delete(key),20000)}
-function mergePending(chatId,next){const now=Date.now();const ids=new Set(next.map(m=>m.id));const merged=[...next];const pending=[...pendingMessages.entries()].filter(([key,msg])=>{const [cid,id]=key.split('::');if(cid!==chatId)return false;if(ids.has(id)){pendingMessages.delete(key);return false}if(now-(msg.pendingAt||0)>=20000){pendingMessages.delete(key);return false}return true}).map(([,msg])=>msg).sort((a,b)=>(a.localSeq||0)-(b.localSeq||0));merged.push(...pending);return merged}
-function pushLocalMessage(chatId,msg){if(!chatId||!msg?.id)return;rememberPending(chatId,msg);state.messages[chatId]||=[];const list=state.messages[chatId];if(!list.some(m=>m.id===msg.id))list.push(msg);state.messages[chatId]=list.sort((a,b)=>{const as=a.localSeq||0,bs=b.localSeq||0;if(as&&bs)return as-bs;if(as&&!bs)return 1;if(!as&&bs)return -1;return 0});syncChatPreview(chatId,state.messages[chatId]);if(window.__ucmuLocallyGoneMsgIds?.has?.(msg.id))window.__ucmuLocallyGoneMsgIds.delete(msg.id);if(window.__ucmuClearAnimatingChatId===chatId)delete window.__ucmuClearAnimatingChatId;if(state.activeChat===chatId)renderFeed()}
-async function ensureGeneralChat(){const uid=currentUid();if(!uid||!db)return;const ref=doc(db,'chats','general');const snap=await getDoc(ref);const profile=profileForCurrentUser();if(!snap.exists()){await setDoc(ref,{title:'# Общий чат',description:'',type:'group',members:[uid],memberProfiles:{[uid]:profile},ownerId:uid,createdBy:uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastText:'Чат создан',styleColor:'#d71920'});return}const data=snap.data()||{};const updates={updatedAt:serverTimestamp()};let changed=false;const members=data.members||[];if(!members.includes(uid)){updates.members=arrayUnion(uid);changed=true}if(!data.ownerId){updates.ownerId=uid;changed=true}if(!data.createdBy){updates.createdBy=uid;changed=true}if(!data.memberProfiles?.[uid]?.displayName&&!data.memberProfiles?.[uid]?.username&&!data.memberProfiles?.[uid]?.email){updates[`memberProfiles.${uid}`]=profile;changed=true}if(changed)await updateDoc(ref,updates)}
-export async function initChatStore(){const uid=currentUid();if(!uid)return;const fb=await getFirebase();db=fb.db;state.chats=[];state.folders=[];state.messages={};state.activeChat=null;subscribedChatId=null;messagesUnsub?.();messagesUnsub=null;pendingMessages.clear();renderChats();renderMembers();renderFeed();try{await ensureGeneralChat()}catch(err){console.error('[UCMU] ensureGeneralChat failed',err);toast('Firestore: не удалось подключить общий чат.\n'+(err.message||err.code||err))}ready=true;subscribeChats()}
-export function isChatStoreReady(){return ready&&!!db&&!!currentUid()}
-export function subscribeChats(){if(!isChatStoreReady())return;chatsUnsub?.();const q=query(collection(db,'chats'),where('members','array-contains',currentUid()),orderBy('updatedAt','desc'),limit(50));chatsUnsub=onSnapshot(q,snap=>{const next=snap.docs.map(mapChat);state.chats=next;state.folders=state.folders.filter(f=>f.chatIds.some(id=>state.chats.some(c=>c.id===id)));if(!state.activeChat||!state.chats.some(c=>c.id===state.activeChat))state.activeChat=state.chats[0]?.id||null;renderChats();renderMembers();if(state.activeChat)subscribeMessages(state.activeChat);else{messagesUnsub?.();messagesUnsub=null;subscribedChatId=null;state.messages={};renderFeed()}},err=>{console.error('[UCMU] subscribeChats failed',err);toast('Firestore chats error:\n'+(err.message||err.code||err))})}
-export function subscribeMessages(chatId,force=false){if(!isChatStoreReady()||!chatId)return;if(!force&&subscribedChatId===chatId&&messagesUnsub)return;messagesUnsub?.();messagesUnsub=null;subscribedChatId=chatId;const q=query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc'),limit(200));messagesUnsub=onSnapshot(q,snap=>{const next=mergePending(chatId,snap.docs.map(mapMessage).filter(Boolean));state.messages[chatId]=next;syncChatPreview(chatId,next);if(window.__ucmuClearAnimatingChatId===chatId){return}if(state.activeChat===chatId)renderFeed()},err=>{console.error('[UCMU] subscribeMessages failed for '+chatId,err);messagesUnsub=null;subscribedChatId=null;toast('Firestore messages error for '+chatId+':\n'+(err.message||err.code||err))})}
-export async function sendStoreMessage({type='text',text='',file='',size='',replyTo=null}={}){if(!isChatStoreReady()){toast('Firestore не готов: сообщение ушло только в локальный UI.');return false}const chatId=state.activeChat;if(!chatId){toast('Нет activeChat — некуда отправлять.');return false}const seq=++localSeq;const ref=doc(collection(db,'chats',chatId,'messages'));const payload={authorId:currentUid(),authorName:displayName(),type,text:text||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp(),deletedFor:[],deletedForAll:false,deletingForAll:false,reactions:{},localSeq:seq};if(file)payload.file=file;if(size)payload.size=size;if(replyTo)payload.replyTo=replyTo;pushLocalMessage(chatId,localMessage({id:ref.id,type,text,file,size,replyTo,seq}));try{await setDoc(ref,payload);updateDoc(doc(db,'chats',chatId),{lastText:type==='sticker'?`${displayName()}: ${text}`:`${displayName()}: ${text||file||'сообщение'}`,updatedAt:serverTimestamp()}).catch(err=>console.error('[UCMU] update lastText failed',err));return true}catch(err){pendingMessages.delete(chatId+'::'+ref.id);state.messages[chatId]=(state.messages[chatId]||[]).filter(m=>m.id!==ref.id);renderFeed();throw err}}
-export async function createStandaloneChat({title='Новый чат',description='',styleColor='#d71920'}={}){if(!isChatStoreReady())return null;const uid=currentUid();const chatId='chat_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7);await setDoc(doc(db,'chats',chatId),{title,description,type:'group',members:[uid],memberProfiles:{[uid]:profileForCurrentUser()},ownerId:uid,createdBy:uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastText:'Чат создан',styleColor});state.activeChat=chatId;subscribeMessages(chatId,true);renderChats();renderMembers();renderFeed();return chatId}
-export async function searchUsersByUsername(username){if(!isChatStoreReady())return[];const u=normalizeUsername(username);if(!u||u.length<2)return[];const direct=await getDoc(doc(db,'usernames',u)).catch(()=>null);let found=[];if(direct?.exists?.()){const uid=direct.data().uid||direct.data().userId;if(uid){const us=await getDoc(doc(db,'users',uid));if(us.exists())found.push({uid,...us.data()})}}if(!found.length){const snap=await getDocs(query(collection(db,'users'),where('username','==',u),limit(8)));found=snap.docs.map(d=>({uid:d.id,...d.data()}))}return found.filter(x=>x.uid!==currentUid())}
-export async function listKnownUsers(){if(!isChatStoreReady())return[];const known=new Map();state.chats.forEach(c=>Object.entries(c.memberProfiles||{}).forEach(([uid,p])=>{if(uid!==currentUid())known.set(uid,{uid,...p})}));if(known.size)return[...known.values()];const snap=await getDocs(query(collection(db,'users'),limit(30)));return snap.docs.map(d=>({uid:d.id,...d.data()})).filter(x=>x.uid!==currentUid())}
-export async function createOrOpenChatWithUsers(users){if(!isChatStoreReady())return null;const clean=(users||[]).filter(Boolean).filter(u=>u.uid&&u.uid!==currentUid());if(!clean.length)return createStandaloneChat();const memberIds=[currentUid(),...clean.map(u=>u.uid)].sort();const chatId=memberIds.length===2?'private_'+memberIds.join('_'):('group_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7));const exists=await getDoc(doc(db,'chats',chatId));if(!exists.exists()){const profiles={[currentUid()]:profileForCurrentUser()};clean.forEach(u=>profiles[u.uid]={uid:u.uid,displayName:u.displayName||u.username||u.email||'User',username:u.username||'',email:u.email||''});const title=clean.length===1?(clean[0].displayName||clean[0].username||clean[0].email||'Личный чат'):clean.map(u=>u.displayName||u.username||'User').join(', ');await setDoc(doc(db,'chats',chatId),{title,description:'',type:clean.length===1?'private':'group',members:memberIds,memberProfiles:profiles,ownerId:currentUid(),createdBy:currentUid(),createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastText:'Чат создан',styleColor:'#d71920'})}state.activeChat=chatId;subscribeMessages(chatId,true);renderChats();renderMembers();renderFeed();return chatId}
-export async function updateActiveChatMeta({title,description,styleColor}){if(!isChatStoreReady()||!state.activeChat)return;await updateDoc(doc(db,'chats',state.activeChat),{title:title||'Чат',description:description||'',styleColor:styleColor||'#d71920',updatedAt:serverTimestamp()})}
-export async function clearActiveChatHistory(){if(!isChatStoreReady()||!state.activeChat)return;const chatId=state.activeChat;const snap=await getDocs(query(collection(db,'chats',chatId,'messages'),limit(300)));const own=snap.docs.filter(d=>d.data().authorId===currentUid()&&!d.data().deletedForAll).reverse();await sleep(1050);for(const d of own){await updateDoc(doc(db,'chats',chatId,'messages',d.id),{text:'',type:'text',deletingForAll:false,deletedForAll:true,updatedAt:serverTimestamp()});await sleep(12)}return{cleared:own.length,total:snap.size}}
-export async function deleteActiveChat(){if(!isChatStoreReady()||!state.activeChat)return;await updateDoc(doc(db,'chats',state.activeChat),{members:[],updatedAt:serverTimestamp(),deleted:true})}
-export async function updateStoreReaction(messageId,reactions){if(!isChatStoreReady()||!state.activeChat||!messageId)return false;await updateDoc(doc(db,'chats',state.activeChat,'messages',messageId),{reactions:reactions||{},updatedAt:serverTimestamp()});return true}
-export async function deleteStoreMessageForMe(messageId){if(!isChatStoreReady()||!state.activeChat||!messageId)return false;await updateDoc(doc(db,'chats',state.activeChat,'messages',messageId),{deletedFor:arrayUnion(currentUid()),updatedAt:serverTimestamp()});return true}
-export async function deleteStoreMessageForAll(messageId){if(!isChatStoreReady()||!state.activeChat||!messageId)return false;const ref=doc(db,'chats',state.activeChat,'messages',messageId);await updateDoc(ref,{deletingForAll:true,updatedAt:serverTimestamp()});await sleep(940);await updateDoc(ref,{text:'',type:'text',deletingForAll:false,deletedForAll:true,updatedAt:serverTimestamp()});return true}
-export function stopChatStore(){chatsUnsub?.();messagesUnsub?.();chatsUnsub=null;messagesUnsub=null;subscribedChatId=null;ready=false}
+function syncPreview(data,chatId){
+  const chat=data.chats.find(c=>c.id===chatId);if(!chat)return;
+  const list=(data.messages[chatId]||[]).filter(m=>!m.deletedForAll&&!m.deletedFor?.includes?.(currentUid()));
+  const last=list[list.length-1];
+  chat.last=previewText(last);chat.lastText=chat.last;chat.time=last?.time||'сейчас';
+}
+function makeLocalMessage({id=uid('m'),type='text',text='',file='',size='',replyTo=null}={}){
+  const seq=++localSeq;
+  return {id,author:displayName(),authorId:currentUid(),color:'red',type,text:text||'',file:file||'',size:size||'',time:'сейчас',mine:true,reactions:{},reply:replyTo||null,deletingForAll:false,deletedForAll:false,deletedFor:[],localSeq:seq,createdAt:now()};
+}
+function remapMine(data){
+  const me=currentUid();
+  Object.values(data.messages||{}).forEach(list=>list.forEach(m=>{m.mine=m.authorId===me;m.color=m.mine?'red':'green'}));
+}
+function bindStorage(){
+  if(storageBound)return;storageBound=true;
+  window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{const data=JSON.parse(e.newValue);remapMine(data);applyStore(data)}catch{}});
+}
+
+export async function initChatStore(){
+  ready=true;
+  bindStorage();
+  const data=ensureMe(loadStore());
+  remapMine(data);
+  saveStore(data);
+  applyStore(data,{keepActive:false});
+  console.log('[UCMU DEV] localStorage chat backend ON — Firestore chat reads/writes disabled');
+  toast('DEV MODE: localStorage backend ON\nПеред реальными тестами выключить dev backend.');
+}
+export function isChatStoreReady(){return ready}
+export function subscribeChats(){applyStore(loadStore())}
+export function subscribeMessages(chatId){if(chatId)state.activeChat=chatId;applyStore(loadStore())}
+
+export async function sendStoreMessage({type='text',text='',file='',size='',replyTo=null}={}){
+  if(!ready)return false;
+  const chatId=state.activeChat||'general';
+  const msg=makeLocalMessage({type,text,file,size,replyTo});
+  mutate(data=>{
+    data.messages[chatId]||=[];
+    data.messages[chatId].push(msg);
+    const c=data.chats.find(x=>x.id===chatId);
+    if(c){c.members||=[];if(!c.members.includes(currentUid()))c.members.push(currentUid());c.memberProfiles||={};c.memberProfiles[currentUid()]=profileForCurrentUser()}
+    syncPreview(data,chatId);
+  });
+  return true;
+}
+export async function createStandaloneChat({title='Новый чат',description='',styleColor='#d71920'}={}){
+  const me=profileForCurrentUser();
+  const chatId=uid('chat');
+  mutate(data=>{
+    data.chats.unshift({id:chatId,title,description,type:'group',members:[me.uid],memberProfiles:{[me.uid]:me},ownerId:me.uid,createdBy:me.uid,last:'Нет сообщений',lastText:'Нет сообщений',time:'сейчас',styleColor,muted:false,unread:0});
+    data.messages[chatId]=[];
+    state.activeChat=chatId;
+  });
+  state.activeChat=chatId;renderChats();renderMembers();renderFeed();
+  return chatId;
+}
+export async function searchUsersByUsername(username){
+  const q=String(username||'').trim().replace(/^@/,'').toLowerCase();
+  if(!q)return[];
+  const data=ensureMe(loadStore());
+  return Object.values(data.users||{}).filter(u=>u.uid!==currentUid()).filter(u=>String(u.username||u.displayName||u.email||'').toLowerCase().includes(q)).slice(0,8);
+}
+export async function listKnownUsers(){
+  const data=ensureMe(loadStore());
+  const map=new Map();
+  data.chats.forEach(c=>Object.entries(c.memberProfiles||{}).forEach(([id,p])=>{if(id!==currentUid())map.set(id,{uid:id,...p})}));
+  Object.entries(data.users||{}).forEach(([id,p])=>{if(id!==currentUid())map.set(id,{uid:id,...p})});
+  return[...map.values()];
+}
+export async function createOrOpenChatWithUsers(users){
+  const clean=(users||[]).filter(Boolean).filter(u=>u.uid&&u.uid!==currentUid());
+  if(!clean.length)return createStandaloneChat();
+  const me=profileForCurrentUser();
+  const ids=[me.uid,...clean.map(u=>u.uid)].sort();
+  const privateId=ids.length===2?'private_'+ids.join('_'):uid('group');
+  let created=false;
+  mutate(data=>{
+    data.users||={};clean.forEach(u=>data.users[u.uid]={...u});
+    let c=data.chats.find(x=>x.id===privateId);
+    if(!c){
+      const profiles={[me.uid]:me};clean.forEach(u=>profiles[u.uid]={uid:u.uid,displayName:u.displayName||u.username||u.email||'User',username:u.username||'',email:u.email||''});
+      c={id:privateId,title:clean.length===1?(clean[0].displayName||clean[0].username||clean[0].email||'Личный чат'):clean.map(u=>u.displayName||u.username||'User').join(', '),description:'',type:clean.length===1?'private':'group',members:ids,memberProfiles:profiles,ownerId:me.uid,createdBy:me.uid,last:'Нет сообщений',lastText:'Нет сообщений',time:'сейчас',styleColor:'#d71920',muted:false,unread:0};
+      data.chats.unshift(c);data.messages[privateId]=[];created=true;
+    }
+    state.activeChat=privateId;
+  });
+  state.activeChat=privateId;renderChats();renderMembers();renderFeed();
+  return privateId;
+}
+export async function updateActiveChatMeta({title,description,styleColor}){
+  const chatId=state.activeChat;if(!chatId)return;
+  mutate(data=>{const c=data.chats.find(x=>x.id===chatId);if(c){c.title=title||c.title;c.description=description||'';c.styleColor=styleColor||c.styleColor}});
+}
+export async function clearActiveChatHistory(){
+  const chatId=state.activeChat;if(!chatId)return{cleared:0,total:0};
+  let count=0;
+  mutate(data=>{count=(data.messages[chatId]||[]).length;data.messages[chatId]=[];syncPreview(data,chatId)});
+  return{cleared:count,total:count};
+}
+export async function deleteActiveChat(){
+  const chatId=state.activeChat;if(!chatId)return;
+  mutate(data=>{
+    data.chats=data.chats.filter(c=>c.id!==chatId);
+    data.folders.forEach(f=>f.chatIds=(f.chatIds||[]).filter(id=>id!==chatId));
+    delete data.messages[chatId];
+    state.activeChat=data.chats[0]?.id||null;
+  });
+}
+export async function updateStoreReaction(messageId,reactions){
+  const chatId=state.activeChat;if(!chatId||!messageId)return false;
+  mutate(data=>{const m=(data.messages[chatId]||[]).find(x=>x.id===messageId);if(m)m.reactions=reactions||{}});
+  return true;
+}
+export async function deleteStoreMessageForMe(messageId){
+  const chatId=state.activeChat;if(!chatId||!messageId)return false;
+  mutate(data=>{const m=(data.messages[chatId]||[]).find(x=>x.id===messageId);if(m){m.deletedFor||=[];if(!m.deletedFor.includes(currentUid()))m.deletedFor.push(currentUid())}syncPreview(data,chatId)});
+  return true;
+}
+export async function deleteStoreMessageForAll(messageId){
+  const chatId=state.activeChat;if(!chatId||!messageId)return false;
+  mutate(data=>{data.messages[chatId]=(data.messages[chatId]||[]).filter(m=>m.id!==messageId);syncPreview(data,chatId)});
+  return true;
+}
+export function stopChatStore(){ready=false}
+
+window.UCMU_DEV_LOCAL_BACKEND=true;
