@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v139-modal-create-settings-clear-fixes',note:'realtime undo return, standalone chat create, central settings modal, local smooth cascade clear'};
+window.UCMU={version:'v140-modal-typing-undo-animation',note:'round color buttons, modal typewriter sequence, restore message appear animation'};
