@@ -9,4 +9,4 @@ initDustParticles();
 bindActions();
 initFirebaseAuth();
 initUiPatch();
-window.UCMU={version:'v131-dust-visible-soft-test',note:'v128 stable Firebase chat plus visible but soft slow dust particles'};
+window.UCMU={version:'v134-dust-overlay-visible',note:'v128 stable Firebase chat plus visible dust overlay and active chat header'};
