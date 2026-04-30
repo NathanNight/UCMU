@@ -29,10 +29,11 @@ function injectStyles(){
     #members .realMember span{display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-width:0!important}
     #members .realMember b{font-size:13px;color:#fff;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #members .realMember small{font-size:11px;color:var(--mut);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .main{position:relative!important;overflow:hidden!important}.main::after{content:'';position:absolute;right:8%;top:-22%;width:260px;height:150%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(205,230,225,.045),rgba(205,230,225,.075),rgba(205,230,225,.025),transparent);transform:skewX(-8deg);filter:blur(.2px);z-index:1}.main>*{position:relative;z-index:2}
-    .main.ucmu-chat-blink .head{animation:ucmuHeadBlink .38s ease-out 1}@keyframes ucmuHeadBlink{0%{box-shadow:inset 3px 0 0 rgba(215,25,32,0),0 0 0 rgba(215,25,32,0)}34%{box-shadow:inset 3px 0 0 rgba(215,25,32,.95),0 0 22px rgba(215,25,32,.22)}100%{box-shadow:inset 3px 0 0 rgba(215,25,32,0),0 0 0 rgba(215,25,32,0)}}
+    .main{position:relative!important;overflow:hidden!important;background-position:right center!important}.main::before{display:none!important}.main::after{content:'';position:absolute;right:13%;top:-24%;width:300px;height:155%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(205,230,225,.025),rgba(205,230,225,.085),rgba(205,230,225,.045),transparent);transform:skewX(8deg);filter:blur(.2px);z-index:1}.main>*{position:relative;z-index:2}
+    .main.ucmu-chat-blink .head::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--chat-color,#d71920),transparent);filter:blur(.5px);animation:ucmuGlassLine .48s ease-out 1}.head{position:relative!important;overflow:hidden}@keyframes ucmuGlassLine{0%{opacity:0;transform:translateX(-25%)}35%{opacity:.95}100%{opacity:0;transform:translateX(25%)}}
     .ucmuDustLayer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}.ucmuDustLayer i{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.28);box-shadow:0 0 8px rgba(255,255,255,.28);opacity:.22;animation:ucmuDustFloat linear infinite,ucmuDustBlink ease-in-out infinite}.ucmuDustLayer i:nth-child(3n){width:1px;height:1px;opacity:.16}.ucmuDustLayer i:nth-child(4n){background:rgba(215,25,32,.22);box-shadow:0 0 10px rgba(215,25,32,.22)}@keyframes ucmuDustFloat{from{transform:translate3d(0,20px,0)}to{transform:translate3d(38px,-90px,0)}}@keyframes ucmuDustBlink{0%,100%{opacity:.08}45%{opacity:.32}60%{opacity:.14}}
-    .deleteModal.rowDelete{position:fixed!important;inset:auto!important;width:250px!important;min-width:250px!important;z-index:120!important;background:rgba(9,13,13,.96)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 18px 58px rgba(0,0,0,.58),0 0 34px rgba(215,25,32,.16)!important;padding:12px!important;backdrop-filter:blur(12px)!important}.deleteModal.rowDelete .deleteAllRow{display:none!important}.deleteModal.rowDelete h3{font-size:15px!important;margin:0 0 8px!important}.deleteModal.rowDelete p{font-size:12px!important;margin:0 0 10px!important;color:var(--mut)!important}.deleteModal.rowDelete .modalActions,.deleteModal.rowDelete .deleteActions{display:flex!important;gap:8px!important;justify-content:flex-end!important}.deleteModal.rowDelete button{height:34px!important;padding:0 10px!important}
+    .deleteModal.rowDelete{position:fixed!important;inset:auto!important;width:270px!important;min-width:270px!important;z-index:120!important;background:linear-gradient(135deg,rgba(22,28,28,.97),rgba(7,10,10,.98))!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 18px 58px rgba(0,0,0,.58),0 0 34px rgba(215,25,32,.16)!important;padding:14px!important;backdrop-filter:blur(14px)!important}.deleteModal.rowDelete .deleteAllRow{display:none!important}.deleteModal.rowDelete h3{font-size:15px!important;margin:0 0 8px!important;letter-spacing:.02em!important}.deleteModal.rowDelete p{font-size:12px!important;margin:0 0 12px!important;color:var(--mut)!important}.deleteModal.rowDelete .modalActions,.deleteModal.rowDelete .deleteActions{display:flex!important;gap:8px!important;justify-content:flex-end!important}.deleteModal.rowDelete button{height:34px!important;padding:0 10px!important}
+    .deleteModal.messageDeleteStrict{position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:360px!important;max-width:calc(100vw - 28px)!important;background:linear-gradient(135deg,rgba(22,28,28,.97),rgba(7,10,10,.98))!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 28px 90px rgba(0,0,0,.68),0 0 42px rgba(215,25,32,.15)!important;padding:18px!important;backdrop-filter:blur(14px)!important}.deleteModal.messageDeleteStrict .deleteAllRow{display:none!important}.deleteModal.messageDeleteStrict h3{font-size:18px!important;margin:0 0 10px!important}.deleteModal.messageDeleteStrict p{font-size:13px!important;color:var(--mut)!important;margin:0 0 14px!important}.deleteModal.messageDeleteStrict .modalActions,.deleteModal.messageDeleteStrict .deleteActions{display:flex!important;justify-content:flex-end!important;gap:10px!important}.deleteModal.messageDeleteStrict button{height:38px!important;padding:0 14px!important}
   `;
   document.head.appendChild(style);
 }
@@ -100,6 +101,10 @@ function restoreMembersMode(){
   }
 }
 
+function closeTransientPanels(){
+  hide($('#profileModal'));hide($('#deleteModal'));hide($('#chatCtx'));hide($('#ctx'));hide($('#moreChatCtx'));
+  $('#deleteModal')?.classList.remove('rowDelete','messageDeleteStrict');
+}
 function blinkChatSwitch(){
   const main=$('.main');
   if(!main)return;
@@ -107,7 +112,6 @@ function blinkChatSwitch(){
   void main.offsetWidth;
   main.classList.add('ucmu-chat-blink');
 }
-
 function ensureDust(){
   const main=$('.main');
   if(!main||main.querySelector('.ucmuDustLayer'))return;
@@ -126,50 +130,20 @@ function ensureDust(){
 
 function openFolderModal(){
   const shade=$('#modalShade'),modal=$('#centerModal'),dyn=$('#modalDynamic');
-  if(!shade||!modal||!dyn){
-    const name=prompt('Название папки','Новая папка');
-    if(name===null)return;
-    state.folders.push({id:uid('f'),name:name.trim()||'Новая папка',color:'#d71920',open:false,chatIds:[]});
-    renderChats();
-    return;
-  }
-  $('#modalKicker').textContent='CREATE FOLDER';
-  $('#modalTitle').textContent='Создать папку';
-  $('#modalText').textContent='Название новой папки.';
-  dyn.innerHTML='<input id="newFolderTitleCenter" placeholder="Название папки" value="Новая папка">';
-  dyn.classList.add('show');
-  $('#modalConfirm').textContent='СОЗДАТЬ';
-  state.centerModalConfirm=()=>{
-    const name=$('#newFolderTitleCenter')?.value?.trim()||'Новая папка';
-    state.folders.push({id:uid('f'),name,color:'#d71920',open:false,chatIds:[]});
-    hide(modal);hide(shade);renderChats();
-  };
-  show(shade);show(modal);shade.classList.add('show');modal.classList.add('show','seq-ready');
+  if(!shade||!modal||!dyn){const name=prompt('Название папки','Новая папка');if(name===null)return;state.folders.push({id:uid('f'),name:name.trim()||'Новая папка',color:'#d71920',open:false,chatIds:[]});renderChats();return}
+  $('#modalKicker').textContent='CREATE FOLDER';$('#modalTitle').textContent='Создать папку';$('#modalText').textContent='Название новой папки.';
+  dyn.innerHTML='<input id="newFolderTitleCenter" placeholder="Название папки" value="Новая папка">';dyn.classList.add('show');$('#modalConfirm').textContent='СОЗДАТЬ';
+  state.centerModalConfirm=()=>{const name=$('#newFolderTitleCenter')?.value?.trim()||'Новая папка';state.folders.push({id:uid('f'),name,color:'#d71920',open:false,chatIds:[]});hide(modal);hide(shade);renderChats()};
+  show(shade);show(modal);shade.classList.add('show');modal.classList.add('show','seq-ready')
 }
 
 export function initLeftPanelUi(){
-  injectStyles();
-  arrangeButtons();
-  liveSearch();
-  ensureDust();
-  setTimeout(arrangeButtons,200);
-  setTimeout(arrangeButtons,800);
-  setTimeout(ensureDust,300);
+  injectStyles();arrangeButtons();liveSearch();ensureDust();setTimeout(arrangeButtons,200);setTimeout(arrangeButtons,800);setTimeout(ensureDust,300);
   document.addEventListener('click',e=>{
-    if(e.target.closest?.('#folderBtn')){
-      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openFolderModal();return;
-    }
-    if(e.target.closest?.('#contactsBtn')){
-      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openContactsPanel();return;
-    }
-    if(e.target.closest?.('#membersBtn')){
-      restoreMembersMode();
-    }
-    if(e.target.closest?.('#closeMembers')){
-      hide($('#profileModal'));
-    }
-    if(e.target.closest?.('[data-chat-id]')){
-      blinkChatSwitch();
-    }
+    if(e.target.closest?.('#folderBtn')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openFolderModal();return}
+    if(e.target.closest?.('#contactsBtn')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openContactsPanel();return}
+    if(e.target.closest?.('#membersBtn')){restoreMembersMode()}
+    if(e.target.closest?.('#closeMembers')){hide($('#profileModal'))}
+    if(e.target.closest?.('[data-chat-id]')){closeTransientPanels();blinkChatSwitch()}
   },true);
 }
