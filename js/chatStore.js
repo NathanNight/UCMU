@@ -59,6 +59,7 @@ function mapChat(snap){
 
 function mapMessage(snap){
   const d = snap.data();
+  if(d.deletedForAll === true) return null;
   const deletedFor = d.deletedFor || [];
   if(currentUid() && deletedFor.includes(currentUid())) return null;
   return {id:snap.id,author:d.authorName||'User',authorId:d.authorId,color:d.authorId===currentUid()?'red':'green',type:d.type||'text',text:d.text||'',file:d.file||'',size:d.size||'',time:messageTime(d),mine:d.authorId===currentUid(),reactions:d.reactions||{},reply:d.replyTo||null};
