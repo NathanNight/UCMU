@@ -19,22 +19,29 @@ service cloud.firestore {
         && userDoc(request.auth.uid).data.disabled != true;
     }
 
+    function chatDoc(chatId) {
+      return get(/databases/$(database)/documents/chats/$(chatId));
+    }
+
     function isChatMember(chatId) {
       return isActiveUser()
         && exists(/databases/$(database)/documents/chats/$(chatId))
-        && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members;
+        && request.auth.uid in chatDoc(chatId).data.members;
     }
 
-    function isAuthor() {
-      return request.resource.data.authorId == request.auth.uid;
+    function joinsGeneralOnly(chatId) {
+      return isActiveUser()
+        && chatId == 'general'
+        && request.auth.uid in request.resource.data.members
+        && !(request.auth.uid in resource.data.members)
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly(['members', 'updatedAt'])
+        && request.resource.data.members.size() == resource.data.members.size() + 1;
     }
 
     match /invites/{inviteCode} {
-      // Клиент может проверить только сам код, который ввёл.
       allow get: if true;
       allow list: if false;
 
-      // После регистрации клиент помечает инвайт использованным только своим uid.
       allow update: if signedIn()
         && resource.data.disabled != true
         && !('usedBy' in resource.data)
@@ -69,14 +76,17 @@ service cloud.firestore {
     match /chats/{chatId} {
       allow get, list: if isChatMember(chatId);
 
-      // Создание чата с собой в members. Для групп позже можно ужесточить через creatorId.
       allow create: if isActiveUser()
         && request.auth.uid in request.resource.data.members
         && request.resource.data.members is list
         && request.resource.data.members.size() <= 20;
 
-      allow update: if isChatMember(chatId)
-        && request.resource.data.members == resource.data.members;
+      allow update: if
+        (
+          isChatMember(chatId)
+          && request.resource.data.members == resource.data.members
+        )
+        || joinsGeneralOnly(chatId);
 
       allow delete: if false;
 
@@ -87,16 +97,18 @@ service cloud.firestore {
           && request.resource.data.authorId == request.auth.uid
           && request.resource.data.createdAt == request.time
           && request.resource.data.keys().hasOnly([
-            'authorId','authorName','type','text','file','size','createdAt','updatedAt','deletedFor','deletedForAll','reactions','replyTo'
+            'authorId','authorName','type','text','file','size',
+            'createdAt','updatedAt','deletedFor','deletedForAll',
+            'reactions','replyTo'
           ]);
 
         allow update: if isChatMember(chatId)
           && (
-            // Автор может редактировать/удалять своё сообщение.
-            (resource.data.authorId == request.auth.uid)
+            resource.data.authorId == request.auth.uid
             ||
-            // Любой участник может менять только reactions/deletedFor.
-            request.resource.data.diff(resource.data).changedKeys().hasOnly(['reactions','deletedFor','updatedAt'])
+            request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              'reactions','deletedFor','updatedAt'
+            ])
           );
 
         allow delete: if false;
