@@ -9,4 +9,4 @@ initDustParticles();
 bindActions();
 initFirebaseAuth();
 initUiPatch();
-window.UCMU={version:'v130-dust-soft-test',note:'v128 stable Firebase chat plus softer slower dust particles'};
+window.UCMU={version:'v131-dust-visible-soft-test',note:'v128 stable Firebase chat plus visible but soft slow dust particles'};
