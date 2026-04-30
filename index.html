@@ -3,16 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>UCMU Chat v160</title>
-  <link rel="stylesheet" href="css/base.css?v=160">
-  <link rel="stylesheet" href="css/layout.css?v=160">
-  <link rel="stylesheet" href="css/components.css?v=160">
-  <link rel="stylesheet" href="css/animations.css?v=160">
-  <link rel="stylesheet" href="css/splash.css?v=160">
-  <link rel="stylesheet" href="css/responsive.css?v=160">
+  <title>U.C.M.U. Chat v161 restored visual</title>
+  <link rel="stylesheet" href="css/base.css?v=161">
+  <link rel="stylesheet" href="css/layout.css?v=161">
+  <link rel="stylesheet" href="css/components.css?v=161">
+  <link rel="stylesheet" href="css/animations.css?v=161">
+  <link rel="stylesheet" href="css/splash.css?v=161">
+  <link rel="stylesheet" href="css/responsive.css?v=161">
+  <style id="ucmu-v161-visual-restore">
+    .side{padding-left:0!important;padding-right:0!important;border-right:0!important}.side .profile,.side .search,.side .cap,.side .folderBtn{margin-left:14px!important;margin-right:14px!important}.side .scrollList{padding-right:0!important}
+    #chatList,.folder-chat-list{display:flex!important;flex-direction:column!important;gap:2px!important}.folder-chat-list.hidden{display:none!important}
+    .head,.compose,.members,.private,.ctx,.float,.folder-item,.auth-form,.auth-card{border:0!important}.ph,.tabs,.reactPicker{border:0!important}.compose{background:transparent!important;box-shadow:none!important}
+    .chat{width:100%!important;margin:0!important;padding:10px 14px!important;background:rgba(255,255,255,.04)!important;border:0!important;box-shadow:none!important;transition:transform .24s cubic-bezier(.16,.86,.22,1),background .16s ease,opacity .16s ease!important}.chat:hover{background:rgba(255,255,255,.06)!important;border:0!important;box-shadow:none!important}.chat.active{background:linear-gradient(90deg,color-mix(in srgb,var(--chat-color,#d71920) 28%,transparent),rgba(255,255,255,.045))!important;border:0!important;box-shadow:inset 3px 0 0 var(--chat-color,#d71920)!important}.chat.active::before{content:none!important;display:none!important}.chat .ava,.chat .logo,.ava,.logo{border-radius:50%!important;overflow:hidden!important}.chat.dragging{opacity:1!important;background:rgba(25,31,31,.98)!important;box-shadow:0 18px 36px rgba(0,0,0,.5)!important}.drag-live .chat{will-change:transform!important}
+    .folder-drop-target>.folder-item{background:linear-gradient(90deg,rgba(255,255,255,.13),rgba(255,255,255,.035))!important;border-color:rgba(255,255,255,.42)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 0 24px rgba(255,255,255,.10)!important}.folder-chat-list{margin-left:0!important;padding-left:18px!important}.drag-slot{height:58px;margin:1px 10px;border:1px dashed rgba(255,255,255,.42);background:rgba(255,255,255,.035);display:grid;place-items:center;color:rgba(255,255,255,.72);font-size:22px;pointer-events:none;box-shadow:inset 0 0 18px rgba(255,255,255,.04)}.drag-slot::before{content:'+'}
+    .extra{min-width:44px!important;text-align:right!important;display:flex!important;flex-direction:column!important;align-items:flex-end!important}.badge{margin-left:auto!important;margin-right:0!important}.collapse{top:auto!important;bottom:12px!important;left:auto!important;right:12px!important;transform:none!important;width:44px!important;height:28px!important;z-index:12!important}.collapsed .collapse{left:50%!important;right:auto!important;transform:translateX(-50%)!important}
+    .msg.sticker-msg .bubble{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;overflow:visible!important}.msg.sticker-msg .bubble::before,.msg.sticker-msg .bubble::after,.msg.sticker-msg::before,.msg.sticker-msg::after{content:none!important;display:none!important;animation:none!important}.msg.sticker-msg.ucmu-new-flash .bubble::before,.msg.sticker-msg.ucmu-new-flash .bubble::after{content:none!important;display:none!important}.msg.sticker-msg .meta{display:none!important}.msg.sticker-msg .sticker{background:transparent!important;border:0!important;box-shadow:none!important;margin-top:0!important;position:relative!important;overflow:visible!important;animation:stickerBounce .42s cubic-bezier(.16,.86,.22,1) both!important}.msg.sticker-msg .sticker::before,.msg.sticker-msg .sticker::after{content:none!important;display:none!important}@keyframes stickerBounce{0%{opacity:0;transform:scale(.72);filter:blur(6px)}55%{opacity:1;transform:scale(1.16);filter:blur(0)}100%{opacity:1;transform:scale(1);filter:blur(0)}}
+    .reactPicker{display:flex;gap:9px;padding:7px 8px 10px!important}.reactRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.reactChip{height:28px;min-width:34px;padding:0 9px;border:0;background:rgba(255,255,255,.07);color:#fff;display:inline-flex;gap:5px;align-items:center;justify-content:center;box-shadow:none}.reactChip b{font-size:12px;color:#dfe5e5}.reactChip.mineReact{background:rgba(255,255,255,.16)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)!important}.reactAppear{animation:reactPopBlink .68s cubic-bezier(.16,.86,.22,1) both}@keyframes reactPopBlink{0%{opacity:0;filter:blur(8px);transform:scale(.2) rotate(-9deg)}28%{opacity:1;filter:blur(0);transform:scale(1.24) rotate(4deg)}43%{transform:scale(.96) rotate(0)}56%{transform:scale(1)}66%,80%,94%{opacity:.25;filter:brightness(1.8)}73%,87%,100%{opacity:1;filter:brightness(1)}}
+    .reactionUsers{position:absolute;z-index:60;width:230px;padding:12px;background:rgba(12,16,16,.98);box-shadow:var(--shadow)}.reactionUser{width:100%;display:flex;gap:10px;align-items:center;padding:7px;background:transparent;text-align:left}.reactionEmpty{color:var(--mut);padding:10px}.profileStub{display:flex;gap:14px;align-items:center;padding:12px}.profileStub p{margin:4px 0 0;color:var(--mut)}
+  </style>
 </head>
 <body>
   <div id="appRoot"></div>
-  <script type="module" src="js/app.js?v=160"></script>
+  <script type="module" src="js/app.js?v=161"></script>
 </body>
 </html>
