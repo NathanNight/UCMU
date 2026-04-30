@@ -4,6 +4,7 @@
 
 @keyframes ucmuEnter{
   0%{opacity:0;filter:blur(13px);transform:translateY(18px) scale(.965)}
+  58%{opacity:1;filter:blur(0);transform:translateY(-2px) scale(1.012)}
   100%{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}
 }
 @keyframes ucmuGlassFlash{
@@ -17,14 +18,20 @@
   to{opacity:1;filter:none;transform:translateY(0) scale(1)}
 }
 @keyframes ucmuRemove{
-  0%{opacity:.48;filter:blur(0);transform:translateY(0) scale(1);max-height:220px;margin-top:var(--ucmu-mt,0);margin-bottom:var(--ucmu-mb,14px);padding-top:var(--ucmu-pt,0);padding-bottom:var(--ucmu-pb,0)}
-  100%{opacity:0;filter:blur(16px);transform:translateY(16px) scale(.965);max-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+  0%{opacity:1;filter:blur(0);transform:translateY(0) scale(1);max-height:260px;margin-top:var(--ucmu-mt,0);margin-bottom:var(--ucmu-mb,14px);padding-top:var(--ucmu-pt,0);padding-bottom:var(--ucmu-pb,0)}
+  18%{opacity:1;filter:blur(3px);transform:translateY(0) scale(1);background:rgba(180,22,28,.14);box-shadow:0 0 28px rgba(215,25,32,.20)}
+  32%{opacity:.42;filter:blur(6px);background:rgba(215,25,32,.22);box-shadow:0 0 34px rgba(215,25,32,.28)}
+  45%{opacity:1;filter:blur(5px);background:rgba(215,25,32,.24);box-shadow:0 0 38px rgba(215,25,32,.32)}
+  58%{opacity:.35;filter:blur(8px);background:rgba(215,25,32,.28);box-shadow:0 0 42px rgba(215,25,32,.36)}
+  72%{opacity:.86;filter:blur(9px);background:rgba(215,25,32,.20);transform:translateY(4px) scale(.99)}
+  100%{opacity:0;filter:blur(18px);transform:translateY(18px) scale(.955);max-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0;background:rgba(215,25,32,0);box-shadow:none}
 }
 
 .ucmu-enter{animation:ucmuEnter .98s var(--ease) both!important;will-change:opacity,filter,transform!important}
 .ucmu-delete-pending{opacity:.48!important;filter:none!important;transform:none!important;transition:none!important;pointer-events:none!important}
 .ucmu-delete-restored{animation:ucmuRestore .42s ease-out both!important}
-.ucmu-remove{pointer-events:none!important;overflow:hidden!important;animation:ucmuRemove .9s cubic-bezier(.16,.86,.22,1) forwards!important;will-change:opacity,filter,transform,max-height!important}
+.ucmu-remove{pointer-events:none!important;overflow:hidden!important;animation:ucmuRemove .92s cubic-bezier(.16,.86,.22,1) forwards!important;will-change:opacity,filter,transform,max-height!important}
+.ucmu-remove .bubble{background:linear-gradient(135deg,rgba(122,16,20,.72),rgba(45,9,11,.88))!important;box-shadow:0 0 30px rgba(215,25,32,.24)!important}
 
 .msg,.bubble,.chat,.folder-wrap,.folder-item{position:relative}
 .bubble,.chat,.folder-item{overflow:hidden}
