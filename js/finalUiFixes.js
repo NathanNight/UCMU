@@ -7,7 +7,10 @@ function injectFinalStyles(){
   const style=document.createElement('style');
   style.id='ucmu-final-ui-fixes';
   style.textContent=`
-    .main::before,.main::after{display:none!important;content:none!important;background:none!important}
+    .main{position:relative!important;overflow:hidden!important}
+    .main::before{display:none!important;content:none!important;background:none!important}
+    .main::after{content:''!important;display:block!important;position:absolute!important;right:8.5%!important;left:auto!important;top:-22%!important;width:330px!important;height:150%!important;pointer-events:none!important;z-index:1!important;background:linear-gradient(90deg,transparent,rgba(205,230,225,.02),rgba(205,230,225,.085),rgba(205,230,225,.035),transparent)!important;transform:skewX(8deg)!important;filter:blur(.15px)!important}
+    .main>*{position:relative;z-index:2}
 
     .collapsed .side{width:72px!important;min-width:72px!important;max-width:72px!important}
     .collapsed .side .profile{margin:16px auto 10px!important;width:54px!important;height:54px!important;padding:0!important;display:grid!important;place-items:center!important;background:transparent!important;border:0!important}
