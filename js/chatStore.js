@@ -5,6 +5,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   addDoc,
   updateDoc,
@@ -36,13 +37,15 @@ function toast(text){
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+function currentUid(){ return state.currentUser?.uid; }
+function displayName(){ return state.currentUser?.displayName || state.currentUser?.username || state.user || 'Operator'; }
+function normalizeUsername(v){ return String(v || '').trim().toLowerCase().replace(/^@/,''); }
 
 function messageTime(data){
   const d = data.createdAt?.toDate?.();
   if(!d) return 'сейчас';
   return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
-
 function chatTime(data){
   const d = data.updatedAt?.toDate?.() || data.createdAt?.toDate?.();
   if(!d) return 'сейчас';
@@ -51,14 +54,10 @@ function chatTime(data){
   return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 
-function currentUid(){ return state.currentUser?.uid; }
-function displayName(){ return state.currentUser?.displayName || state.currentUser?.username || state.user || 'Operator'; }
-
 function mapChat(snap){
   const d = snap.data();
-  return {id:snap.id,title:d.title||'Чат',last:d.lastText||'Нет сообщений',time:chatTime(d),unread:0,muted:false,members:d.members||[],type:d.type||'group',styleColor:d.styleColor||d.color||'#d71920'};
+  return {id:snap.id,title:d.title||'Чат',description:d.description||d.desc||'',last:d.lastText||'Нет сообщений',time:chatTime(d),unread:0,muted:false,members:d.members||[],memberProfiles:d.memberProfiles||{},type:d.type||'group',styleColor:d.styleColor||d.color||'#d71920'};
 }
-
 function mapMessage(snap){
   const d = snap.data();
   if(d.deletedForAll === true) return null;
@@ -73,16 +72,11 @@ async function ensureGeneralChat(){
   const ref = doc(db, 'chats', 'general');
   const snap = await getDoc(ref);
   if(!snap.exists()){
-    console.log('[UCMU] create chats/general for', uid);
-    await setDoc(ref, {title:'# Общий чат',type:'group',members:[uid],createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastText:'Чат создан',styleColor:'#d71920'});
+    await setDoc(ref, {title:'# Общий чат',description:'',type:'group',members:[uid],memberProfiles:{[uid]:{uid,displayName:displayName(),username:state.currentUser?.username||''}},createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastText:'Чат создан',styleColor:'#d71920'});
     return;
   }
   const members = snap.data().members || [];
-  console.log('[UCMU] chats/general members', members, 'current uid', uid);
-  if(!members.includes(uid)){
-    console.log('[UCMU] joining chats/general', uid);
-    await updateDoc(ref, {members: arrayUnion(uid), updatedAt: serverTimestamp()});
-  }
+  if(!members.includes(uid)) await updateDoc(ref, {members: arrayUnion(uid), updatedAt: serverTimestamp()});
 }
 
 export async function initChatStore(){
@@ -101,7 +95,6 @@ export async function initChatStore(){
   ready = true;
   subscribeChats();
 }
-
 export function isChatStoreReady(){ return ready && !!db && !!currentUid(); }
 
 export function subscribeChats(){
@@ -110,7 +103,6 @@ export function subscribeChats(){
   const q = query(collection(db, 'chats'), where('members', 'array-contains', currentUid()), orderBy('updatedAt', 'desc'), limit(50));
   chatsUnsub = onSnapshot(q, snap => {
     const next = snap.docs.map(mapChat);
-    console.log('[UCMU] chats snapshot', next.map(c=>({id:c.id,title:c.title,members:c.members})));
     state.chats = next;
     state.folders = state.folders.filter(f => f.chatIds.some(id => state.chats.some(c => c.id === id)));
     if(!state.activeChat || !state.chats.some(c => c.id === state.activeChat)) state.activeChat = state.chats[0]?.id || null;
@@ -119,14 +111,11 @@ export function subscribeChats(){
     else { messagesUnsub?.(); state.messages = {}; renderFeed(); }
   }, err => { console.error('[UCMU] subscribeChats failed', err); toast('Firestore chats error:\n' + (err.message || err.code || err)); });
 }
-
 export function subscribeMessages(chatId){
   if(!isChatStoreReady() || !chatId) return;
   messagesUnsub?.();
-  console.log('[UCMU] subscribe messages for chatId:', chatId);
   const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'), limit(200));
   messagesUnsub = onSnapshot(q, snap => {
-    console.log('[UCMU] messages snapshot', chatId, snap.size);
     state.messages[chatId] = snap.docs.map(mapMessage).filter(Boolean);
     renderFeed();
   }, err => { console.error('[UCMU] subscribeMessages failed', err); toast('Firestore messages error for '+chatId+':\n' + (err.message || err.code || err)); });
@@ -140,14 +129,73 @@ export async function sendStoreMessage({type='text', text='', file='', size='', 
   if(file) payload.file = file;
   if(size) payload.size = size;
   if(replyTo) payload.replyTo = replyTo;
-  console.log('[UCMU] sending message', {chatId, payload});
   try{
-    const ref = await addDoc(collection(db, 'chats', chatId, 'messages'), payload);
-    console.log('[UCMU] message written', ref.path);
+    await addDoc(collection(db, 'chats', chatId, 'messages'), payload);
     await updateDoc(doc(db, 'chats', chatId), {lastText:type==='sticker'?`${displayName()}: ${text}`:`${displayName()}: ${text||file||'сообщение'}`,updatedAt:serverTimestamp()});
-    toast('Firestore OK: ' + ref.path);
     return true;
   }catch(err){ console.error('[UCMU] send message failed', err); toast('Firestore send error:\nchatId: '+chatId+'\n'+(err.message || err.code || err)); throw err; }
+}
+
+export async function searchUsersByUsername(username){
+  if(!isChatStoreReady()) return [];
+  const u = normalizeUsername(username);
+  if(!u || u.length < 2) return [];
+  const direct = await getDoc(doc(db, 'usernames', u)).catch(()=>null);
+  let found = [];
+  if(direct?.exists?.()){
+    const uid = direct.data().uid || direct.data().userId;
+    if(uid){ const us = await getDoc(doc(db, 'users', uid)); if(us.exists()) found.push({uid, ...us.data()}); }
+  }
+  if(!found.length){
+    const snap = await getDocs(query(collection(db, 'users'), where('username','==',u), limit(8)));
+    found = snap.docs.map(d=>({uid:d.id,...d.data()}));
+  }
+  return found.filter(x=>x.uid !== currentUid());
+}
+
+export async function listKnownUsers(){
+  if(!isChatStoreReady()) return [];
+  const known = new Map();
+  state.chats.forEach(c => Object.entries(c.memberProfiles || {}).forEach(([uid,p]) => { if(uid !== currentUid()) known.set(uid,{uid,...p}); }));
+  if(known.size) return [...known.values()];
+  const snap = await getDocs(query(collection(db, 'users'), limit(30)));
+  return snap.docs.map(d=>({uid:d.id,...d.data()})).filter(x=>x.uid !== currentUid());
+}
+
+export async function createOrOpenChatWithUsers(users){
+  if(!isChatStoreReady()) return null;
+  const clean = (users||[]).filter(Boolean).filter(u=>u.uid && u.uid !== currentUid());
+  if(!clean.length){ toast('Выберите хотя бы одного контакта.'); return null; }
+  const memberIds = [currentUid(), ...clean.map(u=>u.uid)].sort();
+  const chatId = memberIds.length === 2 ? 'private_' + memberIds.join('_') : ('group_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7));
+  const exists = await getDoc(doc(db, 'chats', chatId));
+  if(!exists.exists()){
+    const profiles = {[currentUid()]:{uid:currentUid(),displayName:displayName(),username:state.currentUser?.username||''}};
+    clean.forEach(u=>profiles[u.uid]={uid:u.uid,displayName:u.displayName||u.username||u.email||'User',username:u.username||''});
+    const title = clean.length === 1 ? (clean[0].displayName || clean[0].username || clean[0].email || 'Личный чат') : clean.map(u=>u.displayName||u.username||'User').join(', ');
+    await setDoc(doc(db, 'chats', chatId), {title,description:'',type:clean.length===1?'private':'group',members:memberIds,memberProfiles:profiles,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastText:'Чат создан',styleColor:'#d71920'});
+  }
+  state.activeChat = chatId;
+  subscribeMessages(chatId);
+  renderChats();
+  renderFeed();
+  return chatId;
+}
+
+export async function updateActiveChatMeta({title,description,styleColor}){
+  if(!isChatStoreReady() || !state.activeChat) return;
+  await updateDoc(doc(db,'chats',state.activeChat), {title:title||'Чат',description:description||'',styleColor:styleColor||'#d71920',updatedAt:serverTimestamp()});
+}
+export async function clearActiveChatHistory(){
+  if(!isChatStoreReady() || !state.activeChat) return;
+  const snap = await getDocs(query(collection(db,'chats',state.activeChat,'messages'), limit(300)));
+  await Promise.all(snap.docs.map(d=>updateDoc(d.ref,{deletingForAll:true,updatedAt:serverTimestamp()})));
+  await sleep(940);
+  await Promise.all(snap.docs.map(d=>updateDoc(d.ref,{text:'',type:'text',deletingForAll:false,deletedForAll:true,updatedAt:serverTimestamp()})));
+}
+export async function deleteActiveChat(){
+  if(!isChatStoreReady() || !state.activeChat) return;
+  await updateDoc(doc(db,'chats',state.activeChat), {members:[],updatedAt:serverTimestamp(),deleted:true});
 }
 
 export async function updateStoreReaction(messageId, reactions){
@@ -155,13 +203,11 @@ export async function updateStoreReaction(messageId, reactions){
   await updateDoc(doc(db, 'chats', state.activeChat, 'messages', messageId), {reactions:reactions||{},updatedAt:serverTimestamp()});
   return true;
 }
-
 export async function deleteStoreMessageForMe(messageId){
   if(!isChatStoreReady() || !state.activeChat || !messageId) return false;
   await updateDoc(doc(db, 'chats', state.activeChat, 'messages', messageId), {deletedFor:arrayUnion(currentUid()),updatedAt:serverTimestamp()});
   return true;
 }
-
 export async function deleteStoreMessageForAll(messageId){
   if(!isChatStoreReady() || !state.activeChat || !messageId) return false;
   const ref = doc(db, 'chats', state.activeChat, 'messages', messageId);
@@ -170,8 +216,4 @@ export async function deleteStoreMessageForAll(messageId){
   await updateDoc(ref, {text:'',type:'text',deletingForAll:false,deletedForAll:true,updatedAt:serverTimestamp()});
   return true;
 }
-
-export function stopChatStore(){
-  chatsUnsub?.(); messagesUnsub?.();
-  chatsUnsub = null; messagesUnsub = null; ready = false;
-}
+export function stopChatStore(){ chatsUnsub?.(); messagesUnsub?.(); chatsUnsub = null; messagesUnsub = null; ready = false; }
