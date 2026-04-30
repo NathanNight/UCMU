@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v138-undo-cascade-delete-create-form',note:'3s undo for message delete, cascade clear from bottom, plus opens create-chat form'};
+window.UCMU={version:'v139-modal-create-settings-clear-fixes',note:'realtime undo return, standalone chat create, central settings modal, local smooth cascade clear'};
