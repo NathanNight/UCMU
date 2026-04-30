@@ -8,13 +8,13 @@ function makeParticle(w, h){
   return {
     x: rand(-40, w + 40),
     y: rand(-40, h + 40),
-    r: rand(0.18, 0.72),
-    vx: rand(-0.008, 0.014) * (0.7 + depth * 0.4),
-    vy: rand(-0.007, 0.012) * (0.7 + depth * 0.4),
-    drift: rand(0.00025, 0.0011),
+    r: rand(0.32, 0.95),
+    vx: rand(-0.012, 0.021) * (0.7 + depth * 0.5),
+    vy: rand(-0.010, 0.017) * (0.7 + depth * 0.5),
+    drift: rand(0.00035, 0.00135),
     phase: rand(0, Math.PI * 2),
-    twinkle: rand(0.0012, 0.0042),
-    alpha: rand(0.006, 0.028),
+    twinkle: rand(0.0010, 0.0032),
+    alpha: rand(0.014, 0.052),
     hue: rand(185, 225),
     depth
   };
@@ -34,7 +34,7 @@ export function initDustParticles(){
     'height:100vh',
     'z-index:0',
     'pointer-events:none',
-    'opacity:.52',
+    'opacity:.78',
     'mix-blend-mode:screen'
   ].join(';');
   document.body.prepend(canvas);
@@ -51,21 +51,22 @@ export function initDustParticles(){
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = clamp(Math.round((w * h) / 16500), 34, 88);
+    const count = clamp(Math.round((w * h) / 9800), 70, 170);
     particles = Array.from({ length: count }, () => makeParticle(w, h));
   }
 
   function drawLightBeams(t){
     ctx.save();
     ctx.globalCompositeOperation = 'screen';
-    const g1 = ctx.createLinearGradient(w * 0.16, 0, w * 0.9, h);
+    const g1 = ctx.createLinearGradient(w * 0.08, 0, w * 0.92, h);
     g1.addColorStop(0, 'rgba(255,255,255,0)');
-    g1.addColorStop(0.5, 'rgba(210,235,255,.008)');
+    g1.addColorStop(0.38, 'rgba(210,235,255,.012)');
+    g1.addColorStop(0.56, 'rgba(255,210,190,.008)');
     g1.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g1;
-    ctx.translate(Math.sin(t * 0.00006) * 10, 0);
+    ctx.translate(Math.sin(t * 0.000055) * 12, 0);
     ctx.rotate(-0.12);
-    ctx.fillRect(w * 0.22, -80, w * 0.11, h + 180);
+    ctx.fillRect(w * 0.18, -80, w * 0.16, h + 180);
     ctx.restore();
   }
 
@@ -88,16 +89,22 @@ export function initDustParticles(){
       if(p.y > h + 55) p.y = -55;
       if(p.y < -55) p.y = h + 55;
 
-      const sparkle = Math.pow(Math.max(0, Math.sin(p.phase)), 14);
-      const hue = p.hue + Math.sin(p.phase * 0.19) * 14 + sparkle * 18;
-      const alpha = p.alpha + sparkle * 0.045;
-      const core = Math.min(1, p.r * (0.75 + sparkle * 0.45));
-      const glow = core * (4.8 + sparkle * 1.8);
+      const sparkle = Math.pow(Math.max(0, Math.sin(p.phase)), 13);
+      const hue = p.hue + Math.sin(p.phase * 0.19) * 16 + sparkle * 22;
+      const alpha = p.alpha + sparkle * 0.065;
+      const core = Math.min(1.1, p.r * (0.72 + sparkle * 0.35));
+      const glow = core * (3.2 + sparkle * 1.1);
 
+      // tiny soft core, максимум около пикселя
+      ctx.fillStyle = `hsla(${hue}, 62%, 88%, ${alpha * 0.82})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, core, 0, Math.PI * 2);
+      ctx.fill();
+
+      // почти невидимый ореол без плотного края
       const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
-      grad.addColorStop(0, `hsla(${hue}, 70%, 88%, ${alpha})`);
-      grad.addColorStop(0.16, `hsla(${hue + 8}, 65%, 78%, ${alpha * 0.26})`);
-      grad.addColorStop(0.42, `hsla(${hue + 12}, 60%, 72%, ${alpha * 0.08})`);
+      grad.addColorStop(0, `hsla(${hue}, 62%, 86%, ${alpha * 0.22})`);
+      grad.addColorStop(0.35, `hsla(${hue + 8}, 58%, 78%, ${alpha * 0.07})`);
       grad.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = grad;
       ctx.beginPath();
