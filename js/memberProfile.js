@@ -28,13 +28,15 @@ function profileFor(uid,source='chat'){
 function injectStyles(){
   if(document.getElementById('ucmu-member-profile-style'))return;
   const style=document.createElement('style');style.id='ucmu-member-profile-style';style.textContent=`
+    #profileModal{z-index:80!important;min-width:310px!important;max-width:360px!important}
     #profileModal .profileStub.ucmuProfileCard{display:flex!important;gap:14px!important;align-items:flex-start!important;flex-wrap:wrap!important;padding:14px!important}
     #profileModal .ucmuProfileInfo{min-width:0;flex:1}
     #profileModal .ucmuProfileInfo b{display:block;color:#fff;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #profileModal .ucmuProfileInfo p{margin:5px 0 0;color:var(--mut);font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    #profileModal .ucmuMemberActions{width:100%;display:grid!important;grid-template-columns:1fr!important;gap:8px!important;margin-top:8px!important}
-    #profileModal .ucmuMemberActions button{width:100%!important;min-height:38px!important;display:block!important;opacity:1!important;visibility:visible!important}
-    #profileModal .dangerMemberKick,#profileModal .dangerContactRemove{background:linear-gradient(135deg,#d71920,#6f0b10)!important;color:#fff!important}
+    #profileModal .ucmuMemberActions{width:100%!important;display:flex!important;flex-direction:column!important;gap:8px!important;margin-top:10px!important;opacity:1!important;visibility:visible!important;position:relative!important;z-index:3!important}
+    #profileModal .profileAction{display:block!important;width:100%!important;min-height:38px!important;padding:0 12px!important;border:1px solid rgba(255,255,255,.14)!important;background:rgba(255,255,255,.07)!important;color:#fff!important;font-weight:900!important;text-align:center!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+    #profileModal .profileAction.primary{background:linear-gradient(135deg,#d71920,#8a1116)!important}
+    #profileModal .profileAction.danger{background:linear-gradient(135deg,#d71920,#6f0b10)!important;color:#fff!important}
   `;document.head.appendChild(style)
 }
 function openMemberProfile(uid,source='chat'){
@@ -48,10 +50,10 @@ function openMemberProfile(uid,source='chat'){
       <div class="ava"></div>
       <div class="ucmuProfileInfo"><b id="profileName">${esc(displayName(p,uid))}</b><p>${esc(displaySub(p)||'Профиль пока пустой')}</p></div>
       <div class="ucmuMemberActions">
-        <button type="button" class="modalCancel" data-member-more="${esc(uid)}">☰ ПОДРОБНЕЕ</button>
-        <button type="button" class="modalConfirm" data-member-write="${esc(uid)}">✉ НАПИСАТЬ</button>
-        ${canKick?`<button type="button" class="modalConfirm dangerMemberKick" data-member-kick="${esc(uid)}">⛔ УДАЛИТЬ ИЗ ЧАТА</button>`:''}
-        ${source==='contact'?`<button type="button" class="modalConfirm dangerContactRemove" data-contact-remove="${esc(uid)}">✕ УДАЛИТЬ ИЗ КОНТАКТОВ</button>`:''}
+        <button type="button" class="profileAction" data-member-more="${esc(uid)}">☰ ПОДРОБНЕЕ</button>
+        <button type="button" class="profileAction primary" data-member-write="${esc(uid)}">✉ НАПИСАТЬ</button>
+        ${canKick?`<button type="button" class="profileAction danger" data-member-kick="${esc(uid)}">⛔ УДАЛИТЬ ИЗ ЧАТА</button>`:''}
+        ${source==='contact'?`<button type="button" class="profileAction danger" data-contact-remove="${esc(uid)}">✕ УДАЛИТЬ ИЗ КОНТАКТОВ</button>`:''}
       </div>
     </div>`;
   show(box);
@@ -68,14 +70,14 @@ function removeContact(uid){window.__ucmuContactProfiles?.delete?.(uid);hide($('
 export function initMemberProfile(){
   injectStyles();
   const closeMembers=$('#closeMembers');if(closeMembers){closeMembers.onclick=()=>{hide($('#members'));hide($('#profileModal'))}}
-  document.addEventListener('click',async e=>{
+  window.addEventListener('click',async e=>{
     const chat=e.target.closest?.('[data-chat-id]');if(chat)hide($('#profileModal'));
-    if(e.target.closest?.('#closeProfile')){hide($('#profileModal'));return}
+    if(e.target.closest?.('#closeProfile')){e.preventDefault();e.stopPropagation();hide($('#profileModal'));return}
     const uid=e.target.closest?.('[data-real-member-id]')?.dataset.realMemberId;if(uid){e.preventDefault();e.stopPropagation();openMemberProfile(uid,'chat');return}
     const cuid=e.target.closest?.('[data-contact-member-id]')?.dataset.contactMemberId;if(cuid){e.preventDefault();e.stopPropagation();openMemberProfile(cuid,'contact');return}
-    const more=e.target.closest?.('[data-member-more]')?.dataset.memberMore;if(more){toast('Полный профиль будет отдельным экраном.');return}
-    const write=e.target.closest?.('[data-member-write]')?.dataset.memberWrite;if(write){await writeToMember(write);return}
-    const kick=e.target.closest?.('[data-member-kick]')?.dataset.memberKick;if(kick){await kickMember(kick);return}
-    const rem=e.target.closest?.('[data-contact-remove]')?.dataset.contactRemove;if(rem){removeContact(rem);return}
+    const more=e.target.closest?.('[data-member-more]')?.dataset.memberMore;if(more){e.preventDefault();e.stopPropagation();toast('Полный профиль будет отдельным экраном.');return}
+    const write=e.target.closest?.('[data-member-write]')?.dataset.memberWrite;if(write){e.preventDefault();e.stopPropagation();await writeToMember(write);return}
+    const kick=e.target.closest?.('[data-member-kick]')?.dataset.memberKick;if(kick){e.preventDefault();e.stopPropagation();await kickMember(kick);return}
+    const rem=e.target.closest?.('[data-contact-remove]')?.dataset.contactRemove;if(rem){e.preventDefault();e.stopPropagation();removeContact(rem);return}
   },true)
 }
