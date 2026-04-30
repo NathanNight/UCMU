@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v141-force-modal-typewriter-round-colors',note:'forced round color buttons and real modal typewriter sequence'};
+window.UCMU={version:'v142-undo-local-state-fix',note:'preserve message copy for realtime undo and prevent clear cascade rebound'};
