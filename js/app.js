@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v142-undo-local-state-fix',note:'preserve message copy for realtime undo and prevent clear cascade rebound'};
+window.UCMU={version:'v143-clear-cascade-rebound-fix',note:'clear history locally hides ids before Firestore snapshot can redraw; modal intro 1.6x faster'};
