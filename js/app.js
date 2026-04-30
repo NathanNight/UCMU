@@ -5,6 +5,7 @@ import {initUiPatch} from './uiPatch.js';
 import {initDustParticles} from './dustParticles.js';
 import {initContactsPatch} from './contactsPatch.js';
 import {initMemberProfile} from './memberProfile.js';
+import {initLeftPanelUi} from './leftPanelUi.js';
 
 document.getElementById('appRoot').innerHTML=shell();
 initDustParticles();
@@ -13,7 +14,8 @@ initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
 initMemberProfile();
+initLeftPanelUi();
 
 // Clean base: no layered v145-v152 runtime patches.
-// Keep feature work inside the main modules only: actions/render/chatStore/contactsPatch/memberProfile.
-window.UCMU={version:'v153-clean-base-member-profile-actions',note:'stable base; member profile actions module loaded; message spawn untouched'};
+// Keep feature work inside the main modules only: actions/render/chatStore/contactsPatch/memberProfile/leftPanelUi.
+window.UCMU={version:'v153-clean-base-left-panel-contacts',note:'stable base; left panel search/buttons/contacts module loaded; message spawn untouched'};
