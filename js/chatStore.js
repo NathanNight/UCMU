@@ -87,6 +87,12 @@ export async function initChatStore(){
   if(!uid) return;
   const fb = await getFirebase();
   db = fb.db;
+  state.chats = [];
+  state.folders = [];
+  state.messages = {};
+  state.activeChat = null;
+  renderChats();
+  renderFeed();
   try{
     await ensureGeneralChat();
   }catch(err){
@@ -106,10 +112,12 @@ export function subscribeChats(){
   chatsUnsub = onSnapshot(q, snap => {
     const next = snap.docs.map(mapChat);
     console.log('[UCMU] chats snapshot', next.map(c=>({id:c.id,title:c.title,members:c.members})));
-    state.chats = next.length ? next : state.chats;
-    if(!state.activeChat || !state.chats.some(c => c.id === state.activeChat)) state.activeChat = state.chats[0]?.id || 'general';
+    state.chats = next;
+    state.folders = state.folders.filter(f => f.chatIds.some(id => state.chats.some(c => c.id === id)));
+    if(!state.activeChat || !state.chats.some(c => c.id === state.activeChat)) state.activeChat = state.chats[0]?.id || null;
     renderChats();
-    subscribeMessages(state.activeChat);
+    if(state.activeChat) subscribeMessages(state.activeChat);
+    else { messagesUnsub?.(); state.messages = {}; renderFeed(); }
   }, err => {
     console.error('[UCMU] subscribeChats failed', err);
     toast('Firestore chats error:\n' + (err.message || err.code || err));
