@@ -1,6 +1,7 @@
 import {state,uid,activeMessages,findChat,findFolder} from './state.js';import {$,$$,show,hide,toggle,placeMenu} from './dom.js';import {renderAll,renderChats,renderFeed,appendMessage} from './render.js';import {appear,pending,restore,removeAnimated,DELETE_DELAY} from './animations.js';import {sendStoreMessage,isChatStoreReady,subscribeMessages,deleteStoreMessageForMe,deleteStoreMessageForAll} from './chatStore.js';
 let selectedFile=null;
 function toast(text){let el=document.getElementById('fireDebugToast');if(!el){el=document.createElement('div');el.id='fireDebugToast';el.style.cssText='position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99999;background:rgba(10,12,12,.96);color:#fff;border:1px solid rgba(255,255,255,.18);padding:10px 14px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:12px system-ui;max-width:min(520px,calc(100vw - 28px));white-space:pre-wrap;pointer-events:none';document.body.appendChild(el)}el.textContent=text;clearTimeout(el._t);el._t=setTimeout(()=>el.remove(),4200)}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 export function bindActions(){
  $('#collapse').onclick=()=>{const app=$('#app');app.classList.toggle('collapsed');$('#collapse').textContent=app.classList.contains('collapsed')?'›':'‹'};
  $('#menu').onclick=()=>$('#app').classList.toggle('mobile');$('#membersBtn').onclick=()=>toggle($('#members'));$('#closeMembers').onclick=()=>hide($('#members'));
@@ -39,10 +40,12 @@ function addChatToFirstFolder(chatId){if(!state.folders.length){const f={id:uid(
 function openDelete(type,id){state.pendingDelete={type,id};const row=$('.deleteAllRow'),check=$('#deleteForAll');if(row&&check){row.style.display='flex';check.checked=false;if(type==='message'){const m=activeMessages().find(x=>x.id===id);if(m&&!m.mine){row.style.display='none';check.checked=false}}}hide($('#deleteModal'));show($('#deleteModal'))}
 function selectorFor(p){return p.type==='message'?`[data-msg-id="${p.id}"]`:p.type==='chat'?`[data-chat-id="${p.id}"]`:`[data-folder-id="${p.id}"]`}
 function prepRemoveMetrics(el){if(!el)return;const cs=getComputedStyle(el);el.style.setProperty('--ucmu-mt',cs.marginTop||'0px');el.style.setProperty('--ucmu-mb',cs.marginBottom||'14px');el.style.setProperty('--ucmu-pt',cs.paddingTop||'0px');el.style.setProperty('--ucmu-pb',cs.paddingBottom||'0px')}
-async function confirmDelete(){const p=state.pendingDelete;if(!p)return;const node=$(selectorFor(p));prepRemoveMetrics(node);hide($('#deleteModal'));
+async function playDeleteAndRemove(node,id){prepRemoveMetrics(node);if(node)removeAnimated(node);await sleep(920);state.messages[state.activeChat]=activeMessages().filter(x=>x.id!==id);renderFeed()}
+async function confirmDelete(){const p=state.pendingDelete;if(!p)return;const node=$(selectorFor(p));hide($('#deleteModal'));
  if(p.type==='message'&&isChatStoreReady()){
-  const m=activeMessages().find(x=>x.id===p.id);const forAll=$('#deleteForAll')?.checked&&m?.mine;
-  try{if(forAll)await deleteStoreMessageForAll(p.id);else await deleteStoreMessageForMe(p.id);state.messages[state.activeChat]=activeMessages().filter(x=>x.id!==p.id);renderFeed();state.pendingDelete=null;toast(forAll?'Удалено для всех':'Удалено у вас');return}catch(err){console.error('delete store message failed',err);toast('Не удалось удалить:\n'+(err.message||err.code||err));state.pendingDelete=null;return}
+  const m=activeMessages().find(x=>x.id===p.id);const forAll=$('#deleteForAll')?.checked&&m?.mine;state.pendingDelete=null;
+  await playDeleteAndRemove(node,p.id);
+  try{if(forAll)await deleteStoreMessageForAll(p.id);else await deleteStoreMessageForMe(p.id);toast(forAll?'Удалено для всех':'Удалено у вас');return}catch(err){console.error('delete store message failed',err);toast('Не удалось удалить:\n'+(err.message||err.code||err));if(isChatStoreReady())subscribeMessages(state.activeChat);return}
  }
  if(p.type==='message'){const m=activeMessages().find(x=>x.id===p.id);if(m&&!m.mine){finalDelete(p,node);return}}pending(node);showUndo(p.type);clearTimeout(state.undoTimer);state.undoTimer=setTimeout(()=>finalDelete(p,node),DELETE_DELAY)}
 function undoDelete(){clearTimeout(state.undoTimer);state.undoTimer=null;state.pendingDelete=null;$$('.ucmu-delete-pending').forEach(restore);hide($('#undoToast'))}
