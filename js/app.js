@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v136-modal-delete-glass-polish',note:'central modal for chat actions, no message rebound, slightly lighter glass cards'};
+window.UCMU={version:'v137-message-stability-modal-fixes',note:'fixed repeated subscriptions, old new-chat popup, immediate modal close, clear history permissions and borderless glass cards'};
