@@ -7,6 +7,7 @@ import {initContactsPatch} from './contactsPatch.js';
 import {initMemberProfile} from './memberProfile.js';
 import {initLeftPanelUi} from './leftPanelUi.js';
 import {initFinalUiFixes} from './finalUiFixes.js';
+import {initFinalSmoothDrag} from './finalSmoothDrag.js';
 
 document.getElementById('appRoot').innerHTML=shell();
 initDustParticles();
@@ -17,7 +18,8 @@ initLeftPanelUi();
 initContactsPatch();
 initMemberProfile();
 initFinalUiFixes();
+initFinalSmoothDrag();
 
 // DEV MODE ON BY DEFAULT.
 // Reminder before real tests: switch chatStore.js back to Firestore backend.
-window.UCMU={version:'v154-dev-localstorage-default-final-ui-fixes',note:'DEV MODE ON: chat/messages use localStorage, Firestore chat reads/writes disabled. Before real tests, switch back to Firebase/Firestore backend.'};
+window.UCMU={version:'v155-dev-localstorage-smooth-drag-stripe-right',note:'DEV MODE ON: chat/messages use localStorage, Firestore chat reads/writes disabled. Before real tests, switch back to Firebase/Firestore backend.'};
