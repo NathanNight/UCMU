@@ -4,7 +4,7 @@ import {initFirebaseAuth} from './authFirebase.js';
 import {initUiPatch} from './uiPatch.js';
 import {initDustParticles} from './dustParticles.js';
 import {initContactsPatch} from './contactsPatch.js';
-import {initV147Patch} from './v147Patch.js';
+import {initV148Patch} from './v148Patch.js';
 
 document.getElementById('appRoot').innerHTML=shell();
 initDustParticles();
@@ -12,5 +12,5 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-initV147Patch();
-window.UCMU={version:'v147-stability-delete-clear-members',note:'single stable patch: v145/v146 stacked handlers disabled, reliable red clear animation, chat leave animation, safe members render, search; drag untouched'};
+initV148Patch();
+window.UCMU={version:'v148-modal-clear-frame-members',note:'space no longer replays modal, true frame-only sweep layer, stronger non-repeating clear delete animation, smooth chat reflow, member profile actions with kick confirmation; drag untouched'};
