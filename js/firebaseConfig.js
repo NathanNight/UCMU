@@ -1,15 +1,14 @@
-// ВАЖНО: сюда вставляется web config из Firebase Console.
-// Сам по себе firebaseConfig не является секретом. Защита держится на Firestore/Storage Rules.
-// Но без настроенных rules проект нельзя считать защищённым.
+// Firebase Web config.
+// Это не пароль и не секрет. Защита проекта держится на Firestore Rules / Auth / Storage Rules.
 
 export const firebaseConfig = {
-  apiKey: "PASTE_API_KEY_HERE",
-  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT_ID.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyD4d15nd3HJDJCMoi99yjxsBrGWNQ999Y8",
+  authDomain: "ucmu-63f74.firebaseapp.com",
+  projectId: "ucmu-63f74",
+  storageBucket: "ucmu-63f74.firebasestorage.app",
+  messagingSenderId: "475838060478",
+  appId: "1:475838060478:web:af492a673cbffb9e304bef",
+  measurementId: "G-3M5EFPS2RE"
 };
 
-// true только после того, как заменишь все PASTE_* значения на реальные.
-export const firebaseConfigReady = false;
+export const firebaseConfigReady = true;
