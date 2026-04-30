@@ -11,4 +11,4 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v140-modal-typing-undo-animation',note:'round color buttons, modal typewriter sequence, restore message appear animation'};
+window.UCMU={version:'v141-force-modal-typewriter-round-colors',note:'forced round color buttons and real modal typewriter sequence'};
