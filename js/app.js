@@ -4,13 +4,17 @@ import {initFirebaseAuth} from './authFirebase.js';
 import {initUiPatch} from './uiPatch.js';
 import {initDustParticles} from './dustParticles.js';
 
-// HOTFIX: use known loading actions.js while actionsClean is debugged.
-document.getElementById('appRoot').innerHTML=shell();
-initDustParticles();
-bindActions();
-initFirebaseAuth();
-initUiPatch();
-
 // DEV MODE ON BY DEFAULT.
-// Reminder before real tests: switch chatStore.js back to Firestore backend.
-window.UCMU={version:'v158-hotfix-working-actions-dev-local',note:'HOTFIX: app loads with known actions.js. localStorage backend ON. actionsClean disabled until debugged.'};
+// Put diagnostics first so window.UCMU exists even if boot fails later.
+window.UCMU={version:'v159-hotfix-boot-diagnostics',note:'HOTFIX: app loads with known actions.js. localStorage backend ON. actionsClean disabled until debugged.'};
+
+try{
+  document.getElementById('appRoot').innerHTML=shell();
+  initDustParticles();
+  bindActions();
+  initFirebaseAuth();
+  initUiPatch();
+}catch(err){
+  console.error('[UCMU BOOT ERROR]',err);
+  window.UCMU.bootError=String(err?.stack||err?.message||err);
+}
