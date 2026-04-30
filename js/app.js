@@ -6,8 +6,9 @@ import {initDustParticles} from './dustParticles.js';
 import {initContactsPatch} from './contactsPatch.js';
 import {initMemberProfile} from './memberProfile.js';
 import {initLeftPanelUi} from './leftPanelUi.js';
+import {initUi162Refine} from './ui162Refine.js';
 
-window.UCMU={version:'v161-restored-visual-bootstrap',note:'DEV MODE ON: visual bootstrap restored. localStorage backend ON. Clean rewrite should be done on separate branch.'};
+window.UCMU={version:'v162-ui-refine-pass',note:'DEV MODE ON: visual bootstrap restored. v162 UI refinements loaded. localStorage backend ON.'};
 
 try{
   document.getElementById('appRoot').innerHTML=shell();
@@ -18,6 +19,7 @@ try{
   initLeftPanelUi();
   initContactsPatch();
   initMemberProfile();
+  initUi162Refine();
 }catch(err){
   console.error('[UCMU BOOT ERROR]',err);
   window.UCMU.bootError=String(err?.stack||err?.message||err);
