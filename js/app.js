@@ -4,6 +4,7 @@ import {initFirebaseAuth} from './authFirebase.js';
 import {initUiPatch} from './uiPatch.js';
 import {initDustParticles} from './dustParticles.js';
 import {initContactsPatch} from './contactsPatch.js';
+import {initV145Patch} from './v145Patch.js';
 
 document.getElementById('appRoot').innerHTML=shell();
 initDustParticles();
@@ -11,4 +12,5 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-window.UCMU={version:'v144-modal-sweep-restore-placement',note:'undo restores message to original index, clear cascade animation lock, smoother 1s modal intro with red diagonal border sweep'};
+initV145Patch();
+window.UCMU={version:'v145-safe-undo-clear-modal-patch',note:'safe patch: undo restores original message index, clear cascade stays visible without return, modal intro softened; drag untouched'};
