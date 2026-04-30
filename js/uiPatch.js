@@ -1,8 +1,17 @@
 import {state,activeMessages} from './state.js';
 import {renderFeed} from './render.js';
+import {isChatStoreReady,updateStoreReaction} from './chatStore.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+function myReactionName(){
+  return state.currentUser?.uid || state.user || 'me';
+}
+
+function reactionDisplayName(){
+  return state.currentUser?.displayName || state.user || 'Operator';
+}
 
 function normalizeReactions(m){
   if(!m.reactions) m.reactions = {};
@@ -26,12 +35,17 @@ function openProfile(name='Профиль'){
 function closeProfile(){ $('#profileModal')?.classList.add('hidden'); }
 function hideReactionUsers(){ $('#reactionUsers')?.classList.add('hidden'); }
 
+function reactionLabel(userKey){
+  if(userKey === myReactionName()) return reactionDisplayName();
+  return userKey;
+}
+
 function openReactionUsers(m, emoji, x, y){
   const pop = $('#reactionUsers');
   if(!pop) return;
   const users = normalizeReactions(m)[emoji] || [];
   $('#reactionUsersTitle').textContent = `${emoji} ${users.length || ''}`.trim();
-  $('#reactionUsersList').innerHTML = users.map(u => `<button class="reactionUser" data-profile="${esc(u)}"><div class="ava s"></div><span>${esc(u)}</span></button>`).join('') || '<div class="reactionEmpty">Нет реакций</div>';
+  $('#reactionUsersList').innerHTML = users.map(u => `<button class="reactionUser" data-profile="${esc(reactionLabel(u))}"><div class="ava s"></div><span>${esc(reactionLabel(u))}</span></button>`).join('') || '<div class="reactionEmpty">Нет реакций</div>';
   pop.style.left = Math.min(x, window.innerWidth - 250) + 'px';
   pop.style.top = Math.min(y, window.innerHeight - 220) + 'px';
   pop.classList.remove('hidden');
@@ -39,35 +53,46 @@ function openReactionUsers(m, emoji, x, y){
 
 function setOnlyMyReaction(m, emoji){
   const reactions = normalizeReactions(m);
-  const already = (reactions[emoji] || []).includes(state.user);
+  const me = myReactionName();
+  const already = (reactions[emoji] || []).includes(me);
   Object.keys(reactions).forEach(key => {
-    reactions[key] = reactions[key].filter(u => u !== state.user);
+    reactions[key] = reactions[key].filter(u => u !== me);
     if(!reactions[key].length) delete reactions[key];
   });
   if(!already){
     reactions[emoji] ||= [];
-    reactions[emoji].push(state.user);
+    reactions[emoji].push(me);
     m.lastReactEmoji = emoji;
     window.__ucmuLastReact = {msgId:m.id, emoji, t:Date.now()};
   } else {
     delete m.lastReactEmoji;
     window.__ucmuLastReact = {msgId:m.id, emoji:null, t:Date.now()};
   }
+  return reactions;
 }
 
-function reactionFromPicker(emoji){
+async function saveReaction(m, reactions){
+  if(isChatStoreReady()){
+    try{ await updateStoreReaction(m.id, reactions); }
+    catch(err){ console.error('update reaction failed', err); }
+  }
+}
+
+async function reactionFromPicker(emoji){
   const m = activeMessages().find(x => x.id === state.selectedMessageId);
   if(!m) return;
-  setOnlyMyReaction(m, emoji);
+  const reactions = setOnlyMyReaction(m, emoji);
   renderFeed();
+  await saveReaction(m, reactions);
 }
 
-function reactionFromChip(chip){
+async function reactionFromChip(chip){
   const msg = chip.closest('[data-msg-id]');
   const m = activeMessages().find(x => x.id === msg?.dataset.msgId);
   if(!m) return;
-  setOnlyMyReaction(m, chip.dataset.emoji);
+  const reactions = setOnlyMyReaction(m, chip.dataset.emoji);
   renderFeed();
+  await saveReaction(m, reactions);
 }
 
 export function initUiPatch(){
