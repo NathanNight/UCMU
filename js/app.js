@@ -16,6 +16,6 @@ initContactsPatch();
 initMemberProfile();
 initLeftPanelUi();
 
-// Clean base: no layered v145-v152 runtime patches.
-// Keep feature work inside the main modules only: actions/render/chatStore/contactsPatch/memberProfile/leftPanelUi.
-window.UCMU={version:'v153-clean-base-left-panel-contacts',note:'stable base; left panel search/buttons/contacts module loaded; message spawn untouched'};
+// DEV MODE ON BY DEFAULT.
+// Reminder before real tests: switch chatStore.js back to Firestore backend.
+window.UCMU={version:'v154-dev-localstorage-default',note:'DEV MODE ON: chat/messages use localStorage, Firestore chat reads/writes disabled. Before real tests, switch back to Firebase/Firestore backend.'};
