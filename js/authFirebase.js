@@ -1,6 +1,7 @@
 import {state} from './state.js';
 import {$} from './dom.js';
 import {getFirebase, isFirebaseReady} from './firebase.js';
+import {initChatStore} from './chatStore.js';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -94,7 +95,7 @@ function setMode(next){
     : 'Нужен invite code. Пароль минимум 8 символов.');
 }
 
-function openApp(profile){
+async function openApp(profile){
   const name = profile?.displayName || profile?.username || profile?.email || 'Operator';
   state.user = name;
   state.currentUser = profile;
@@ -103,6 +104,7 @@ function openApp(profile){
   localStorage.setItem(USER_KEY, JSON.stringify(profile));
   document.body.classList.add('ucmu-unlocked');
   requestAnimationFrame(() => $('#auth')?.classList.add('hidden'));
+  try{ await initChatStore(); }catch(err){ console.error('initChatStore failed', err); }
 }
 
 function showRemember(profile){
@@ -168,7 +170,7 @@ async function submitAuth(e){
       };
       await setDoc(doc(db, 'users', cred.user.uid), profile);
       await updateDoc(inviteRef, {usedBy: cred.user.uid, usedAt: serverTimestamp()});
-      openApp({...profile, createdAt:null, lastSeenAt:null});
+      await openApp({...profile, createdAt:null, lastSeenAt:null});
       return;
     }
 
@@ -179,7 +181,7 @@ async function submitAuth(e){
       return showError('Аккаунт отключён или профиль не найден.');
     }
     await updateDoc(doc(db, 'users', cred.user.uid), {lastSeenAt: serverTimestamp()}).catch(()=>{});
-    openApp(profile);
+    await openApp(profile);
   }catch(err){
     console.error(err);
     const code = err?.code || '';
@@ -203,7 +205,7 @@ export async function initFirebaseAuth(){
       const user = firebaseCache.auth.currentUser;
       if(!user) return setMode('login');
       const profile = await loadProfile(user.uid);
-      if(profile) openApp(profile);
+      if(profile) await openApp(profile);
     }catch{ setMode('login'); }
   });
   $('#switchBtn')?.addEventListener('click', async()=>{
