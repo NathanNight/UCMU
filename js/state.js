@@ -1,6 +1,6 @@
-import {seedChats,seedMessages,seedPeople} from './data.js';
+import {seedChats} from './data.js';
 export const state={
-  user:'Director',activeChat:'general',chats:structuredClone(seedChats),folders:[],people:[...seedPeople],messages:{general:structuredClone(seedMessages)},
+  user:'Operator',activeChat:'general',chats:structuredClone(seedChats),folders:[],people:[],messages:{},
   selectedMessageId:null,selectedChatId:null,selectedFolderId:null,replyTo:null,editingId:null,pendingDelete:null,undoTimer:null,drag:null
 };
 export function uid(prefix='id'){return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`}
