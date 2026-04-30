@@ -4,8 +4,7 @@ import {initFirebaseAuth} from './authFirebase.js';
 import {initUiPatch} from './uiPatch.js';
 import {initDustParticles} from './dustParticles.js';
 import {initContactsPatch} from './contactsPatch.js';
-import {initV145Patch} from './v145Patch.js';
-import {initV146Patch} from './v146Patch.js';
+import {initV147Patch} from './v147Patch.js';
 
 document.getElementById('appRoot').innerHTML=shell();
 initDustParticles();
@@ -13,6 +12,5 @@ bindActions();
 initFirebaseAuth();
 initUiPatch();
 initContactsPatch();
-initV145Patch();
-initV146Patch();
-window.UCMU={version:'v146-clear-leave-members-search',note:'visible clear cascade, border sweep, leave chat behavior, real members panel, member card actions, message search navigation; drag untouched'};
+initV147Patch();
+window.UCMU={version:'v147-stability-delete-clear-members',note:'single stable patch: v145/v146 stacked handlers disabled, reliable red clear animation, chat leave animation, safe members render, search; drag untouched'};
