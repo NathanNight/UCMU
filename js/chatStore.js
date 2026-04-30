@@ -35,6 +35,8 @@ function toast(text){
   el._t = setTimeout(()=>el.remove(), 5200);
 }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 function messageTime(data){
   const d = data.createdAt?.toDate?.();
   if(!d) return 'сейчас';
@@ -62,7 +64,7 @@ function mapMessage(snap){
   if(d.deletedForAll === true) return null;
   const deletedFor = d.deletedFor || [];
   if(currentUid() && deletedFor.includes(currentUid())) return null;
-  return {id:snap.id,author:d.authorName||'User',authorId:d.authorId,color:d.authorId===currentUid()?'red':'green',type:d.type||'text',text:d.text||'',file:d.file||'',size:d.size||'',time:messageTime(d),mine:d.authorId===currentUid(),reactions:d.reactions||{},reply:d.replyTo||null};
+  return {id:snap.id,author:d.authorName||'User',authorId:d.authorId,color:d.authorId===currentUid()?'red':'green',type:d.type||'text',text:d.text||'',file:d.file||'',size:d.size||'',time:messageTime(d),mine:d.authorId===currentUid(),reactions:d.reactions||{},reply:d.replyTo||null,deletingForAll:d.deletingForAll===true};
 }
 
 async function ensureGeneralChat(){
@@ -94,12 +96,8 @@ export async function initChatStore(){
   state.activeChat = null;
   renderChats();
   renderFeed();
-  try{
-    await ensureGeneralChat();
-  }catch(err){
-    console.error('[UCMU] ensureGeneralChat failed', err);
-    toast('Firestore: не удалось подключить общий чат.\n' + (err.message || err.code || err));
-  }
+  try{ await ensureGeneralChat(); }
+  catch(err){ console.error('[UCMU] ensureGeneralChat failed', err); toast('Firestore: не удалось подключить общий чат.\n' + (err.message || err.code || err)); }
   ready = true;
   subscribeChats();
 }
@@ -119,10 +117,7 @@ export function subscribeChats(){
     renderChats();
     if(state.activeChat) subscribeMessages(state.activeChat);
     else { messagesUnsub?.(); state.messages = {}; renderFeed(); }
-  }, err => {
-    console.error('[UCMU] subscribeChats failed', err);
-    toast('Firestore chats error:\n' + (err.message || err.code || err));
-  });
+  }, err => { console.error('[UCMU] subscribeChats failed', err); toast('Firestore chats error:\n' + (err.message || err.code || err)); });
 }
 
 export function subscribeMessages(chatId){
@@ -134,23 +129,14 @@ export function subscribeMessages(chatId){
     console.log('[UCMU] messages snapshot', chatId, snap.size);
     state.messages[chatId] = snap.docs.map(mapMessage).filter(Boolean);
     renderFeed();
-  }, err => {
-    console.error('[UCMU] subscribeMessages failed', err);
-    toast('Firestore messages error for '+chatId+':\n' + (err.message || err.code || err));
-  });
+  }, err => { console.error('[UCMU] subscribeMessages failed', err); toast('Firestore messages error for '+chatId+':\n' + (err.message || err.code || err)); });
 }
 
 export async function sendStoreMessage({type='text', text='', file='', size='', replyTo=null}={}){
-  if(!isChatStoreReady()){
-    toast('Firestore не готов: сообщение ушло только в локальный UI.');
-    return false;
-  }
+  if(!isChatStoreReady()){ toast('Firestore не готов: сообщение ушло только в локальный UI.'); return false; }
   const chatId = state.activeChat;
-  if(!chatId){
-    toast('Нет activeChat — некуда отправлять.');
-    return false;
-  }
-  const payload = {authorId:currentUid(),authorName:displayName(),type,text:text||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp(),deletedFor:[],deletedForAll:false,reactions:{}};
+  if(!chatId){ toast('Нет activeChat — некуда отправлять.'); return false; }
+  const payload = {authorId:currentUid(),authorName:displayName(),type,text:text||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp(),deletedFor:[],deletedForAll:false,deletingForAll:false,reactions:{}};
   if(file) payload.file = file;
   if(size) payload.size = size;
   if(replyTo) payload.replyTo = replyTo;
@@ -161,11 +147,7 @@ export async function sendStoreMessage({type='text', text='', file='', size='', 
     await updateDoc(doc(db, 'chats', chatId), {lastText:type==='sticker'?`${displayName()}: ${text}`:`${displayName()}: ${text||file||'сообщение'}`,updatedAt:serverTimestamp()});
     toast('Firestore OK: ' + ref.path);
     return true;
-  }catch(err){
-    console.error('[UCMU] send message failed', err);
-    toast('Firestore send error:\nchatId: '+chatId+'\n'+(err.message || err.code || err));
-    throw err;
-  }
+  }catch(err){ console.error('[UCMU] send message failed', err); toast('Firestore send error:\nchatId: '+chatId+'\n'+(err.message || err.code || err)); throw err; }
 }
 
 export async function updateStoreReaction(messageId, reactions){
@@ -182,7 +164,10 @@ export async function deleteStoreMessageForMe(messageId){
 
 export async function deleteStoreMessageForAll(messageId){
   if(!isChatStoreReady() || !state.activeChat || !messageId) return false;
-  await updateDoc(doc(db, 'chats', state.activeChat, 'messages', messageId), {text:'',type:'text',deletedForAll:true,updatedAt:serverTimestamp()});
+  const ref = doc(db, 'chats', state.activeChat, 'messages', messageId);
+  await updateDoc(ref, {deletingForAll:true,updatedAt:serverTimestamp()});
+  await sleep(940);
+  await updateDoc(ref, {text:'',type:'text',deletingForAll:false,deletedForAll:true,updatedAt:serverTimestamp()});
   return true;
 }
 
