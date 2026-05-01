@@ -1,0 +1,26 @@
+{
+  "name": "U.C.M.U Chat",
+  "short_name": "U.C.M.U",
+  "description": "U.C.M.U secure communications chat",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#020303",
+  "theme_color": "#020303",
+  "icons": [
+    {
+      "src": "../assets/logo.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../assets/logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
