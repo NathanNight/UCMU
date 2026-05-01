@@ -43,11 +43,12 @@ function profileFromLocalOrUser(user){
     const saved = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
     if(saved?.uid === user?.uid) return saved;
   }catch{}
+  const username = normalizeUsername(val('username'));
   return {
     uid: user?.uid || 'dev_user',
     email: user?.email || val('email').toLowerCase(),
-    displayName: val('displayName') || user?.displayName || val('username') || user?.email || 'Operator',
-    username: normalizeUsername(val('username')),
+    displayName: username || user?.displayName || user?.email || 'Operator',
+    username,
     role: 'member',
     disabled: false,
     devProfileFallback: true
@@ -98,7 +99,7 @@ function bindPasswordEyes(){
 }
 
 function bindAutofillStabilizer(){
-  const ids = ['email','password','password2','displayName','username','inviteCode'];
+  const ids = ['email','password','password2','username','inviteCode'];
   const ping = () => {
     ids.forEach(id=>{
       const el = $('#'+id);
@@ -127,7 +128,7 @@ function setMode(next){
   setText('authAction', mode === 'login' ? 'ВОЙТИ' : 'ЗАРЕГИСТРИРОВАТЬСЯ');
   setText('authHint', mode === 'login'
     ? 'Вход через Firebase Auth. Доступ только для зарегистрированных пользователей.'
-    : 'Dev mode: если Firestore rules не дадут записать профиль, вход всё равно откроется локально.');
+    : 'Username = имя в чате. Dev mode: если Firestore rules не дадут записать профиль, вход всё равно откроется локально.');
 }
 
 async function openApp(profile){
@@ -186,7 +187,7 @@ async function validateInvite(code){
 
 async function submitAuth(e){
   e?.preventDefault();
-  await sleep(120); // let browser autofill / suggested email settle before reading fields
+  await sleep(120);
   if(!isFirebaseReady()) return showError('Firebase ещё не настроен. Заполни js/firebaseConfig.js.');
 
   const email = val('email').toLowerCase();
@@ -199,10 +200,9 @@ async function submitAuth(e){
     const {auth, db} = firebaseCache;
 
     if(mode === 'register'){
-      const displayName = val('displayName');
       const username = normalizeUsername(val('username'));
+      const displayName = username;
       const inviteCode = val('inviteCode');
-      if(!displayName) return showError('Введи позывной.');
       if(!username || username.length < 3) return showError('Username минимум 3 символа.');
       if(pass.length < 8) return showError('Пароль минимум 8 символов.');
       if(pass !== ($('#password2')?.value || '')) return showError('Пароли не совпадают.');
@@ -256,8 +256,8 @@ export async function initFirebaseAuth(){
   window.addEventListener('resize', scaleAuth, {passive:true});
   bindPasswordEyes();
   bindAutofillStabilizer();
-  $('#loginTab')?.addEventListener('click',()=>setMode('login'));
-  $('#registerTab')?.addEventListener('click',()=>setMode('register'));
+  $('#loginTab')?.addEventListener('click', e=>{e.preventDefault();setMode('login')});
+  $('#registerTab')?.addEventListener('click', e=>{e.preventDefault();e.stopPropagation();setMode('register')});
   $('#authForm')?.addEventListener('submit', submitAuth);
   $('#authAction')?.addEventListener('click', e=>{
     e.preventDefault();
@@ -276,7 +276,7 @@ export async function initFirebaseAuth(){
     try{ firebaseCache ||= await getFirebase(); await signOut(firebaseCache.auth); }catch{}
     localStorage.removeItem(USER_KEY);
     setMode('login');
-    ['email','password','password2','displayName','username','inviteCode'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
+    ['email','password','password2','username','inviteCode'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
   });
   document.addEventListener('keydown', e=>{
     if(e.key !== 'Enter') return;
