@@ -29,12 +29,15 @@ function currentChat(){return state.chats.find(c=>c.id===state.activeChat)||stat
 function now(){return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
 function pulseHead(){const h=$('.head');if(!h)return;h.classList.remove('chatSwitch');void h.offsetWidth;h.classList.add('chatSwitch');setTimeout(()=>h.classList.remove('chatSwitch'),520)}
 function pulseAuthFields(){
-  $$('#authForm .auth-input').forEach((el,i)=>{
-    el.classList.remove('fieldPulse');
-    el.style.animationDelay=(i*85)+'ms';
-    void el.offsetWidth;
-    el.classList.add('fieldPulse');
-    setTimeout(()=>{el.classList.remove('fieldPulse');el.style.animationDelay=''},720+i*85);
+  const fields=$$('#authForm .auth-input');
+  fields.forEach(el=>el.classList.remove('fieldPulse'));
+  fields.forEach((el,i)=>{
+    setTimeout(()=>{
+      el.classList.remove('fieldPulse');
+      void el.offsetWidth;
+      el.classList.add('fieldPulse');
+      setTimeout(()=>el.classList.remove('fieldPulse'),520);
+    },i*115);
   });
 }
 
@@ -54,7 +57,7 @@ function runAuthIntro(){
   setTimeout(async()=>{await typeText($('#authTitle'),'CHAT',44);typeText($('#authSubtitle'),'SECURE COMMUNICATIONS',20)},820);
   setTimeout(()=>$('#authHolo')?.classList.add('built','built-static'),1400);
   setTimeout(()=>$('#authHolo')?.classList.add('built-dynamic'),1650);
-  setTimeout(()=>$('#authForm')?.classList.add('built'),1780);
+  setTimeout(()=>{$('#authForm')?.classList.add('built');setTimeout(pulseAuthFields,120)},1780);
   setTimeout(()=>auth?.classList.add('red-ready'),2080);
   setTimeout(()=>auth?.classList.add('authStable'),2850);
 }
@@ -81,7 +84,7 @@ function switchAuthMode(mode){
   const old=form.querySelector('.form-grid'); const err=form.querySelector('.auth-error'); const act=form.querySelector('.auth-action'); const hint=form.querySelector('.auth-hint');
   const temp=document.createElement('div'); temp.innerHTML=authFields();
   old?.replaceWith(temp.querySelector('.form-grid')); err?.replaceWith(temp.querySelector('.auth-error')); act?.replaceWith(temp.querySelector('.auth-action')); hint?.replaceWith(temp.querySelector('.auth-hint'));
-  form.classList.add('built'); bindAuthForm(); pulseAuthFields();
+  form.classList.add('built'); bindAuthForm(); setTimeout(pulseAuthFields,40);
 }
 function renderAuth(){
   app.innerHTML = `
@@ -121,5 +124,5 @@ function renderChats(){const q=$('#chatSearch')?.value.trim().toLowerCase()||'';
 function renderFeed(){const c=currentChat();if(!c)return;$('#headTitle').textContent=c.title;$('#headSub').textContent=c.desc||'SECURE COMMUNICATIONS';const msgs=state.messages[c.id]||[];$('#feed').innerHTML=msgs.map(m=>`<div class="msg ${m.uid===state.user?.uid?'mine':''} ${m.id===state.lastNewMessageId?'fresh':''}" data-msg="${m.id}"><div class="bubble"><div class="meta">${esc(m.name||'user')} · ${esc(m.timeText||'')}</div><div class="txt">${esc(m.text)}</div></div></div>`).join('')||'<div class="hint">Сообщений пока нет</div>';$('#feed').scrollTop=$('#feed').scrollHeight;$$('[data-msg]').forEach(el=>el.oncontextmenu=e=>{e.preventDefault();state.deleteTarget=el.dataset.msg;$('#deleteModal').classList.remove('hidden')});$$('#deleteModal [data-del]').forEach(b=>b.onclick=()=>deleteMessage(b.dataset.del));state.lastNewMessageId=null}
 function sendMessage(forceText){const input=$('#msgInput');const text=(forceText||input.value).trim();if(!text)return;const c=currentChat();const msg={id:uid('m'),uid:state.user.uid,name:state.user.displayName||state.user.username||'user',text,time:Date.now(),timeText:now()};state.messages[c.id]||=[];state.messages[c.id].push(msg);state.lastNewMessageId=msg.id;c.last=(msg.name+': '+text).slice(0,80);input.value='';$('#sendBtn').textContent='🎙';$('#sendBtn').classList.remove('ready');save();renderChats();renderFeed()}
 function deleteMessage(scope){const id=state.deleteTarget,c=currentChat();const el=$(`[data-msg="${CSS.escape(id)}"]`);const finish=()=>{state.messages[c.id]=(state.messages[c.id]||[]).filter(m=>m.id!==id);state.deleteTarget=null;$('#deleteModal').classList.add('hidden');save();renderFeed()};if(el){el.classList.add('deleting');setTimeout(finish,520)}else finish()}
-async function boot(){window.UCMU_CLEAN={version:'clean-v5-auth-rings-field-pulse',devLocalMessages:DEV_LOCAL_MESSAGES};load();try{const saved=JSON.parse(localStorage.getItem(LS_USER)||'null');if(saved){state.user=saved;renderApp();return}if(firebaseConfigReady){const{auth,db}=await getFb();onAuthStateChanged(auth,async user=>{if(user&&!state.user){state.user=await loadProfile(db,user);localStorage.setItem(LS_USER,JSON.stringify(state.user));renderApp()}})}}catch(err){console.warn('auth boot fallback',err)}if(!state.user)renderAuth()}
+async function boot(){window.UCMU_CLEAN={version:'clean-v6-visible-field-cascade',devLocalMessages:DEV_LOCAL_MESSAGES};load();try{const saved=JSON.parse(localStorage.getItem(LS_USER)||'null');if(saved){state.user=saved;renderApp();return}if(firebaseConfigReady){const{auth,db}=await getFb();onAuthStateChanged(auth,async user=>{if(user&&!state.user){state.user=await loadProfile(db,user);localStorage.setItem(LS_USER,JSON.stringify(state.user));renderApp()}})}}catch(err){console.warn('auth boot fallback',err)}if(!state.user)renderAuth()}
 boot();
