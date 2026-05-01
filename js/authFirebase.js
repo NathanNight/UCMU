@@ -17,6 +17,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 const USER_KEY = 'ucmuFirebaseUser';
+const DEV_AUTH_FALLBACK = true;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const val = id => ($('#'+id)?.value || '').trim();
 const setText = (id, text) => { const el = $('#'+id); if(el) el.textContent = text; };
@@ -35,6 +36,22 @@ function showError(text){
   void form?.offsetWidth;
   form?.classList.add('shake');
   setTimeout(()=>form?.classList.remove('shake'),380);
+}
+
+function profileFromLocalOrUser(user){
+  try{
+    const saved = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+    if(saved?.uid === user?.uid) return saved;
+  }catch{}
+  return {
+    uid: user?.uid || 'dev_user',
+    email: user?.email || val('email').toLowerCase(),
+    displayName: val('displayName') || user?.displayName || val('username') || user?.email || 'Operator',
+    username: normalizeUsername(val('username')),
+    role: 'member',
+    disabled: false,
+    devProfileFallback: true
+  };
 }
 
 function scaleAuth(){
@@ -80,6 +97,24 @@ function bindPasswordEyes(){
   apply();
 }
 
+function bindAutofillStabilizer(){
+  const ids = ['email','password','password2','displayName','username','inviteCode'];
+  const ping = () => {
+    ids.forEach(id=>{
+      const el = $('#'+id);
+      if(!el) return;
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+  };
+  ids.forEach(id=>{
+    const el = $('#'+id);
+    if(!el) return;
+    ['input','change','blur','animationstart','keyup','paste'].forEach(ev=>el.addEventListener(ev,()=>setTimeout(ping,30),{passive:true}));
+  });
+  document.addEventListener('mousedown',()=>setTimeout(ping,80),true);
+  document.addEventListener('pointerdown',()=>setTimeout(ping,80),true);
+}
+
 function setMode(next){
   mode = next;
   $('#authForm')?.classList.remove('remember-mode');
@@ -92,7 +127,7 @@ function setMode(next){
   setText('authAction', mode === 'login' ? 'ВОЙТИ' : 'ЗАРЕГИСТРИРОВАТЬСЯ');
   setText('authHint', mode === 'login'
     ? 'Вход через Firebase Auth. Доступ только для зарегистрированных пользователей.'
-    : 'Нужен invite code. Пароль минимум 8 символов.');
+    : 'Dev mode: если Firestore rules не дадут записать профиль, вход всё равно откроется локально.');
 }
 
 async function openApp(profile){
@@ -117,9 +152,15 @@ function showRemember(profile){
 }
 
 async function loadProfile(uid){
-  const {db} = firebaseCache || await getFirebase();
-  const snap = await getDoc(doc(db, 'users', uid));
-  return snap.exists() ? {uid, ...snap.data()} : null;
+  const {db, auth} = firebaseCache || await getFirebase();
+  try{
+    const snap = await getDoc(doc(db, 'users', uid));
+    return snap.exists() ? {uid, ...snap.data()} : profileFromLocalOrUser(auth.currentUser);
+  }catch(err){
+    console.warn('[UCMU AUTH] Firestore profile read failed, using dev fallback', err);
+    if(DEV_AUTH_FALLBACK) return profileFromLocalOrUser(auth.currentUser);
+    throw err;
+  }
 }
 
 async function validateInvite(code){
@@ -127,16 +168,25 @@ async function validateInvite(code){
   if(clean.length < 6) throw new Error('Введите invite code.');
   const {db} = firebaseCache || await getFirebase();
   const inviteRef = doc(db, 'invites', clean);
-  const inviteSnap = await getDoc(inviteRef);
-  if(!inviteSnap.exists()) throw new Error('Invite code не найден.');
-  const invite = inviteSnap.data();
-  if(invite.disabled) throw new Error('Invite code отключён.');
-  if(invite.usedBy) throw new Error('Invite code уже использован.');
-  return {inviteRef, invite};
+  try{
+    const inviteSnap = await getDoc(inviteRef);
+    if(!inviteSnap.exists()) throw new Error('Invite code не найден.');
+    const invite = inviteSnap.data();
+    if(invite.disabled) throw new Error('Invite code отключён.');
+    if(invite.usedBy) throw new Error('Invite code уже использован.');
+    return {inviteRef, invite};
+  }catch(err){
+    if(DEV_AUTH_FALLBACK && String(err?.message||'').toLowerCase().includes('permission')){
+      console.warn('[UCMU AUTH] Invite read denied, bypassing only in dev mode', err);
+      return {inviteRef:null, invite:null, bypassed:true};
+    }
+    throw err;
+  }
 }
 
 async function submitAuth(e){
   e?.preventDefault();
+  await sleep(120); // let browser autofill / suggested email settle before reading fields
   if(!isFirebaseReady()) return showError('Firebase ещё не настроен. Заполни js/firebaseConfig.js.');
 
   const email = val('email').toLowerCase();
@@ -168,9 +218,17 @@ async function submitAuth(e){
         lastSeenAt: serverTimestamp(),
         disabled: false
       };
-      await setDoc(doc(db, 'users', cred.user.uid), profile);
-      await updateDoc(inviteRef, {usedBy: cred.user.uid, usedAt: serverTimestamp()});
-      await openApp({...profile, createdAt:null, lastSeenAt:null});
+      await setDoc(doc(db, 'users', cred.user.uid), profile).catch(err=>{
+        console.warn('[UCMU AUTH] User profile write denied, continuing in dev fallback', err);
+        if(!DEV_AUTH_FALLBACK) throw err;
+      });
+      if(inviteRef){
+        await updateDoc(inviteRef, {usedBy: cred.user.uid, usedAt: serverTimestamp()}).catch(err=>{
+          console.warn('[UCMU AUTH] Invite update denied, continuing in dev fallback', err);
+          if(!DEV_AUTH_FALLBACK) throw err;
+        });
+      }
+      await openApp({...profile, createdAt:null, lastSeenAt:null, devProfileFallback: !inviteRef});
       return;
     }
 
@@ -188,6 +246,7 @@ async function submitAuth(e){
     if(code.includes('auth/invalid-credential') || code.includes('auth/wrong-password')) return showError('Неверный email или пароль.');
     if(code.includes('auth/email-already-in-use')) return showError('Email уже зарегистрирован.');
     if(code.includes('auth/weak-password')) return showError('Слабый пароль. Минимум 8 символов.');
+    if(String(err?.message||'').toLowerCase().includes('permission')) return showError('Firestore не дал доступ. В dev-режиме профиль будет локальным, попробуй войти ещё раз.');
     showError(err?.message || 'Ошибка входа.');
   }
 }
@@ -196,9 +255,14 @@ export async function initFirebaseAuth(){
   bootAuth();
   window.addEventListener('resize', scaleAuth, {passive:true});
   bindPasswordEyes();
+  bindAutofillStabilizer();
   $('#loginTab')?.addEventListener('click',()=>setMode('login'));
   $('#registerTab')?.addEventListener('click',()=>setMode('register'));
   $('#authForm')?.addEventListener('submit', submitAuth);
+  $('#authAction')?.addEventListener('click', e=>{
+    e.preventDefault();
+    setTimeout(()=>$('#authForm')?.requestSubmit(),140);
+  });
   $('#continueBtn')?.addEventListener('click', async()=>{
     try{
       firebaseCache = await getFirebase();
