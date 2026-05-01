@@ -10,27 +10,28 @@
   <meta name="apple-mobile-web-app-title" content="U.C.M.U">
   <meta name="application-name" content="U.C.M.U">
   <meta name="format-detection" content="telephone=no">
-  <title>U.C.M.U Chat Clean v13 Composer</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=13">
+  <title>U.C.M.U Chat Clean v14 Capacitor</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=14">
   <link rel="icon" href="../assets/logo.webp" type="image/webp">
   <link rel="apple-touch-icon" href="../assets/logo.webp">
-  <link rel="stylesheet" href="./styles.css?v=13">
-  <link rel="stylesheet" href="./intro.css?v=13">
-  <link rel="stylesheet" href="./intro-fixes.css?v=13">
-  <link rel="stylesheet" href="./keyboard.css?v=13">
-  <link rel="stylesheet" href="./drag.css?v=13">
-  <link rel="stylesheet" href="./composer-fix.css?v=13">
+  <link rel="stylesheet" href="./styles.css?v=14">
+  <link rel="stylesheet" href="./intro.css?v=14">
+  <link rel="stylesheet" href="./intro-fixes.css?v=14">
+  <link rel="stylesheet" href="./keyboard.css?v=14">
+  <link rel="stylesheet" href="./drag.css?v=14">
+  <link rel="stylesheet" href="./composer-fix.css?v=14">
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="./app.js?v=13"></script>
-  <script type="module" src="./keyboard.js?v=13"></script>
-  <script type="module" src="./drag.js?v=13"></script>
-  <script type="module" src="./composer-fix.js?v=13"></script>
+  <script type="module" src="./app.js?v=14"></script>
+  <script type="module" src="./keyboard.js?v=14"></script>
+  <script type="module" src="./drag.js?v=14"></script>
+  <script type="module" src="./composer-fix.js?v=14"></script>
+  <script type="module" src="./capacitor-mobile.js?v=14"></script>
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && !window.Capacitor) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=13').catch(console.warn);
+        navigator.serviceWorker.register('./sw.js?v=14').catch(console.warn);
       });
     }
   </script>
