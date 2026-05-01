@@ -17,6 +17,7 @@ let state = {
   mode:'login',
   user:null,
   activeChat:'general',
+  lastNewMessageId:null,
   chats:[
     {id:'general',title:'UCMU',desc:'Общий чат',pinned:true,last:'Локальный dev-режим',color:'#d71920'},
     {id:'ops',title:'Оперативный',desc:'Рабочие сообщения',last:'Нет сообщений',color:'#d71920'}
@@ -34,6 +35,7 @@ function load(){try{const d=JSON.parse(localStorage.getItem(LS_DATA)||'null');if
 function normalizeUsername(v){return String(v||'').trim().toLowerCase().replace(/^@/,'').replace(/[^a-z0-9_.а-яё-]/gi,'');}
 function currentChat(){return state.chats.find(c=>c.id===state.activeChat)||state.chats[0];}
 function now(){return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
+function pulseHead(){const h=$('.head');if(!h)return;h.classList.remove('chatSwitch');void h.offsetWidth;h.classList.add('chatSwitch');setTimeout(()=>h.classList.remove('chatSwitch'),520)}
 
 async function getFb(){
   if(fb) return fb;
@@ -151,7 +153,7 @@ function bindApp(){
   $('#logoutBtn').onclick=async()=>{try{const {auth}=await getFb();await signOut(auth);}catch{}localStorage.removeItem(LS_USER);state.user=null;renderAuth();};
   $('#contactsBtn').onclick=()=>$('#contactsPanel').classList.toggle('hidden');
   $('#stickerBtn').onclick=()=>$('#stickersPanel').classList.toggle('hidden');
-  $('#newChatBtn').onclick=()=>{const title=prompt('Название чата');if(!title)return;const id=uid('chat');state.chats.unshift({id,title,desc:'Локальный чат',last:'Нет сообщений',color:'#d71920'});state.messages[id]=[];state.activeChat=id;save();renderChats();renderFeed();};
+  $('#newChatBtn').onclick=()=>{const title=prompt('Название чата');if(!title)return;const id=uid('chat');state.chats.unshift({id,title,desc:'Локальный чат',last:'Нет сообщений',color:'#d71920'});state.messages[id]=[];state.activeChat=id;save();renderChats();renderFeed();pulseHead();};
   $('#msgInput').oninput=()=>{const has=$('#msgInput').value.trim();$('#sendBtn').textContent=has?'➤':'🎙';$('#sendBtn').classList.toggle('ready',!!has);};
   $('#msgInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}};
   $('#sendBtn').onclick=sendMessage;
@@ -162,32 +164,37 @@ function bindApp(){
 function renderChats(){
   const q=$('#chatSearch')?.value.trim().toLowerCase()||'';
   const list=$('#chatList');
-  list.innerHTML=state.chats.filter(c=>!q||c.title.toLowerCase().includes(q)).map(c=>`
-    <button class="chatItem ${c.id===state.activeChat?'active':''}" data-chat="${c.id}"><div class="avatar">${esc(c.title[0]||'#')}</div><div><div class="chatTitle">${esc(c.title)}</div><div class="chatLast">${esc(c.last||'')}</div></div>${c.pinned?'<div class="pinDot"></div>':''}</button>`).join('');
-  $$('[data-chat]').forEach(b=>b.onclick=()=>{state.activeChat=b.dataset.chat;save();renderChats();renderFeed();$('#shell').classList.add('mobile-chat');});
+  list.innerHTML=state.chats.filter(c=>!q||c.title.toLowerCase().includes(q)).map((c,i)=>`
+    <button class="chatItem ${c.id===state.activeChat?'active':''}" data-chat="${c.id}" style="animation-delay:${Math.min(i*18,120)}ms"><div class="avatar">${esc(c.title[0]||'#')}</div><div><div class="chatTitle">${esc(c.title)}</div><div class="chatLast">${esc(c.last||'')}</div></div>${c.pinned?'<div class="pinDot"></div>':''}</button>`).join('');
+  $$('[data-chat]').forEach(b=>b.onclick=()=>{state.activeChat=b.dataset.chat;save();renderChats();renderFeed();$('#shell').classList.add('mobile-chat');pulseHead();});
 }
 function renderFeed(){
   const c=currentChat(); if(!c)return;
   $('#headTitle').textContent=c.title;$('#headSub').textContent=c.desc||'SECURE COMMUNICATIONS';
   const msgs=state.messages[c.id]||[];
-  $('#feed').innerHTML=msgs.map(m=>`<div class="msg ${m.uid===state.user?.uid?'mine':''}" data-msg="${m.id}"><div class="bubble"><div class="meta">${esc(m.name||'user')} · ${esc(m.timeText||'')}</div><div class="txt">${esc(m.text)}</div></div></div>`).join('')||'<div class="hint">Сообщений пока нет</div>';
+  $('#feed').innerHTML=msgs.map(m=>`<div class="msg ${m.uid===state.user?.uid?'mine':''} ${m.id===state.lastNewMessageId?'fresh':''}" data-msg="${m.id}"><div class="bubble"><div class="meta">${esc(m.name||'user')} · ${esc(m.timeText||'')}</div><div class="txt">${esc(m.text)}</div></div></div>`).join('')||'<div class="hint">Сообщений пока нет</div>';
   $('#feed').scrollTop=$('#feed').scrollHeight;
   $$('[data-msg]').forEach(el=>el.oncontextmenu=e=>{e.preventDefault();state.deleteTarget=el.dataset.msg;$('#deleteModal').classList.remove('hidden');});
   $$('#deleteModal [data-del]').forEach(b=>b.onclick=()=>deleteMessage(b.dataset.del));
+  state.lastNewMessageId=null;
 }
 function sendMessage(forceText){
   const input=$('#msgInput');const text=(forceText||input.value).trim();if(!text)return;
   const c=currentChat();const msg={id:uid('m'),uid:state.user.uid,name:state.user.displayName||state.user.username||'user',text,time:Date.now(),timeText:now()};
-  state.messages[c.id] ||= [];state.messages[c.id].push(msg);c.last=(msg.name+': '+text).slice(0,80);input.value='';$('#sendBtn').textContent='🎙';$('#sendBtn').classList.remove('ready');save();renderChats();renderFeed();
+  state.messages[c.id] ||= [];state.messages[c.id].push(msg);state.lastNewMessageId=msg.id;c.last=(msg.name+': '+text).slice(0,80);input.value='';$('#sendBtn').textContent='🎙';$('#sendBtn').classList.remove('ready');save();renderChats();renderFeed();
 }
 function deleteMessage(scope){
   const id=state.deleteTarget,c=currentChat();
-  state.messages[c.id]=(state.messages[c.id]||[]).filter(m=>m.id!==id);
-  state.deleteTarget=null;$('#deleteModal').classList.add('hidden');save();renderFeed();
+  const el=$(`[data-msg="${CSS.escape(id)}"]`);
+  const finish=()=>{
+    state.messages[c.id]=(state.messages[c.id]||[]).filter(m=>m.id!==id);
+    state.deleteTarget=null;$('#deleteModal').classList.add('hidden');save();renderFeed();
+  };
+  if(el){el.classList.add('deleting');setTimeout(finish,520)}else finish();
 }
 
 async function boot(){
-  window.UCMU_CLEAN={version:'clean-v1',devLocalMessages:DEV_LOCAL_MESSAGES};
+  window.UCMU_CLEAN={version:'clean-v2-animations',devLocalMessages:DEV_LOCAL_MESSAGES};
   load();
   try{
     const saved=JSON.parse(localStorage.getItem(LS_USER)||'null');
