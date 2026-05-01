@@ -10,21 +10,23 @@
   <meta name="apple-mobile-web-app-title" content="U.C.M.U">
   <meta name="application-name" content="U.C.M.U">
   <meta name="format-detection" content="telephone=no">
-  <title>U.C.M.U Chat Clean v8 PWA</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=8">
+  <title>U.C.M.U Chat Clean v9 Drag</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=9">
   <link rel="icon" href="../assets/logo.webp" type="image/webp">
   <link rel="apple-touch-icon" href="../assets/logo.webp">
-  <link rel="stylesheet" href="./styles.css?v=8">
-  <link rel="stylesheet" href="./intro.css?v=8">
-  <link rel="stylesheet" href="./intro-fixes.css?v=8">
+  <link rel="stylesheet" href="./styles.css?v=9">
+  <link rel="stylesheet" href="./intro.css?v=9">
+  <link rel="stylesheet" href="./intro-fixes.css?v=9">
+  <link rel="stylesheet" href="./drag.css?v=9">
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="./app.js?v=8"></script>
+  <script type="module" src="./app.js?v=9"></script>
+  <script type="module" src="./drag.js?v=9"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=8').catch(console.warn);
+        navigator.serviceWorker.register('./sw.js?v=9').catch(console.warn);
       });
     }
   </script>
