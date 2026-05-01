@@ -2,14 +2,31 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>U.C.M.U Chat Clean v7 Mobile Auth</title>
-  <link rel="stylesheet" href="./styles.css?v=7">
-  <link rel="stylesheet" href="./intro.css?v=7">
-  <link rel="stylesheet" href="./intro-fixes.css?v=7">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#020303">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="U.C.M.U">
+  <meta name="application-name" content="U.C.M.U">
+  <meta name="format-detection" content="telephone=no">
+  <title>U.C.M.U Chat Clean v8 PWA</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=8">
+  <link rel="icon" href="../assets/logo.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="../assets/logo.webp">
+  <link rel="stylesheet" href="./styles.css?v=8">
+  <link rel="stylesheet" href="./intro.css?v=8">
+  <link rel="stylesheet" href="./intro-fixes.css?v=8">
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="./app.js?v=7"></script>
+  <script type="module" src="./app.js?v=8"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js?v=8').catch(console.warn);
+      });
+    }
+  </script>
 </body>
 </html>
