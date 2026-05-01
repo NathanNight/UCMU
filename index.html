@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>U.C.M.U. Chat v166 auth fixes</title>
-  <link rel="stylesheet" href="css/base.css?v=166">
-  <link rel="stylesheet" href="css/layout.css?v=166">
-  <link rel="stylesheet" href="css/components.css?v=166">
-  <link rel="stylesheet" href="css/animations.css?v=166">
-  <link rel="stylesheet" href="css/splash.css?v=166">
-  <link rel="stylesheet" href="css/responsive.css?v=166">
-  <style id="ucmu-v166-visual-restore">
+  <title>U.C.M.U. Chat v167 username registration</title>
+  <link rel="stylesheet" href="css/base.css?v=167">
+  <link rel="stylesheet" href="css/layout.css?v=167">
+  <link rel="stylesheet" href="css/components.css?v=167">
+  <link rel="stylesheet" href="css/animations.css?v=167">
+  <link rel="stylesheet" href="css/splash.css?v=167">
+  <link rel="stylesheet" href="css/responsive.css?v=167">
+  <style id="ucmu-v167-visual-restore">
     .side{padding-left:0!important;padding-right:0!important;border-right:0!important}.side .profile,.side .search,.side .cap,.side .folderBtn{margin-left:14px!important;margin-right:14px!important}.side .scrollList{padding-right:0!important}
     #chatList,.folder-chat-list{display:flex!important;flex-direction:column!important;gap:2px!important}.folder-chat-list.hidden{display:none!important}
     .head,.compose,.members,.private,.ctx,.float,.folder-item,.auth-form,.auth-card{border:0!important}.ph,.tabs,.reactPicker{border:0!important}.compose{background:transparent!important;box-shadow:none!important}
@@ -25,7 +25,7 @@
 </head>
 <body>
   <div id="appRoot"></div>
-  <script type="module" src="js/app.js?v=166"></script>
+  <script type="module" src="js/app.js?v=167"></script>
   <script>
     (()=>{
       const $=s=>document.querySelector(s);
@@ -34,7 +34,7 @@
       function placeContacts(){const side=$('#side'),x=(side&&side.getBoundingClientRect().width)||330;['#contactsModal','#members.ucmu-contacts-mode'].forEach(sel=>{const el=$(sel);if(el){el.style.left=x+'px';el.style.right='auto';el.style.top='96px'}})}
       function polishDelete(){const m=$('#deleteModal.messageDeleteStrict');if(!m)return;const t=m.querySelector('.ph span');if(t)t.textContent='УДАЛИТЬ';const h=m.querySelector('.deleteHint');if(h)h.textContent='';const row=m.querySelector('.deleteAllRow');if(row)row.style.display='none';let wrap=m.querySelector('.ucmuDeleteActions');if(!wrap){wrap=document.createElement('div');wrap.className='ucmuDeleteActions';wrap.innerHTML='<button type="button" data-for-me="1">У МЕНЯ</button><button type="button" data-for-all="1">У ВСЕХ</button>';m.appendChild(wrap)}const old=m.querySelector('#confirmDelete');if(old)old.style.display='none'}
       function bindDeleteButtons(){document.addEventListener('click',e=>{const b=e.target.closest('.ucmuDeleteActions button');if(!b)return;e.preventDefault();e.stopImmediatePropagation();const chk=$('#deleteForAll');if(chk)chk.checked=!!b.dataset.forAll;$('#confirmDelete')?.click()},true)}
-      function bind(){const input=$('#input');if(input&&!input.__ucmu166){input.__ucmu166=1;input.addEventListener('input',updateSend);input.addEventListener('change',updateSend)}const st=$('#stickerBtn');if(st&&!st.__ucmu166){st.__ucmu166=1;st.addEventListener('click',placeStickers,true)}updateSend();placeContacts();polishDelete()}
+      function bind(){const input=$('#input');if(input&&!input.__ucmu167){input.__ucmu167=1;input.addEventListener('input',updateSend);input.addEventListener('change',updateSend)}const st=$('#stickerBtn');if(st&&!st.__ucmu167){st.__ucmu167=1;st.addEventListener('click',placeStickers,true)}updateSend();placeContacts();polishDelete()}
       bindDeleteButtons();
       document.addEventListener('click',e=>{if(e.target.closest('#contactsBtn'))setTimeout(placeContacts,0);if(e.target.closest('[data-a="delete"]'))setTimeout(polishDelete,0)},true);
       document.addEventListener('DOMContentLoaded',()=>{bind();setInterval(bind,600)});
