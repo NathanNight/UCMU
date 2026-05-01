@@ -1,0 +1,21 @@
+{
+  "appId": "io.ucmu.chat",
+  "appName": "UCMU",
+  "webDir": "clean",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Keyboard": {
+      "resize": "body",
+      "style": "dark",
+      "resizeOnFullScreen": true
+    },
+    "StatusBar": {
+      "style": "dark",
+      "backgroundColor": "#020303",
+      "overlaysWebView": true
+    }
+  }
+}
