@@ -11,14 +11,14 @@
   }
 
   body.ucmu-desktop .auth-bg{
-    opacity:0!important;
-    animation:bgAfterBoot .34s ease .92s both!important;
+    filter:opacity(0)!important;
+    animation:bgAfterBoot .42s ease 1.05s both!important;
   }
 
   body.ucmu-desktop .auth-film,
   body.ucmu-desktop .auth-scan{
-    opacity:0!important;
-    animation:bgAfterBoot .28s ease .98s both!important;
+    filter:opacity(0)!important;
+    animation:bgAfterBoot .34s ease 1.12s both!important;
   }
 
   body.ucmu-desktop .auth-stage::before{
@@ -27,9 +27,6 @@
     left:50%;
     top:49%;
     z-index:50;
-    width:17ch;
-    max-width:17ch;
-    overflow:hidden;
     white-space:nowrap;
     transform:translate(-50%,-50%);
     color:#f3f7f7;
@@ -37,7 +34,8 @@
     letter-spacing:.14em;
     text-shadow:0 0 12px rgba(255,255,255,.58),0 0 22px rgba(255,0,0,.22);
     border-right:2px solid rgba(255,80,80,.9);
-    animation:initType .34s steps(12,end) both,initBlink .08s steps(1,end) .40s 6,initGone .16s ease .86s both;
+    clip-path:inset(0 100% 0 0);
+    animation:initType .52s steps(12,end) both,initBlink .10s steps(1,end) .58s 6,initGone .22s ease 1.05s both;
   }
 
   body.ucmu-desktop button,
@@ -49,52 +47,55 @@
 
   body.ucmu-desktop .home-topbar.built,
   body.ucmu-desktop .home-top-line.built{
-    opacity:0;
-    animation:softAppear .24s ease .92s both!important;
+    filter:opacity(0) blur(8px);
+    animation:softAppear .34s ease 1.10s both!important;
   }
 
   body.ucmu-desktop .home-logo.built{
-    opacity:0;
-    animation:logoFromDark .42s cubic-bezier(.16,1,.24,1) 1.02s both!important;
+    filter:opacity(0) blur(18px) brightness(.35);
+    animation:logoFromDark .72s cubic-bezier(.16,1,.24,1) 1.16s both!important;
   }
 
   body.ucmu-desktop .home-title.built{
     font-size:44px!important;
     letter-spacing:.26em!important;
-    opacity:0;
-    animation:titleAfterLogo .24s cubic-bezier(.16,1,.24,1) 1.34s both!important;
+    filter:opacity(0) blur(10px);
+    animation:titleAfterLogo .38s cubic-bezier(.16,1,.24,1) 1.72s both!important;
   }
 
   body.ucmu-desktop .home-subtitle.built{
-    opacity:0;
-    animation:titleAfterLogo .22s cubic-bezier(.16,1,.24,1) 1.44s both!important;
+    filter:opacity(0) blur(10px);
+    animation:titleAfterLogo .34s cubic-bezier(.16,1,.24,1) 1.86s both!important;
+  }
+
+  body.ucmu-desktop .home-holo{
+    top:430px!important;
+    transform:translateX(-50%) scale(.96)!important;
+    filter:opacity(0) blur(16px)!important;
   }
 
   body.ucmu-desktop .home-holo.built{
-    top:430px!important;
-    transform:translateX(-50%) scale(.96)!important;
-    opacity:0!important;
-    animation:holoShellIn .26s cubic-bezier(.16,1,.24,1) 1.56s both!important;
+    animation:holoShellIn .48s cubic-bezier(.16,1,.24,1) 2.05s both!important;
   }
 
   body.ucmu-desktop .home-holo.built i,
   body.ucmu-desktop .home-holo.built b,
   body.ucmu-desktop .home-holo.built .holo-glow,
   body.ucmu-desktop .home-holo.built .holo-core{
-    opacity:0!important;
+    opacity:0;
   }
 
-  body.ucmu-desktop .home-holo.built .holo-glow{animation:ringFlash .16s ease 1.58s both!important;}
-  body.ucmu-desktop .home-holo.built .holo-core{animation:ringFlash .16s ease 1.62s both!important;}
-  body.ucmu-desktop .home-holo.built .c4{animation:ringFlash .14s ease 1.66s both!important;}
-  body.ucmu-desktop .home-holo.built .c3{animation:ringFlash .14s ease 1.71s both!important;}
-  body.ucmu-desktop .home-holo.built .c2{animation:ringFlash .14s ease 1.76s both!important;}
-  body.ucmu-desktop .home-holo.built .c1{animation:ringFlash .14s ease 1.81s both!important;}
-  body.ucmu-desktop .home-holo.built b{animation:ringFlash .12s ease 1.86s both!important;}
+  body.ucmu-desktop .home-holo.built .holo-glow{animation:ringFlash .22s ease 2.10s both!important;}
+  body.ucmu-desktop .home-holo.built .holo-core{animation:ringFlash .22s ease 2.16s both!important;}
+  body.ucmu-desktop .home-holo.built .c4{animation:ringFlash .20s ease 2.22s both!important;}
+  body.ucmu-desktop .home-holo.built .c3{animation:ringFlash .20s ease 2.30s both!important;}
+  body.ucmu-desktop .home-holo.built .c2{animation:ringFlash .20s ease 2.38s both!important;}
+  body.ucmu-desktop .home-holo.built .c1{animation:ringFlash .20s ease 2.46s both!important;}
+  body.ucmu-desktop .home-holo.built b{animation:ringFlash .18s ease 2.54s both!important;}
 
   body.ucmu-desktop .auth-form.built{
-    opacity:0;
-    animation:formFromDark .26s cubic-bezier(.16,1,.24,1) 1.98s both!important;
+    filter:opacity(0) blur(10px);
+    animation:formFromDark .40s cubic-bezier(.16,1,.24,1) 2.60s both!important;
   }
 
   body.ucmu-desktop .auth-form{
@@ -104,9 +105,13 @@
     min-width:320px!important;
     max-width:320px!important;
     margin-left:-160px!important;
-    top:585px!important;
-    min-height:250px!important;
+    top:auto!important;
+    bottom:78px!important;
+    height:250px!important;
+    min-height:0!important;
     overflow:hidden!important;
+    transform-origin:center bottom!important;
+    transition:height .46s cubic-bezier(.16,1,.24,1), filter .18s ease, transform .18s ease!important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 24px rgba(0,0,0,.42)!important;
   }
 
@@ -117,8 +122,10 @@
     min-width:320px!important;
     max-width:320px!important;
     margin-left:-160px!important;
-    top:455px!important;
-    min-height:380px!important;
+    top:auto!important;
+    bottom:78px!important;
+    height:390px!important;
+    min-height:0!important;
   }
 
   body.ucmu-desktop .auth-form::before,
@@ -157,16 +164,16 @@
   body.auth-error-pulse .auth-error{ animation:errorTextGlitch .42s steps(2,end) both; }
 }
 
-@keyframes initType{from{width:0;opacity:1}to{width:17ch;opacity:1}}
+@keyframes initType{from{clip-path:inset(0 100% 0 0);opacity:1}to{clip-path:inset(0 0 0 0);opacity:1}}
 @keyframes initBlink{0%,100%{opacity:1}50%{opacity:.08}}
 @keyframes initGone{to{opacity:0;filter:blur(8px);transform:translate(-50%,-50%) scale(.96)}}
-@keyframes bgAfterBoot{to{opacity:1}}
-@keyframes softAppear{from{opacity:0;filter:blur(8px);transform:translateY(-8px)}to{opacity:1;filter:blur(0);transform:none}}
-@keyframes logoFromDark{0%{opacity:0;filter:blur(18px) brightness(.35);transform:translateX(-50%) scale(.86)}100%{opacity:1;filter:blur(0) brightness(1);transform:translateX(-50%) scale(1)}}
-@keyframes titleAfterLogo{0%{opacity:0;filter:blur(10px);transform:translateY(10px)}100%{opacity:1;filter:blur(0);transform:none}}
-@keyframes holoShellIn{0%{opacity:0;filter:blur(16px);transform:translateX(-50%) scale(.82)}100%{opacity:1;filter:blur(0);transform:translateX(-50%) scale(.96)}}
+@keyframes bgAfterBoot{to{filter:opacity(1)}}
+@keyframes softAppear{from{filter:opacity(0) blur(8px);transform:translateY(-8px)}to{filter:opacity(1) blur(0);transform:none}}
+@keyframes logoFromDark{0%{filter:opacity(0) blur(18px) brightness(.35);transform:translateX(-50%) scale(.86)}100%{filter:opacity(1) blur(0) brightness(1);transform:translateX(-50%) scale(1)}}
+@keyframes titleAfterLogo{0%{filter:opacity(0) blur(10px);transform:translateY(10px)}100%{filter:opacity(1) blur(0);transform:none}}
+@keyframes holoShellIn{0%{filter:opacity(0) blur(16px);transform:translateX(-50%) scale(.82)}100%{filter:opacity(1) blur(0);transform:translateX(-50%) scale(.96)}}
 @keyframes ringFlash{0%{opacity:0;filter:blur(10px)}42%{opacity:1;filter:blur(0) brightness(1.55)}62%{opacity:.25}82%{opacity:1}100%{opacity:1;filter:blur(0) brightness(1)}}
-@keyframes formFromDark{0%{opacity:0;filter:blur(10px);transform:translateY(16px) scale(.985)}100%{opacity:1;filter:blur(0);transform:none}}
+@keyframes formFromDark{0%{filter:opacity(0) blur(10px);transform:translateY(16px) scale(.985)}100%{filter:opacity(1) blur(0);transform:none}}
 
 @keyframes umbrellaPetals{
   0%,100%{ transform:translate(-50%,-50%) scale(.82) rotate(0deg); opacity:.18; }
