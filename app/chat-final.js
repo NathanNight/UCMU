@@ -50,13 +50,11 @@
   function addCard({ title, subtitle, color, kind }) {
     const list = $('#chatList');
     if (!list) return;
-
     const card = document.createElement('button');
     card.type = 'button';
     card.className = kind === 'folder' ? 'chatCard folderCard' : 'chatCard localChatCard';
     card.dataset.kind = kind;
     card.dataset.local = 'true';
-
     const icon = makeCardIcon(color, kind === 'folder' ? '▰' : title.slice(0, 1).toUpperCase(), kind === 'folder');
     const text = document.createElement('span');
     text.className = 'cardText';
@@ -65,7 +63,6 @@
     text.querySelector('em').textContent = subtitle;
     const time = document.createElement('time');
     time.textContent = 'сейчас';
-
     card.append(icon, text, time);
     list.prepend(card);
     card.classList.add('newCardPulse');
@@ -121,9 +118,7 @@
         closeModal();
         return;
       }
-      if ($('.modalWindow.open') && !e.target.closest('.modalWindow') && !e.target.closest('#folderOpen') && !e.target.closest('#chatOpen') && !e.target.closest('#profileOpen .avatar')) {
-        closeModal();
-      }
+      if ($('.modalWindow.open') && !e.target.closest('.modalWindow') && !e.target.closest('#folderOpen') && !e.target.closest('#chatOpen') && !e.target.closest('#profileOpen .avatar')) closeModal();
     }, true);
   }
 
@@ -132,7 +127,6 @@
     ctxMenu.className = 'chatContextMenu';
     document.body.appendChild(ctxMenu);
     let target = null;
-
     document.addEventListener('contextmenu', (e) => {
       const card = e.target.closest('.chatCard');
       if (!card || !$('#chatList')?.contains(card)) return;
@@ -147,7 +141,6 @@
       ctxMenu.style.top = `${e.clientY}px`;
       ctxMenu.classList.add('open');
     });
-
     ctxMenu.addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (!btn || !target) return;
@@ -156,7 +149,6 @@
       ctxMenu.classList.remove('open');
       target = null;
     });
-
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.chatContextMenu')) ctxMenu?.classList.remove('open');
     });
@@ -165,11 +157,9 @@
   function getItems(list) {
     return [...list.children].filter((el) => el.classList.contains('chatCard') || el.classList.contains('chatPlaceholder'));
   }
-
   function snapshot(list) {
     return new Map(getItems(list).map((el) => [el, el.getBoundingClientRect()]));
   }
-
   function animateSiblings(before, list) {
     getItems(list).forEach((el) => {
       const old = before.get(el);
@@ -190,13 +180,34 @@
       }, 270);
     });
   }
-
   function afterForY(list, y) {
     for (const card of $$('.chatCard', list)) {
       const r = card.getBoundingClientRect();
       if (y < r.top + r.height / 2) return card;
     }
     return null;
+  }
+
+  function finishDrag(cancel = false) {
+    pending = null;
+    if (!dragging) return;
+    const current = dragging;
+    dragging = null;
+    current.locked = true;
+
+    if (cancel) {
+      current.placeholder.replaceWith(current.card);
+      current.ghost.remove();
+      return;
+    }
+
+    const target = current.placeholder.getBoundingClientRect();
+    current.ghost.classList.add('dropSettle');
+    current.ghost.style.transform = `translate3d(${target.left}px,${target.top}px,0)`;
+    setTimeout(() => {
+      current.placeholder.replaceWith(current.card);
+      current.ghost.remove();
+    }, 270);
   }
 
   function setupDrag() {
@@ -207,22 +218,21 @@
       if (e.button !== 0) return;
       const card = e.target.closest('.chatCard');
       if (!card || !list.contains(card) || e.target.closest('input,textarea,select,a,.chatContextMenu')) return;
-      pending = { card, sx: e.clientX, sy: e.clientY, rect: card.getBoundingClientRect() };
+      pending = { card, sx: e.clientX, sy: e.clientY, rect: card.getBoundingClientRect(), pointerId: e.pointerId };
+      try { card.setPointerCapture?.(e.pointerId); } catch {}
     }, true);
 
-    document.addEventListener('pointermove', (e) => {
+    window.addEventListener('pointermove', (e) => {
       if (pending && !dragging) {
         if (Math.hypot(e.clientX - pending.sx, e.clientY - pending.sy) < 8) return;
         e.preventDefault();
         e.stopImmediatePropagation();
-
         const { card, rect, sx, sy } = pending;
         const placeholder = document.createElement('div');
         placeholder.className = 'chatPlaceholder';
         placeholder.innerHTML = '<span>+</span>';
         placeholder.style.height = `${rect.height}px`;
         card.replaceWith(placeholder);
-
         const ghost = card.cloneNode(true);
         ghost.className = 'chatCard dragFloat';
         ghost.style.width = `${rect.width}px`;
@@ -231,16 +241,13 @@
         ghost.style.top = '0px';
         ghost.style.transform = `translate3d(${rect.left}px,${rect.top}px,0)`;
         document.body.appendChild(ghost);
-
         dragging = { card, placeholder, ghost, ox: sx - rect.left, oy: sy - rect.top, after: null, locked: false };
         pending = null;
       }
-
       if (!dragging || dragging.locked) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       dragging.ghost.style.transform = `translate3d(${e.clientX - dragging.ox}px,${e.clientY - dragging.oy}px,0)`;
-
       const after = afterForY(list, e.clientY);
       if (after === dragging.after) return;
       const before = snapshot(list);
@@ -250,25 +257,19 @@
       animateSiblings(before, list);
     }, { passive: false, capture: true });
 
-    document.addEventListener('pointerup', (e) => {
-      pending = null;
+    const release = (e) => {
+      if (pending) pending = null;
       if (!dragging) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      dragging.locked = true;
-      const target = dragging.placeholder.getBoundingClientRect();
-      dragging.ghost.classList.add('dropSettle');
-      dragging.ghost.style.transform = `translate3d(${target.left}px,${target.top}px,0)`;
-      setTimeout(() => {
-        dragging.placeholder.replaceWith(dragging.card);
-        dragging.ghost.remove();
-        dragging = null;
-      }, 270);
-    }, true);
-
-    document.addEventListener('pointercancel', () => {
-      pending = null;
-      dragging = null;
+      e?.preventDefault?.();
+      e?.stopImmediatePropagation?.();
+      finishDrag(false);
+    };
+    window.addEventListener('pointerup', release, true);
+    window.addEventListener('mouseup', release, true);
+    window.addEventListener('pointercancel', () => finishDrag(true), true);
+    window.addEventListener('blur', () => finishDrag(true));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') finishDrag(true);
     }, true);
   }
 
