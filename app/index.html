@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#020303">
+  <title>U.C.M.U App Boot</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main id="app" class="app-shell">
+    <section class="boot" data-boot>
+      <div class="boot__noise" aria-hidden="true"></div>
+      <div class="boot__grid" aria-hidden="true"></div>
+      <div class="boot__glow" aria-hidden="true"></div>
+
+      <div class="boot__center">
+        <div class="boot__rings" aria-hidden="true">
+          <span class="boot__ring boot__ring--outer"></span>
+          <span class="boot__ring boot__ring--middle"></span>
+          <span class="boot__ring boot__ring--inner"></span>
+        </div>
+
+        <div class="boot__rays" aria-hidden="true">
+          <span class="boot__ray boot__ray--a"></span>
+          <span class="boot__ray boot__ray--b"></span>
+          <span class="boot__ray boot__ray--c"></span>
+          <span class="boot__ray boot__ray--d"></span>
+        </div>
+
+        <div class="boot__logo" aria-label="U.C.M.U">
+          <span class="boot__logo-main">U.C.M.U</span>
+          <span class="boot__logo-sub">MEDIA UNIT</span>
+        </div>
+      </div>
+
+      <div class="boot__terminal" aria-live="polite">
+        <div class="boot__terminal-line" data-boot-line></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
