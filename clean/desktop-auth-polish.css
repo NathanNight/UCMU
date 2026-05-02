@@ -9,11 +9,12 @@
   body.ucmu-desktop .pass-eye{ -webkit-app-region:no-drag; }
 
   body.ucmu-desktop .auth-form{
-    left:106px!important;
-    right:106px!important;
-    width:auto!important;
-    min-width:0!important;
-    max-width:none!important;
+    left:50%!important;
+    right:auto!important;
+    width:320px!important;
+    min-width:320px!important;
+    max-width:320px!important;
+    margin-left:-160px!important;
     top:585px!important;
     min-height:250px!important;
     overflow:hidden!important;
@@ -21,9 +22,12 @@
   }
 
   body.ucmu-desktop .auth-form.register{
-    left:106px!important;
-    right:106px!important;
-    width:auto!important;
+    left:50%!important;
+    right:auto!important;
+    width:320px!important;
+    min-width:320px!important;
+    max-width:320px!important;
+    margin-left:-160px!important;
     top:455px!important;
     min-height:380px!important;
   }
