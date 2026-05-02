@@ -1,0 +1,14 @@
+@media (min-width:900px){
+  body.ucmu-desktop .auth-form{
+    top:auto!important;
+    bottom:74px!important;
+    min-height:230px!important;
+    transform-origin:center bottom!important;
+    transition:min-height .46s cubic-bezier(.16,1,.24,1), opacity .38s ease, transform .38s cubic-bezier(.16,1,.24,1)!important;
+  }
+  body.ucmu-desktop .auth-form.register{
+    top:auto!important;
+    bottom:74px!important;
+    min-height:354px!important;
+  }
+}
