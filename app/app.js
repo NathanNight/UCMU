@@ -21,13 +21,13 @@ const TextFx = {
   async blinkThreeTimes(element) {
     if (!element) return;
     element.classList.add('is-blinking', 'blink-text');
-    await Timing.sleep(1080);
+    await Timing.sleep(660);
     element.classList.remove('is-blinking', 'blink-text');
   },
 
-  async typeAndBlink(element, text, delay = 42) {
+  async typeAndBlink(element, text, delay = 18) {
     await this.type(element, text, delay);
-    await Timing.sleep(90);
+    await Timing.sleep(24);
     await this.blinkThreeTimes(element);
   }
 };
@@ -120,42 +120,30 @@ const StartScreen = {
 
     AuthScreen.init();
 
-    await Timing.sleep(240);
-    await TextFx.type(initText, 'INIT SYSTEM', 58);
-    await Timing.sleep(180);
+    await Timing.sleep(120);
+    await TextFx.type(initText, 'INIT SYSTEM', 34);
+    await Timing.sleep(70);
     await TextFx.blinkThreeTimes(initText);
-    await Timing.sleep(160);
+    await Timing.sleep(45);
 
     init?.classList.add('is-hidden');
     scene?.classList.add('is-visible');
 
-    await Timing.sleep(180);
+    await Timing.sleep(70);
     scene?.classList.add('has-logo');
 
-    await Timing.sleep(520);
-    scene?.classList.add('has-top');
-    await Timing.sleep(90);
-    scene?.classList.add('has-line');
+    await Timing.sleep(120);
+    scene?.classList.add('has-top', 'has-line', 'has-grid', 'has-red', 'has-frame');
 
-    await Timing.sleep(200);
-    await Promise.all([
-      TextFx.typeAndBlink(document.querySelector('[data-type="topLeft"]'), 'U.C.M.U TERMINAL', 24),
-      TextFx.typeAndBlink(document.querySelector('[data-type="topRight"]'), 'SECURE LINE', 24)
-    ]);
-
-    scene?.classList.add('has-grid');
-    await Timing.sleep(240);
-    scene?.classList.add('has-red', 'has-frame');
-
-    await Timing.sleep(220);
-    scene?.classList.add('has-title');
-    await TextFx.typeAndBlink(document.querySelector('[data-type="chatTitle"]'), 'CHAT', 54);
-    await TextFx.typeAndBlink(document.querySelector('[data-type="chatSubtitle"]'), 'SECURE COMMUNICATIONS', 18);
+    TextFx.typeAndBlink(document.querySelector('[data-type="topLeft"]'), 'U.C.M.U TERMINAL', 10);
+    TextFx.typeAndBlink(document.querySelector('[data-type="topRight"]'), 'SECURE LINE', 10);
 
     await Timing.sleep(140);
-    scene?.classList.add('has-holo');
+    scene?.classList.add('has-title', 'has-holo');
+    TextFx.typeAndBlink(document.querySelector('[data-type="chatTitle"]'), 'CHAT', 24);
+    TextFx.typeAndBlink(document.querySelector('[data-type="chatSubtitle"]'), 'SECURE COMMUNICATIONS', 8);
 
-    await Timing.sleep(360);
+    await Timing.sleep(300);
     scene?.classList.add('has-form');
   }
 };
