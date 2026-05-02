@@ -9,8 +9,8 @@
   body.ucmu-desktop .pass-eye{ -webkit-app-region:no-drag; }
 
   body.ucmu-desktop .auth-form{
-    left:52px!important;
-    right:52px!important;
+    left:70px!important;
+    right:70px!important;
     width:auto!important;
     min-width:0!important;
     max-width:none!important;
@@ -21,8 +21,8 @@
   }
 
   body.ucmu-desktop .auth-form.register{
-    left:52px!important;
-    right:52px!important;
+    left:70px!important;
+    right:70px!important;
     width:auto!important;
     top:455px!important;
     min-height:380px!important;
