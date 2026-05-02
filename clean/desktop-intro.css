@@ -1,6 +1,10 @@
-/* === DESKTOP BOOT OVERLAY + INTRO TIMING === */
+/* === DESKTOP BOOT OVERLAY + SMOOTH INTRO === */
 
-/* 1) pure black boot screen */
+:root{
+  --ucmu-ease:cubic-bezier(.16,1,.24,1);
+  --ucmu-ease-soft:cubic-bezier(.22,.8,.18,1);
+}
+
 .desktop-boot-overlay{
   position:fixed;
   inset:0;
@@ -10,7 +14,7 @@
   justify-content:center;
   background:#000;
   pointer-events:none;
-  animation:bootFadeOut .38s ease forwards 1.45s;
+  animation:bootFadeOut .34s var(--ucmu-ease) forwards 1.28s;
 }
 .desktop-boot-word{
   width:0;
@@ -22,11 +26,11 @@
   font-weight:900;
   letter-spacing:.34em;
   text-shadow:0 0 18px rgba(255,255,255,.32);
-  animation:bootType .72s steps(14,end) forwards .12s,bootCaret .48s steps(2,end) infinite;
+  animation:bootType .62s steps(14,end) forwards .1s,bootCaret .42s steps(2,end) infinite;
 }
 @keyframes bootType{to{width:240px}}
 @keyframes bootCaret{50%{border-color:transparent}}
-@keyframes bootFadeOut{to{opacity:0;filter:blur(7px)}}
+@keyframes bootFadeOut{to{opacity:0;filter:blur(8px);transform:scale(.985)}}
 
 @media (min-width:900px){
   body.ucmu-desktop{background:#000!important}
@@ -34,16 +38,26 @@
 
   body.ucmu-desktop .auth-bg{
     background:#000!important;
-    animation:desktopBgWake 1.7s ease forwards 3.05s;
+    overflow:hidden;
   }
 
-  body.ucmu-desktop .auth::before,
-  body.ucmu-desktop .auth-film,
-  body.ucmu-desktop .auth-scan{
-    opacity:0!important;
-    animation:desktopAtmosphereIn 1.15s ease forwards 3.25s!important;
+  /* red background spots: real overlay, smooth fade */
+  body.ucmu-desktop .auth-bg::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    opacity:0;
+    background:
+      radial-gradient(circle at 50% 32%,rgba(215,25,32,.18),transparent 29%),
+      radial-gradient(circle at 17% 72%,rgba(255,255,255,.045),transparent 25%),
+      radial-gradient(circle at 82% 70%,rgba(215,25,32,.10),transparent 25%),
+      linear-gradient(180deg,#061010,#010202 62%,#050000);
+    animation:desktopLayerIn 1.35s var(--ucmu-ease) forwards 1.9s;
   }
 
+  /* tactical grid: separate layer, visible */
   body.ucmu-desktop .auth-bg::after{
     content:"";
     position:absolute;
@@ -52,25 +66,21 @@
     pointer-events:none;
     opacity:0;
     background:
-      linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px),
-      linear-gradient(rgba(215,25,32,.06) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(215,25,32,.055) 1px,transparent 1px);
+      linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px),
+      linear-gradient(rgba(215,25,32,.075) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(215,25,32,.07) 1px,transparent 1px);
     background-size:64px 64px,64px 64px,256px 256px,256px 256px;
-    mask-image:radial-gradient(circle at 50% 54%,#000 0 62%,transparent 86%);
-    animation:desktopGridIn 1.45s cubic-bezier(.16,1,.24,1) forwards 3.35s;
+    -webkit-mask-image:radial-gradient(circle at 50% 54%,#000 0 66%,transparent 88%);
+    mask-image:radial-gradient(circle at 50% 54%,#000 0 66%,transparent 88%);
+    animation:desktopGridIn 1.45s var(--ucmu-ease) forwards 2.2s;
   }
 
-  body.ucmu-desktop .auth-bg::before{
-    content:"";
-    position:absolute;
-    inset:22px;
-    z-index:3;
-    pointer-events:none;
-    border:1px solid rgba(255,255,255,.07);
-    box-shadow:inset 0 0 0 1px rgba(215,25,32,.035),inset 0 0 42px rgba(215,25,32,.035),0 0 44px rgba(215,25,32,.055);
-    opacity:0;
-    animation:desktopFrameIn 1.15s ease forwards 3.55s;
+  body.ucmu-desktop .auth::before,
+  body.ucmu-desktop .auth-film,
+  body.ucmu-desktop .auth-scan{
+    opacity:0!important;
+    animation:desktopAtmosphereIn 1.1s var(--ucmu-ease) forwards 2.15s!important;
   }
 
   body.ucmu-desktop .auth-stage{
@@ -81,40 +91,57 @@
     filter:none!important;
   }
 
+  body.ucmu-desktop .auth-stage::before{
+    content:"";
+    position:absolute;
+    inset:22px;
+    z-index:3;
+    pointer-events:none;
+    border:1px solid rgba(255,255,255,.07);
+    box-shadow:inset 0 0 0 1px rgba(215,25,32,.035),inset 0 0 42px rgba(215,25,32,.04),0 0 44px rgba(215,25,32,.06);
+    opacity:0;
+    animation:desktopFrameIn 1.15s var(--ucmu-ease) forwards 2.35s;
+  }
+
   body.ucmu-desktop .auth-inner{
     width:430px!important;
     height:932px!important;
-    top:50.5%!important;
-    transform:translate(-50%,-50%) scale(min(calc(100vw / 430),calc((100dvh - 28px) / 932),1))!important;
+    top:48.5%!important;
+    transform:translate(-50%,-50%) scale(min(calc(100vw / 430),calc((100dvh - 96px) / 932),1))!important;
     transform-origin:center!important;
   }
 
   body.ucmu-desktop .home-topbar{top:54px!important}
   body.ucmu-desktop .home-top-line{top:82px!important}
 
-  /* logo: hidden by normal properties, revealed by keyframes */
+  /* smooth logo reveal via transitions, not keyframes fighting !important */
   body.ucmu-desktop .home-logo{
-    top:112px!important;
-    opacity:0;
-    filter:blur(18px);
-    transform:translateX(-50%) scale(.86)!important;
-    transition:none!important;
+    top:106px!important;
+    opacity:0!important;
+    filter:blur(24px)!important;
+    transform:translateX(-50%) scale(.78)!important;
+    transition:opacity 1.15s var(--ucmu-ease),filter 1.15s var(--ucmu-ease),transform 1.15s var(--ucmu-ease)!important;
   }
   body.ucmu-desktop .home-logo.built{
-    animation:desktopLogoReveal 1.15s cubic-bezier(.16,1,.24,1) forwards .08s!important;
+    opacity:1!important;
+    filter:blur(0)!important;
+    transform:translateX(-50%) scale(.92)!important;
   }
 
-  body.ucmu-desktop .home-title{top:382px!important}
-  body.ucmu-desktop .home-subtitle{top:428px!important}
-  body.ucmu-desktop .home-holo{top:462px!important}
-  body.ucmu-desktop .auth-form{top:626px!important}
-  body.ucmu-desktop .auth-form.register{top:536px!important}
+  body.ucmu-desktop .home-title{top:360px!important;transition:opacity .7s var(--ucmu-ease),transform .7s var(--ucmu-ease),filter .7s var(--ucmu-ease)!important}
+  body.ucmu-desktop .home-subtitle{top:406px!important;transition:opacity .7s var(--ucmu-ease),transform .7s var(--ucmu-ease),filter .7s var(--ucmu-ease)!important}
+  body.ucmu-desktop .home-holo{top:438px!important}
+  body.ucmu-desktop .auth-form{top:586px!important;transition:opacity .82s var(--ucmu-ease),transform .82s var(--ucmu-ease),filter .82s var(--ucmu-ease),top .45s var(--ucmu-ease)!important}
+  body.ucmu-desktop .auth-form.register{top:504px!important}
 
   body.ucmu-desktop .home-logo-glow{
-    background:radial-gradient(circle,rgba(255,70,70,.30) 0%,rgba(255,18,18,.14) 36%,rgba(255,0,0,.05) 56%,transparent 76%)!important;
+    opacity:0;
+    background:radial-gradient(circle,rgba(255,70,70,.30) 0%,rgba(255,18,18,.15) 36%,rgba(255,0,0,.055) 56%,transparent 76%)!important;
+    transition:opacity 1.2s var(--ucmu-ease)!important;
   }
+  body.ucmu-desktop .home-logo.built .home-logo-glow{opacity:.72}
 
-  /* rings: no !important on opacity, so keyframes can actually reveal them */
+  /* rings: smooth fade/blur, glow starts with them */
   body.ucmu-desktop .home-holo .holo-glow,
   body.ucmu-desktop .home-holo .holo-core,
   body.ucmu-desktop .holo-plane-base .c1,
@@ -124,38 +151,26 @@
   body.ucmu-desktop .holo-plane-rise .c1,
   body.ucmu-desktop .holo-plane-rise .c2,
   body.ucmu-desktop .holo-plane-rise .c3,
-  body.ucmu-desktop .holo-plane-rise .c4{opacity:0}
+  body.ucmu-desktop .holo-plane-rise .c4{
+    opacity:0;
+    filter:blur(9px);
+  }
 
-  body.ucmu-desktop .home-holo.built-static .holo-glow{animation:desktopRingBlink .75s steps(1,end) forwards 1.00s,ringGlowPulse 5.8s ease-in-out infinite 2.3s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-core{animation:desktopRingBlink .75s steps(1,end) forwards 1.12s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c3{animation:desktopRingBlink .75s steps(1,end) forwards 1.24s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c1{animation:desktopRingBlink .75s steps(1,end) forwards 1.36s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c4{animation:desktopRingBlink .75s steps(1,end) forwards 1.48s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c2{animation:desktopRingBlink .75s steps(1,end) forwards 1.60s!important}
+  body.ucmu-desktop .home-holo.built-static .holo-glow{animation:desktopRingSoftIn .95s var(--ucmu-ease) forwards 1.05s,ringGlowPulse 5.8s ease-in-out infinite 2.25s!important}
+  body.ucmu-desktop .home-holo.built-static .holo-core{animation:desktopRingSoftIn .95s var(--ucmu-ease) forwards 1.12s!important}
+  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c3{animation:desktopRingSoftIn .9s var(--ucmu-ease) forwards 1.18s!important}
+  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c1{animation:desktopRingSoftIn .9s var(--ucmu-ease) forwards 1.28s!important}
+  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c4{animation:desktopRingSoftIn .9s var(--ucmu-ease) forwards 1.38s!important}
+  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c2{animation:desktopRingSoftIn .9s var(--ucmu-ease) forwards 1.48s!important}
 
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c1{animation:desktopRingBlink .55s steps(1,end) forwards 1.72s,holoSpin 15s linear infinite 2.25s!important}
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c2{animation:desktopRingBlink .55s steps(1,end) forwards 1.84s,holoLiftA 14s linear infinite 2.25s!important}
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c3{animation:desktopRingBlink .55s steps(1,end) forwards 1.96s,holoLiftB 12.2s linear infinite reverse 2.25s!important}
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c4{animation:desktopRingBlink .55s steps(1,end) forwards 2.08s,holoLiftC 10.4s linear infinite 2.25s!important}
+  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c1{animation:desktopRingSoftIn .75s var(--ucmu-ease) forwards 1.62s,holoSpin 15s linear infinite 2.25s!important}
+  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c2{animation:desktopRingSoftIn .75s var(--ucmu-ease) forwards 1.72s,holoLiftA 14s ease-in-out infinite 2.25s!important}
+  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c3{animation:desktopRingSoftIn .75s var(--ucmu-ease) forwards 1.82s,holoLiftB 12.2s ease-in-out infinite reverse 2.25s!important}
+  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c4{animation:desktopRingSoftIn .75s var(--ucmu-ease) forwards 1.92s,holoLiftC 10.4s ease-in-out infinite 2.25s!important}
 }
 
-@keyframes desktopLogoReveal{
-  0%{opacity:0;filter:blur(22px);transform:translateX(-50%) scale(.80)}
-  55%{opacity:.72;filter:blur(7px);transform:translateX(-50%) scale(.96)}
-  100%{opacity:1;filter:blur(0);transform:translateX(-50%) scale(1)}
-}
-@keyframes desktopBgWake{
-  to{background:radial-gradient(circle at 50% 30%,rgba(215,25,32,.16),transparent 28%),radial-gradient(circle at 16% 72%,rgba(255,255,255,.04),transparent 25%),radial-gradient(circle at 84% 70%,rgba(215,25,32,.08),transparent 24%),linear-gradient(180deg,#061010,#010202 62%,#050000)}
-}
+@keyframes desktopLayerIn{from{opacity:0;filter:blur(16px)}to{opacity:1;filter:blur(0)}}
 @keyframes desktopAtmosphereIn{to{opacity:1}}
-@keyframes desktopGridIn{from{opacity:0;filter:blur(10px);transform:scale(1.04)}to{opacity:.38;filter:blur(0);transform:scale(1)}}
+@keyframes desktopGridIn{from{opacity:0;filter:blur(12px);transform:scale(1.035)}to{opacity:.42;filter:blur(0);transform:scale(1)}}
 @keyframes desktopFrameIn{from{opacity:0;filter:blur(10px);transform:scale(.985)}to{opacity:1;filter:blur(0);transform:scale(1)}}
-@keyframes desktopRingBlink{
-  0%{opacity:0;filter:blur(8px)}
-  18%{opacity:1;filter:blur(0)}
-  32%{opacity:.10}
-  46%{opacity:1}
-  62%{opacity:.22}
-  78%{opacity:1}
-  100%{opacity:1}
-}
+@keyframes desktopRingSoftIn{from{opacity:0;filter:blur(10px);transform:translate(-50%,-50%) scale(.94)}to{opacity:1;filter:blur(0);transform:translate(-50%,-50%) scale(1)}}
