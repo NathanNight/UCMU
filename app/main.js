@@ -1,4 +1,4 @@
-import { authReady, loginWithEmail, registerWithEmail, watchAuthState } from './firebase.js';
+import { authReady, loginWithEmail, registerWithEmail, watchAuthState } from './firebase.js?v=firestore-sidebar-1';
 
 const sleep = (m) => new Promise((resolve) => setTimeout(resolve, m));
 let bootDone = false;
@@ -61,109 +61,6 @@ async function ringsSeq() {
     if (element) element.classList.add('show');
     await sleep(85 + Math.random() * 95);
   }
-}
-
-function getSortableItems(list) {
-  return [...list.querySelectorAll('.chatCard, .chatPlaceholder')];
-}
-
-function snapshotItems(list) {
-  return new Map(getSortableItems(list).map((item) => [item, item.getBoundingClientRect()]));
-}
-
-function animateListFrom(before) {
-  before.forEach((oldBox, item) => {
-    if (!item.isConnected) return;
-    const newBox = item.getBoundingClientRect();
-    const dx = oldBox.left - newBox.left;
-    const dy = oldBox.top - newBox.top;
-    if (!dx && !dy) return;
-    item.style.transition = 'none';
-    item.style.transform = `translate(${dx}px, ${dy}px)`;
-    item.getBoundingClientRect();
-    item.style.transition = 'transform .22s cubic-bezier(.22,1,.36,1)';
-    item.style.transform = '';
-    window.setTimeout(() => {
-      item.style.transition = '';
-      item.style.transform = '';
-    }, 240);
-  });
-}
-
-function getDragAfterElement(container, y) {
-  const cards = [...container.querySelectorAll('.chatCard')];
-  return cards.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offset = y - box.top - box.height / 2;
-    if (offset < 0 && offset > closest.offset) return { offset, element: child };
-    return closest;
-  }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
-}
-
-function startPointerDrag(event, card, list) {
-  if (event.button !== 0) return;
-  if (event.target.closest('input,textarea,select,a')) return;
-
-  event.preventDefault();
-
-  const rect = card.getBoundingClientRect();
-  const placeholder = document.createElement('div');
-  placeholder.className = 'chatPlaceholder';
-  placeholder.innerHTML = '<span>+</span>';
-  placeholder.style.height = `${rect.height}px`;
-  card.replaceWith(placeholder);
-
-  const ghost = card.cloneNode(true);
-  ghost.className = 'chatCard dragFloat';
-  ghost.style.width = `${rect.width}px`;
-  ghost.style.height = `${rect.height}px`;
-  ghost.style.left = `${rect.left}px`;
-  ghost.style.top = `${rect.top}px`;
-  document.body.appendChild(ghost);
-
-  dragState = {
-    card,
-    list,
-    placeholder,
-    ghost,
-    offsetX: event.clientX - rect.left,
-    offsetY: event.clientY - rect.top,
-    currentBefore: null
-  };
-}
-
-function movePointerDrag(event) {
-  if (!dragState) return;
-  event.preventDefault();
-
-  dragState.ghost.style.left = `${event.clientX - dragState.offsetX}px`;
-  dragState.ghost.style.top = `${event.clientY - dragState.offsetY}px`;
-
-  const after = getDragAfterElement(dragState.list, event.clientY);
-  if (after === dragState.currentBefore) return;
-
-  const before = snapshotItems(dragState.list);
-  if (!after) dragState.list.appendChild(dragState.placeholder);
-  else dragState.list.insertBefore(dragState.placeholder, after);
-  dragState.currentBefore = after;
-  animateListFrom(before);
-}
-
-function endPointerDrag() {
-  if (!dragState) return;
-
-  const { card, placeholder, ghost } = dragState;
-  const target = placeholder.getBoundingClientRect();
-
-  ghost.style.left = `${target.left}px`;
-  ghost.style.top = `${target.top}px`;
-  ghost.classList.add('dropSettle');
-
-  window.setTimeout(() => {
-    placeholder.replaceWith(card);
-    ghost.remove();
-    dragState = null;
-  }, 230);
 }
 
 function wireChatDrag() {
