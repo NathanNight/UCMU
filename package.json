@@ -5,7 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "desktop": "electron .",
-    "desktop:dev": "electron .",
+    "desktop:dev": "electron . --dev",
     "cap:init": "npx cap init UCMU io.ucmu.chat --web-dir=clean",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
