@@ -94,6 +94,36 @@ export async function setChatFolderRecord(chatId, folderId) {
   });
 }
 
+export async function deleteFolderRecord(folderId) {
+  await persistenceReady;
+  const user = requireUser();
+  if (!folderId) throw new Error('FOLDER_ID_REQUIRED');
+  const userRef = doc(db, 'users', user.uid);
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(userRef);
+    const data = snap.data() || {};
+    const folders = Array.isArray(data.folders) ? data.folders : [];
+    tx.set(userRef, {
+      folders: folders.filter((folder) => folder.id !== folderId),
+      lastSeenAt: serverTimestamp()
+    }, { merge: true });
+  });
+}
+
+async function removeChatFromAllUserFolders(user, chatId) {
+  const userRef = doc(db, 'users', user.uid);
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(userRef);
+    const data = snap.data() || {};
+    const folders = Array.isArray(data.folders) ? data.folders : [];
+    const nextFolders = folders.map((folder) => ({
+      ...folder,
+      chatIds: Array.isArray(folder.chatIds) ? folder.chatIds.filter((id) => id !== chatId) : []
+    }));
+    tx.set(userRef, { folders: nextFolders, lastSeenAt: serverTimestamp() }, { merge: true });
+  });
+}
+
 export async function leaveChatRecord(chatId) {
   await persistenceReady;
   const user = requireUser();
@@ -110,6 +140,7 @@ export async function leaveChatRecord(chatId) {
     if (nextMembers.length <= 0) tx.update(chatRef, { members: [], memberRoles: {}, memberCount: 0, deleted: true, deletedAt: serverTimestamp(), updatedAt: serverTimestamp() });
     else tx.update(chatRef, { members: arrayRemove(user.uid), memberRoles: nextRoles, memberCount: nextMembers.length, updatedAt: serverTimestamp() });
   });
+  await removeChatFromAllUserFolders(user, chatId);
 }
 
 export function watchSidebarRecords(callback) {
@@ -147,4 +178,4 @@ export async function registerWithEmail({ username, email, password, passwordRep
 export function watchAuthState(callback) { return onAuthStateChanged(auth, async (user) => { if (!user) { callback(null); return; } try { await persistenceReady; callback(await touchUser(user)); } catch (error) { console.warn('[UCMU] auth state rejected:', error); callback(null); } }); }
 export function authReady() { return true; }
 
-window.UCMUFirebase = { createChatRecord, createFolderRecord, setChatFolderRecord, leaveChatRecord, watchSidebarRecords, getCurrentUser: () => auth.currentUser };
+window.UCMUFirebase = { createChatRecord, createFolderRecord, setChatFolderRecord, deleteFolderRecord, leaveChatRecord, watchSidebarRecords, getCurrentUser: () => auth.currentUser };
