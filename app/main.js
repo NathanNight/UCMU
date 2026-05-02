@@ -3,6 +3,7 @@ import { authReady, loginWithEmail, registerWithEmail, watchAuthState } from './
 const sleep = (m) => new Promise((resolve) => setTimeout(resolve, m));
 let bootDone = false;
 let authOpened = false;
+let chatBooted = false;
 
 function byId(id) {
   return document.getElementById(id);
@@ -53,12 +54,57 @@ async function ringsSeq() {
 }
 
 function wireChatShell() {
-  byId('railToggle')?.addEventListener('click', () => document.querySelector('.screen')?.classList.toggle('railCollapsed'));
-  byId('profileOpen')?.addEventListener('click', () => byId('profileCard')?.classList.add('open'));
-  byId('profileClose')?.addEventListener('click', () => byId('profileCard')?.classList.remove('open'));
-  byId('messageInput')?.addEventListener('input', () => {
-    byId('messageInput')?.closest('.composer')?.classList.toggle('hasText', byId('messageInput').value.trim().length > 0);
+  const screen = document.querySelector('.screen');
+  const profileButton = byId('profileOpen');
+  const profileCard = byId('profileCard');
+  const profileClose = byId('profileClose');
+  const input = byId('messageInput');
+
+  byId('railToggle')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    screen?.classList.toggle('railCollapsed');
   });
+
+  profileButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    profileCard?.classList.toggle('open');
+  });
+
+  profileClose?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    profileCard?.classList.remove('open');
+  });
+
+  input?.addEventListener('input', () => {
+    input.closest('.composer')?.classList.toggle('hasText', input.value.trim().length > 0);
+  });
+}
+
+async function bootChatInterface(user, fast = false) {
+  if (chatBooted) return;
+  chatBooted = true;
+
+  const worldNode = byId('world');
+  const roomTitle = document.querySelector('.roomTitle span');
+  const roomSub = document.querySelector('.roomTitle small');
+  const railTitle = document.querySelector('.railLabel');
+  const search = byId('chatSearch');
+
+  worldNode?.classList.add('authorized');
+  worldNode?.classList.add('chatBoot');
+
+  await sleep(fast ? 80 : 220);
+  await type(roomTitle, 'U.C.M.U', fast ? 14 : 28);
+  await sleep(fast ? 40 : 120);
+  await type(roomSub, 'ТЕСТ', fast ? 18 : 38);
+  await sleep(fast ? 40 : 120);
+  await type(railTitle, 'ЧАТЫ', fast ? 16 : 34);
+  await sleep(fast ? 60 : 160);
+  if (search) search.setAttribute('placeholder', 'Поиск чатов');
+  worldNode?.classList.add('chatReady');
 }
 
 async function authorizedSequence(user, fast = false) {
@@ -83,7 +129,7 @@ async function authorizedSequence(user, fast = false) {
   byId('sideUser') && (byId('sideUser').textContent = name);
   byId('profileName') && (byId('profileName').textContent = name);
 
-  worldNode?.classList.add('authorized');
+  await bootChatInterface(user, fast);
 }
 
 function authErrorText(error) {
@@ -104,10 +150,7 @@ function authErrorText(error) {
   return 'ОШИБКА ДОСТУПА.';
 }
 
-const panelHeights = {
-  login: 244,
-  register: 362
-};
+const panelHeights = { login: 244, register: 362 };
 
 const AuthScreen = {
   mode: 'login',
@@ -171,7 +214,6 @@ const AuthScreen = {
       const user = this.mode === 'register'
         ? await registerWithEmail(data)
         : await loginWithEmail(data);
-
       this.setStatus('ДОСТУП РАЗРЕШЁН: ' + (user.displayName || user.email || user.uid));
       await authorizedSequence(user);
     } catch (error) {
@@ -192,7 +234,6 @@ const AuthScreen = {
 
   async set(mode) {
     if (this.busy || this.mode === mode) return;
-
     this.busy = true;
     this.p.classList.add('switching');
     await sleep(120);
@@ -207,17 +248,14 @@ const AuthScreen = {
 
   render() {
     this.s.textContent = this.mode === 'register' ? 'ЗАРЕГИСТРИРОВАТЬСЯ' : 'ВОЙТИ';
-
     document.querySelectorAll('[data-mode]').forEach((button) => {
       button.classList.toggle('active', button.dataset.mode === this.mode);
     });
-
     let html = '';
     this.sets[this.mode].forEach((item) => {
       html += '<label class="field ' + (item[4] ? 'password' : '') + '"><input class="input" data-pass="' + item[4] + '" type="' + item[1] + '" placeholder="' + item[2] + '" autocomplete="' + item[3] + '">' + (item[5] ? '<button class="eye" type="button">◉</button>' : '') + '</label>';
     });
     this.f.innerHTML = html;
-
     this.f.querySelectorAll('.eye').forEach((button) => {
       button.onclick = () => {
         const passwordInputs = [...this.f.querySelectorAll('[data-pass="1"]')];
