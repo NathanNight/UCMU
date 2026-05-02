@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-const isDev = !app.isPackaged;
+const isDev = process.argv.includes('--dev');
 
 function firstExistingPath(paths) {
   return paths.find((p) => fs.existsSync(p));
@@ -29,13 +29,9 @@ async function loadCleanApp(win) {
 
   if (!indexPath) {
     console.error('[UCMU] clean/index.html not found');
-    console.error('[UCMU] __dirname:', __dirname);
-    console.error('[UCMU] appPath:', app.getAppPath());
-    console.error('[UCMU] cwd:', process.cwd());
     return;
   }
 
-  console.log('[UCMU] Loading clean UI:', indexPath);
   await win.loadFile(indexPath);
 }
 
@@ -59,17 +55,19 @@ function createWindow() {
 
   Menu.setApplicationMenu(null);
 
-  win.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    console.error('[UCMU] did-fail-load:', errorCode, errorDescription, validatedURL);
+  win.webContents.on('did-finish-load', () => {
+    win.show();
+    if (isDev) win.webContents.openDevTools({ mode: 'detach' });
+  });
+
+  win.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+    console.error('[UCMU] did-fail-load:', errorCode, errorDescription);
+    win.show();
   });
 
   loadCleanApp(win).catch((error) => {
     console.error('[UCMU] loadCleanApp failed:', error);
-  });
-
-  win.once('ready-to-show', () => {
     win.show();
-    if (isDev) win.webContents.openDevTools({ mode: 'detach' });
   });
 
   ipcMain.handle('ucmu:window:minimize', () => win.minimize());
