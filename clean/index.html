@@ -4,34 +4,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#020303">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="U.C.M.U">
-  <meta name="application-name" content="U.C.M.U">
-  <meta name="format-detection" content="telephone=no">
-  <title>U.C.M.U Chat Clean v16 Effects</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=16">
-  <link rel="icon" href="../assets/logo.webp" type="image/webp">
-  <link rel="apple-touch-icon" href="../assets/logo.webp">
-  <link rel="stylesheet" href="./styles.css?v=16">
-  <link rel="stylesheet" href="./intro.css?v=16">
-  <link rel="stylesheet" href="./intro-fixes.css?v=16">
-  <link rel="stylesheet" href="./keyboard.css?v=16">
-  <link rel="stylesheet" href="./drag.css?v=16">
-  <link rel="stylesheet" href="./composer-fix.css?v=16">
+  <title>U.C.M.U Chat Clean</title>
+  <link rel="stylesheet" href="./styles.css?v=stable">
+  <link rel="stylesheet" href="./intro.css?v=stable">
 </head>
 <body>
   <div id="app"></div>
+
   <script>
-    if (window.ucmuDesktop || (window.process && window.process.type === 'renderer')) {
-      document.body.classList.add('ucmu-desktop');
+    const isDesktop = !!(window.ucmuDesktop || (window.process && window.process.type === 'renderer'));
+    if (isDesktop) document.body.classList.add('ucmu-desktop');
+
+    const load = (src) => {
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.src = src;
+      document.body.appendChild(s);
+    };
+
+    // ALWAYS load core
+    load('./app.js?v=stable');
+
+    // ONLY web/mobile extras
+    if (!isDesktop) {
+      load('./keyboard.js');
+      load('./drag.js');
+      load('./composer-fix.js');
+      load('./capacitor-mobile.js');
     }
   </script>
-  <script type="module" src="./app.js?v=16"></script>
-  <script type="module" src="./keyboard.js?v=16"></script>
-  <script type="module" src="./drag.js?v=16"></script>
-  <script type="module" src="./composer-fix.js?v=16"></script>
-  <script type="module" src="./capacitor-mobile.js?v=16"></script>
 </body>
 </html>
