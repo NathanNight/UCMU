@@ -10,17 +10,18 @@
   <meta name="apple-mobile-web-app-title" content="U.C.M.U">
   <meta name="application-name" content="U.C.M.U">
   <meta name="format-detection" content="telephone=no">
-  <title>U.C.M.U Chat Clean v15 Desktop Intro</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=15">
+  <title>U.C.M.U Chat Clean v16 Effects</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=16">
   <link rel="icon" href="../assets/logo.webp" type="image/webp">
   <link rel="apple-touch-icon" href="../assets/logo.webp">
-  <link rel="stylesheet" href="./styles.css?v=15">
-  <link rel="stylesheet" href="./intro.css?v=15">
-  <link rel="stylesheet" href="./intro-fixes.css?v=15">
-  <link rel="stylesheet" href="./keyboard.css?v=15">
-  <link rel="stylesheet" href="./drag.css?v=15">
-  <link rel="stylesheet" href="./composer-fix.css?v=15">
-  <link rel="stylesheet" href="./desktop-intro.css?v=15">
+  <link rel="stylesheet" href="./styles.css?v=16">
+  <link rel="stylesheet" href="./intro.css?v=16">
+  <link rel="stylesheet" href="./intro-fixes.css?v=16">
+  <link rel="stylesheet" href="./keyboard.css?v=16">
+  <link rel="stylesheet" href="./drag.css?v=16">
+  <link rel="stylesheet" href="./composer-fix.css?v=16">
+  <link rel="stylesheet" href="./desktop-intro.css?v=16">
+  <link rel="stylesheet" href="./desktop-auth-polish.css?v=16">
 </head>
 <body>
   <div class="desktop-boot-left"></div>
@@ -37,17 +38,11 @@
       document.body.classList.add('ucmu-desktop');
     }
   </script>
-  <script type="module" src="./app.js?v=15"></script>
-  <script type="module" src="./keyboard.js?v=15"></script>
-  <script type="module" src="./drag.js?v=15"></script>
-  <script type="module" src="./composer-fix.js?v=15"></script>
-  <script type="module" src="./capacitor-mobile.js?v=15"></script>
-  <script>
-    if ('serviceWorker' in navigator && !window.Capacitor) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=15').catch(console.warn);
-      });
-    }
-  </script>
+  <script type="module" src="./app.js?v=16"></script>
+  <script type="module" src="./keyboard.js?v=16"></script>
+  <script type="module" src="./drag.js?v=16"></script>
+  <script type="module" src="./composer-fix.js?v=16"></script>
+  <script type="module" src="./capacitor-mobile.js?v=16"></script>
+  <script type="module" src="./desktop-auth-effects.js?v=16"></script>
 </body>
 </html>
