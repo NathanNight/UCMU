@@ -2,80 +2,87 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#020303">
-  <title>U.C.M.U App Boot</title>
+  <title>U.C.M.U Chat</title>
   <style>
-    html, body {
-      width: 100%;
-      min-height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background: #020303;
-      color: #eef4f2;
-    }
-    body {
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    .app-shell, .boot {
-      width: 100vw;
-      height: 100vh;
-      background: #020303;
-    }
-    .boot {
-      position: relative;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-    }
-    .boot__center {
-      opacity: 0;
-    }
-    .boot__terminal {
-      position: absolute;
-      left: clamp(18px, 6vw, 72px);
-      top: clamp(18px, 7vh, 68px);
-      color: #eef4f2;
-      font-family: "Cascadia Mono", Consolas, monospace;
-      font-size: clamp(16px, 3.8vw, 28px);
-      letter-spacing: 0.11em;
-    }
+    html,body,#app{width:100%;height:100%;margin:0;background:#020303;color:#f4f7f6;overflow:hidden}
+    body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
   </style>
-  <link rel="stylesheet" href="./styles.css?v=boot-20260502-2">
+  <link rel="stylesheet" href="./styles.css?v=app-stage1-20260502-1">
 </head>
 <body>
-  <main id="app" class="app-shell">
-    <section class="boot" data-boot>
-      <div class="boot__noise" aria-hidden="true"></div>
-      <div class="boot__grid" aria-hidden="true"></div>
-      <div class="boot__glow" aria-hidden="true"></div>
-
-      <div class="boot__center">
-        <div class="boot__rings" aria-hidden="true">
-          <span class="boot__ring boot__ring--outer"></span>
-          <span class="boot__ring boot__ring--middle"></span>
-          <span class="boot__ring boot__ring--inner"></span>
-        </div>
-
-        <div class="boot__rays" aria-hidden="true">
-          <span class="boot__ray boot__ray--a"></span>
-          <span class="boot__ray boot__ray--b"></span>
-          <span class="boot__ray boot__ray--c"></span>
-          <span class="boot__ray boot__ray--d"></span>
-        </div>
-
-        <div class="boot__logo" aria-label="U.C.M.U">
-          <span class="boot__logo-main">U.C.M.U</span>
-          <span class="boot__logo-sub">MEDIA UNIT</span>
-        </div>
+  <main id="app" class="ucmu-app" data-app>
+    <section class="start" data-start-screen>
+      <div class="start__init" data-init>
+        <div class="start__init-text" data-init-text></div>
       </div>
 
-      <div class="boot__terminal" aria-live="polite">
-        <div class="boot__terminal-line" data-boot-line></div>
+      <div class="start__scene" data-scene>
+        <div class="scene-bg" aria-hidden="true">
+          <div class="scene-bg__radial"></div>
+          <div class="scene-bg__grid"></div>
+          <div class="scene-bg__scan"></div>
+        </div>
+
+        <div class="scene-frame" aria-hidden="true"></div>
+
+        <header class="scene-top" data-scene-item>
+          <span>U.C.M.U TERMINAL</span>
+          <i></i>
+          <span>SECURE LINE</span>
+        </header>
+
+        <section class="hero" aria-label="U.C.M.U authorization screen">
+          <div class="hero__logo-wrap" data-scene-item>
+            <div class="hero__logo-glow" aria-hidden="true"></div>
+            <img class="hero__logo" src="../assets/logo.webp" alt="U.C.M.U">
+            <div class="hero__logo-shine" aria-hidden="true"></div>
+          </div>
+
+          <div class="hero__holo" data-scene-item aria-hidden="true">
+            <div class="holo__glow"></div>
+            <div class="holo__core"></div>
+            <div class="holo__plane holo__plane--base">
+              <i class="holo__ring holo__ring--1"></i>
+              <i class="holo__ring holo__ring--2"></i>
+              <i class="holo__ring holo__ring--3"></i>
+              <i class="holo__ring holo__ring--4"></i>
+              <b class="holo__dot holo__dot--1"></b>
+              <b class="holo__dot holo__dot--2"></b>
+              <b class="holo__dot holo__dot--3"></b>
+            </div>
+            <div class="holo__plane holo__plane--motion">
+              <i class="holo__ring holo__ring--1"></i>
+              <i class="holo__ring holo__ring--2"></i>
+              <i class="holo__ring holo__ring--3"></i>
+              <i class="holo__ring holo__ring--4"></i>
+            </div>
+          </div>
+        </section>
+
+        <section class="auth-card" data-auth data-scene-item aria-label="Авторизация">
+          <div class="auth-card__head">
+            <span data-auth-title>IDENTITY CHECK</span>
+            <i></i>
+          </div>
+
+          <div class="auth-tabs" role="tablist" aria-label="Режим авторизации">
+            <button class="auth-tabs__button is-active" type="button" data-auth-mode="login">Вход</button>
+            <button class="auth-tabs__button" type="button" data-auth-mode="register">Регистрация</button>
+          </div>
+
+          <form class="auth-form" data-auth-form>
+            <div class="auth-form__fields" data-auth-fields></div>
+            <div class="auth-form__error" data-auth-error></div>
+            <button class="auth-form__submit" type="submit" data-auth-submit>ВОЙТИ</button>
+            <div class="auth-form__hint" data-auth-hint>Secure communications access point.</div>
+          </form>
+        </section>
       </div>
     </section>
   </main>
 
-  <script type="module" src="./app.js?v=boot-20260502-2"></script>
+  <script type="module" src="./app.js?v=app-stage1-20260502-1"></script>
 </body>
 </html>
