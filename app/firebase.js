@@ -18,8 +18,6 @@ import {
   collection,
   addDoc,
   arrayUnion,
-  query,
-  where,
   onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.local.js';
@@ -177,24 +175,23 @@ export function watchSidebarRecords(callback) {
       const data = snap.data() || {};
       folders = Array.isArray(data.folders) ? data.folders.map((folder) => ({ ...folder, kind: 'folder' })) : [];
       emit();
-    });
+    }, (error) => console.error('[UCMU] folders watch failed:', error));
 
-    const chatsQuery = query(collection(db, 'chats'), where('members', 'array-contains', user.uid));
-    unsubChats = onSnapshot(chatsQuery, (snap) => {
+    unsubChats = onSnapshot(collection(db, 'chats'), (snap) => {
       chats = snap.docs.map((chatDoc) => {
         const data = chatDoc.data() || {};
         return {
           id: chatDoc.id,
-          title: data.title || 'Чат',
+          title: data.title || data.name || 'Чат',
           color: data.color || '#d71920',
           avatarUrl: data.avatarUrl || '',
-          lastMessageText: data.lastMessageText || '',
-          memberCount: data.memberCount || 0,
+          lastMessageText: data.lastMessageText || data.lastMessage || '',
+          memberCount: data.memberCount || (Array.isArray(data.members) ? data.members.length : 0),
           kind: 'chat'
         };
       });
       emit();
-    });
+    }, (error) => console.error('[UCMU] chats watch failed:', error));
   });
 
   return () => {
