@@ -2,14 +2,8 @@
   body.ucmu-desktop .auth{
     -webkit-app-region:drag;
     padding:38px 40px 48px;
-    --stage-w:min(calc(100vw - 112px),430px);
-    --stage-h:min(calc(100dvh - 104px),932px);
-  }
-
-  body.ucmu-desktop .auth-stage,
-  body.ucmu-desktop .auth-inner{
-    overflow:visible!important;
-    clip-path:none!important;
+    --stage-w:min(calc(100vw - 112px),calc((100dvh - 104px) * 430 / 932),430px);
+    --stage-h:min(calc(100dvh - 104px),calc((100vw - 112px) * 932 / 430),932px);
   }
 
   body.ucmu-desktop .auth-stage{
@@ -17,6 +11,16 @@
     height:var(--stage-h);
     max-width:430px;
     max-height:932px;
+    overflow:hidden!important;
+    clip-path:inset(0)!important;
+  }
+
+  body.ucmu-desktop .auth-inner{
+    width:430px!important;
+    height:932px!important;
+    overflow:visible!important;
+    clip-path:none!important;
+    transform:translate(-50%,-50%) scale(calc(var(--stage-w) / 430px))!important;
   }
 
   body.ucmu-desktop button,
@@ -27,48 +31,48 @@
   body.ucmu-desktop .pass-eye{ -webkit-app-region:no-drag; }
 
   body.ucmu-desktop .auth-form{
-    top:auto!important;
-    bottom:74px!important;
-    height:286px!important;
-    min-height:0!important;
-    overflow:visible!important;
+    top:615px!important;
+    bottom:auto!important;
+    height:auto!important;
+    min-height:252px!important;
+    overflow:hidden!important;
     z-index:9!important;
-    transform-origin:center bottom!important;
-    transition:height .34s cubic-bezier(.16,1,.24,1), opacity .22s ease, transform .22s ease!important;
+    transform-origin:center top!important;
+    transition:top .42s cubic-bezier(.16,1,.24,1), min-height .42s cubic-bezier(.16,1,.24,1), opacity .22s ease, transform .22s ease!important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 22px rgba(0,0,0,.42),0 0 5px rgba(255,0,0,.03)!important;
   }
 
   body.ucmu-desktop .auth-form.register{
-    top:auto!important;
-    bottom:74px!important;
-    height:424px!important;
-    min-height:0!important;
+    top:472px!important;
+    bottom:auto!important;
+    height:auto!important;
+    min-height:395px!important;
   }
 
   body.ucmu-desktop .auth-form::before,
   body.ucmu-desktop .auth-form::after{ display:none!important; }
 
   body.ucmu-desktop .home-holo{
-    top:388px!important;
+    top:430px!important;
     z-index:4!important;
-    height:190px!important;
-    transform:translateX(-50%) scale(1)!important;
-    filter:drop-shadow(0 0 16px rgba(255,0,0,.42)) drop-shadow(0 0 34px rgba(255,0,0,.18));
+    height:180px!important;
+    transform:translateX(-50%) scale(.94)!important;
+    filter:drop-shadow(0 0 14px rgba(255,0,0,.36)) drop-shadow(0 0 28px rgba(255,0,0,.15));
   }
 
   body.ucmu-desktop .holo-glow{
-    opacity:1!important;
-    background:radial-gradient(ellipse at center,rgba(255,55,55,.66) 0%,rgba(255,30,30,.30) 36%,rgba(255,0,0,0) 76%)!important;
+    opacity:.92!important;
+    background:radial-gradient(ellipse at center,rgba(255,55,55,.56) 0%,rgba(255,30,30,.24) 36%,rgba(255,0,0,0) 76%)!important;
   }
 
   body.ucmu-desktop .holo-plane i{
-    border-color:rgba(255,70,70,.72)!important;
-    box-shadow:0 0 10px rgba(255,0,0,.24), inset 0 0 8px rgba(255,40,40,.12)!important;
+    border-color:rgba(255,70,70,.62)!important;
+    box-shadow:0 0 8px rgba(255,0,0,.18), inset 0 0 6px rgba(255,40,40,.10)!important;
   }
 
   body.ucmu-desktop .holo-core{
-    opacity:.96!important;
-    box-shadow:0 0 28px rgba(255,0,0,.34)!important;
+    opacity:.9!important;
+    box-shadow:0 0 22px rgba(255,0,0,.28)!important;
   }
 
   body.ucmu-desktop .auth-input.fieldPulse,
