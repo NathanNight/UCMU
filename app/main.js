@@ -5,6 +5,7 @@ let bootDone = false;
 let authOpened = false;
 let chatBooted = false;
 let dragState = null;
+let persistedUser = null;
 
 function byId(id) {
   return document.getElementById(id);
@@ -66,10 +67,9 @@ function getDragAfterElement(container, y) {
 
 function startPointerDrag(event, card, list) {
   if (event.button !== 0) return;
-  if (event.target.closest('button,input')) return;
+  if (event.target.closest('input,textarea,select,a')) return;
 
   event.preventDefault();
-  card.setPointerCapture?.(event.pointerId);
 
   const rect = card.getBoundingClientRect();
   const placeholder = document.createElement('div');
@@ -93,9 +93,7 @@ function startPointerDrag(event, card, list) {
     placeholder,
     ghost,
     offsetX: event.clientX - rect.left,
-    offsetY: event.clientY - rect.top,
-    lastX: event.clientX,
-    lastY: event.clientY
+    offsetY: event.clientY - rect.top
   };
 }
 
@@ -103,8 +101,6 @@ function movePointerDrag(event) {
   if (!dragState) return;
   event.preventDefault();
 
-  dragState.lastX = event.clientX;
-  dragState.lastY = event.clientY;
   dragState.ghost.style.left = `${event.clientX - dragState.offsetX}px`;
   dragState.ghost.style.top = `${event.clientY - dragState.offsetY}px`;
 
@@ -145,6 +141,10 @@ function wireChatDrag() {
   window.addEventListener('pointercancel', endPointerDrag);
 }
 
+function setModalOpen(isOpen) {
+  byId('modalDimmer')?.classList.toggle('open', Boolean(isOpen));
+}
+
 function wireChatShell() {
   const screen = document.querySelector('.screen');
   const profileCard = byId('profileCard');
@@ -163,7 +163,9 @@ function wireChatShell() {
     if (avatarHit) {
       event.preventDefault();
       event.stopPropagation();
-      profileCard?.classList.toggle('open');
+      const shouldOpen = !profileCard?.classList.contains('open');
+      profileCard?.classList.toggle('open', shouldOpen);
+      setModalOpen(shouldOpen);
       return;
     }
 
@@ -171,6 +173,7 @@ function wireChatShell() {
       event.preventDefault();
       event.stopPropagation();
       profileCard?.classList.remove('open');
+      setModalOpen(false);
     }
   });
 
@@ -368,6 +371,7 @@ const AuthScreen = {
 };
 
 watchAuthState((user) => {
+  persistedUser = user;
   if (user) authorizedSequence(user, true);
 });
 
@@ -397,7 +401,7 @@ async function boot() {
   await sleep(70);
   typeBlink(byId('titleSub'), 'SECURE COMMUNICATIONS', 10);
   await sleep(220);
-  byId('world')?.classList.add('formOn');
+  if (!persistedUser && !authOpened) byId('world')?.classList.add('formOn');
   bootDone = true;
 }
 
