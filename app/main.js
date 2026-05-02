@@ -167,17 +167,7 @@ function endPointerDrag() {
 }
 
 function wireChatDrag() {
-  const list = byId('chatList');
-  if (!list) return;
-
-  list.querySelectorAll('.chatCard').forEach((card) => {
-    card.removeAttribute('draggable');
-    card.addEventListener('pointerdown', (event) => startPointerDrag(event, card, list));
-  });
-
-  window.addEventListener('pointermove', movePointerDrag, { passive: false });
-  window.addEventListener('pointerup', endPointerDrag);
-  window.addEventListener('pointercancel', endPointerDrag);
+  return;
 }
 
 function setModalOpen(isOpen) {
