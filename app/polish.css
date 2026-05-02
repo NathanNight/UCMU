@@ -9,25 +9,21 @@
 .grid:before,.grid:after{content:none!important}
 .tileWave{display:none!important}
 
-.hud{width:min(760px,calc(100vw - 44px))}
-.hud div{gap:88px}
-.hud span:nth-child(2){position:relative;color:#ff4b4b;text-shadow:0 0 10px rgba(255,0,0,.36)}
-.hud span:nth-child(2):after{content:"";position:absolute;left:-18px;right:auto;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#ff3030;box-shadow:0 0 8px rgba(255,45,45,.95),0 0 18px rgba(255,0,0,.5);animation:hudDot .9s ease-in-out infinite}
+.hud{width:min(760px,calc(100vw - 44px))}.hud div{gap:88px}.hud span:nth-child(2){position:relative;color:#ff4b4b;text-shadow:0 0 10px rgba(255,0,0,.36)}.hud span:nth-child(2):after{content:"";position:absolute;left:-18px;right:auto;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#ff3030;box-shadow:0 0 8px rgba(255,45,45,.95),0 0 18px rgba(255,0,0,.5);animation:hudDot .9s ease-in-out infinite}
 
-.input{color:#b9c0c0!important;-webkit-text-fill-color:#b9c0c0!important}
-.input::placeholder{color:#858d8d!important;-webkit-text-fill-color:#858d8d!important}
-.tab,.submit,.bar{color:#d7dddd}
+.input{color:#b9c0c0!important;-webkit-text-fill-color:#b9c0c0!important}.input::placeholder{color:#858d8d!important;-webkit-text-fill-color:#858d8d!important}.tab,.submit,.bar{color:#d7dddd}
 
-.rings:before,.rings:after{content:none!important}
-.ringsBase,.baseRing{position:absolute;left:50%;top:52%;border-radius:50%;pointer-events:none}.ringsBase{inset:0;left:0;top:0}.baseRing{transform:translate(-50%,-50%) perspective(540px) rotateX(67deg);opacity:.68}.b1{width:326px;height:326px;border:1px solid rgba(255,72,72,.18);box-shadow:0 0 12px rgba(255,0,0,.07),inset 0 0 8px rgba(255,40,40,.035)}.b2{width:262px;height:262px;border:1px dashed rgba(255,72,72,.14);box-shadow:0 0 10px rgba(255,0,0,.05)}.b3{width:198px;height:198px;border:1px solid rgba(255,72,72,.13);box-shadow:0 0 8px rgba(255,0,0,.045)}
+.rings:before,.rings:after{content:none!important}.ringsBase,.baseRing{position:absolute;left:50%;top:52%;border-radius:50%;pointer-events:none}.ringsBase{inset:0;left:0;top:0}.baseRing{transform:translate(-50%,-50%) perspective(540px) rotateX(67deg);opacity:.68}.b1{width:326px;height:326px;border:1px solid rgba(255,72,72,.18);box-shadow:0 0 12px rgba(255,0,0,.07),inset 0 0 8px rgba(255,40,40,.035)}.b2{width:262px;height:262px;border:1px dashed rgba(255,72,72,.14);box-shadow:0 0 10px rgba(255,0,0,.05)}.b3{width:198px;height:198px;border:1px solid rgba(255,72,72,.13);box-shadow:0 0 8px rgba(255,0,0,.045)}
 
-.panel{transition:opacity .42s var(--ease),filter .42s var(--ease),transform .42s var(--ease),height .46s var(--ease)!important}
-.panel.switching .fields{transition:none}.field{opacity:0;filter:blur(8px);transform:translateY(8px);animation:fieldBoot .34s ease forwards}.field:nth-child(1){animation-delay:.00s}.field:nth-child(2){animation-delay:.06s}.field:nth-child(3){animation-delay:.12s}.field:nth-child(4){animation-delay:.18s}.field:nth-child(5){animation-delay:.24s}
+.panel{display:flex;flex-direction:column;transition:opacity .42s var(--ease),filter .42s var(--ease),transform .42s var(--ease),height .46s var(--ease)!important}.bar{opacity:0;animation:formPart .22s ease forwards;animation-delay:.00s}.tabs{opacity:0;animation:formPart .22s ease forwards;animation-delay:.06s}.form{display:grid!important;grid-template-rows:auto 1fr 16px 36px;height:100%}.fields{display:grid;gap:6px;align-content:start}.error{min-height:16px;height:16px;flex:none}.submit{margin-top:0!important;height:36px;align-self:stretch;opacity:0;animation:submitBoot .26s ease forwards;animation-delay:.42s}.panel.switching .fields{transition:none}.field{opacity:0;filter:blur(8px);transform:translateY(8px);animation:fieldBoot .30s ease forwards}.field:nth-child(1){animation-delay:.08s}.field:nth-child(2){animation-delay:.14s}.field:nth-child(3){animation-delay:.20s}.field:nth-child(4){animation-delay:.26s}.field:nth-child(5){animation-delay:.32s}
 
-.bar i{width:38px;height:6px;background:radial-gradient(circle,#ff3030 0 2px,transparent 2.4px);background-size:10px 6px;background-repeat:repeat-x;box-shadow:0 0 10px rgba(255,0,0,.28);animation:modemDots .85s steps(1) infinite}
+.bar i{position:relative;width:32px;height:6px;background:radial-gradient(circle at 3px 3px,rgba(255,48,48,.18) 0 2px,transparent 2.4px),radial-gradient(circle at 11px 3px,rgba(255,48,48,.24) 0 2px,transparent 2.4px);box-shadow:none;animation:none}.bar i:before{content:"";position:absolute;right:8px;top:1px;width:4px;height:4px;border-radius:50%;background:#ff3030;box-shadow:0 0 8px rgba(255,0,0,.45);animation:penultBlink 1.6s steps(1) infinite}.bar i:after{content:"";position:absolute;right:0;top:1px;width:4px;height:4px;border-radius:50%;background:#ff3030;box-shadow:0 0 8px rgba(255,0,0,.95),0 0 16px rgba(255,0,0,.45);animation:lastBlink .34s steps(1) infinite}
 
+@keyframes formPart{0%{opacity:0;filter:blur(8px);transform:translateY(8px)}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
+@keyframes submitBoot{0%{opacity:0;filter:blur(8px);transform:translateY(8px)}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
+@keyframes lastBlink{0%,100%{opacity:.18}18%{opacity:1}34%{opacity:.16}52%{opacity:1}68%{opacity:.22}}
+@keyframes penultBlink{0%,100%{opacity:.18}30%{opacity:.18}42%{opacity:.78}56%{opacity:.20}}
 @keyframes hudDot{0%,100%{opacity:.28;transform:scale(.82)}45%{opacity:1;transform:scale(1.22)}65%{opacity:.55;transform:scale(.96)}}
-@keyframes modemDots{0%,100%{opacity:.35;filter:brightness(.7)}12%{opacity:1;filter:brightness(1.4)}25%{opacity:.55;filter:brightness(.8)}38%{opacity:1;filter:brightness(1.6)}55%{opacity:.28;filter:brightness(.65)}70%{opacity:.95;filter:brightness(1.35)}}
 @keyframes gridBoot{0%{opacity:0}10%{opacity:.34}16%{opacity:.08}26%{opacity:.58}40%{opacity:.22}58%{opacity:.50}100%{opacity:.58}}
 @keyframes fieldBoot{0%{opacity:0;filter:blur(8px);transform:translateY(8px)}22%{opacity:1;filter:blur(0);transform:translateY(0)}38%{opacity:.22}54%{opacity:1}70%{opacity:.28}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
 @media(max-width:700px){.hud div{gap:32px}.hud span:nth-child(2):after{left:-14px;right:auto}}
