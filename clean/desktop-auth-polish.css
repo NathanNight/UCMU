@@ -21,10 +21,10 @@
   body.ucmu-desktop .pass-eye{ -webkit-app-region:no-drag; }
 
   body.ucmu-desktop .auth-form{
-    top:560px!important;
+    top:615px!important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 22px rgba(0,0,0,.42),0 0 5px rgba(255,0,0,.03)!important;
   }
-  body.ucmu-desktop .auth-form.register{ top:430px!important; }
+  body.ucmu-desktop .auth-form.register{ top:470px!important; }
   body.ucmu-desktop .auth-form::before,
   body.ucmu-desktop .auth-form::after{ display:none!important; }
 
