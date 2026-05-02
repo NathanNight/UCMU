@@ -8,6 +8,8 @@
   let pending = null;
   let sidebarUnsub = null;
   let initialized = false;
+  let confirmAction = null;
+  let chatData = new Map();
 
   function syncModalState() {
     const hasOpen = Boolean($('.modalWindow.open'));
@@ -43,7 +45,27 @@
 
   function closeModal() {
     $$('.modalWindow.open').forEach((m) => m.classList.remove('open'));
+    confirmAction = null;
     syncModalState();
+  }
+
+  function ensureConfirmModal() {
+    let modal = $('#confirmModal');
+    if (modal) return modal;
+    const layer = $('#modalLayer');
+    modal = document.createElement('div');
+    modal.className = 'folderModal modalWindow confirmModal';
+    modal.id = 'confirmModal';
+    modal.innerHTML = '<button class="modalClose" id="confirmClose" type="button">×</button><div class="modalTitle">CONFIRM</div><div class="modalItem confirmText" id="confirmText">Подтвердить действие?</div><div class="modalItem confirmActions"><button class="modalSubmit" id="confirmYes" type="button">ПОДТВЕРДИТЬ</button><button class="modalCancel" id="confirmNo" type="button">ОТМЕНА</button></div>';
+    layer?.appendChild(modal);
+    return modal;
+  }
+
+  function openConfirm(text, action) {
+    const modal = ensureConfirmModal();
+    $('#confirmText', modal).textContent = text;
+    confirmAction = action;
+    openModal(modal, 'CONFIRM');
   }
 
   function modalError(modal, text) {
@@ -96,6 +118,7 @@
     const list = $('#chatList');
     if (!list) return;
     const activeId = $('.chatCard.active', list)?.dataset.id;
+    chatData = new Map(chats.map((chat) => [chat.id, chat]));
     list.innerHTML = '';
 
     folders.forEach((folder) => {
@@ -141,16 +164,26 @@
     sidebarUnsub = api.watchSidebarRecords(renderSidebar);
   }
 
+  function renderChatWindow(card) {
+    const chatId = card.dataset.id;
+    const data = chatData.get(chatId) || {};
+    const title = $('.cardText b', card)?.textContent || data.title || 'ЧАТ';
+    const sub = $('.cardText em', card)?.textContent || data.lastMessageText || 'чат';
+    const roomTitle = $('.roomTitle span');
+    const roomSub = $('.roomTitle small');
+    const msgList = $('#messageList');
+    if (roomTitle) roomTitle.textContent = title;
+    if (roomSub) roomSub.textContent = sub.toUpperCase();
+    if (msgList) {
+      msgList.innerHTML = `<article class="msg"><span class="msgAvatar"></span><div class="msgBubble"><b>U.C.M.U <small>system</small></b><p>Открыт чат: ${title}</p></div></article>`;
+    }
+  }
+
   function activateChat(card) {
     if (!card || card.classList.contains('folderCard')) return;
     $$('.chatCard.active').forEach((c) => c.classList.remove('active'));
     card.classList.add('active');
-    const title = $('.cardText b', card)?.textContent || 'ЧАТ';
-    const sub = $('.cardText em', card)?.textContent || 'онлайн';
-    const roomTitle = $('.roomTitle span');
-    const roomSub = $('.roomTitle small');
-    if (roomTitle) roomTitle.textContent = title;
-    if (roomSub) roomSub.textContent = sub.toUpperCase();
+    renderChatWindow(card);
   }
 
   function setupModals() {
@@ -210,6 +243,27 @@
       }
     }, true);
 
+    document.addEventListener('click', async (e) => {
+      if (e.target.closest('#confirmYes')) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const action = confirmAction;
+        try {
+          if (action) await action();
+          closeModal();
+        } catch (error) {
+          modalError($('#confirmModal'), 'ДЕЙСТВИЕ НЕ ВЫПОЛНЕНО');
+          console.error('[UCMU] confirm action failed:', error);
+        }
+        return;
+      }
+      if (e.target.closest('#confirmNo, #confirmClose')) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closeModal();
+      }
+    }, true);
+
     document.addEventListener('click', (e) => {
       const swatch = e.target.closest('.swatch');
       if (!swatch) return;
@@ -263,14 +317,11 @@
     let target = null;
     document.addEventListener('contextmenu', (e) => {
       const card = e.target.closest('.chatCard');
-      if (!card || !$('#chatList')?.contains(card)) return;
+      if (!card || !$('#chatList')?.contains(card) || card.classList.contains('folderCard')) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       target = card;
-      const isFolder = card.dataset.kind === 'folder' || card.classList.contains('folderCard');
-      ctxMenu.innerHTML = isFolder
-        ? '<button data-action="delete">Удалить папку</button>'
-        : '<button data-action="leave">Выйти из чата</button><button data-action="delete">Удалить чат</button>';
+      ctxMenu.innerHTML = '<button data-action="leave">Выйти из чата</button>';
       ctxMenu.style.left = `${e.clientX}px`;
       ctxMenu.style.top = `${e.clientY}px`;
       ctxMenu.classList.add('open');
@@ -278,10 +329,14 @@
     ctxMenu.addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (!btn || !target) return;
-      target.classList.add('cardRemoving');
-      setTimeout(() => target?.remove(), 220);
+      const chatId = target.dataset.id;
+      const title = $('.cardText b', target)?.textContent || 'чат';
       ctxMenu.classList.remove('open');
       target = null;
+      openConfirm(`Выйти из чата «${title}»?`, async () => {
+        const api = await waitForFirebase();
+        await api.leaveChatRecord(chatId);
+      });
     });
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.chatContextMenu')) ctxMenu?.classList.remove('open');
