@@ -3,7 +3,10 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  updateProfile
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import {
   getFirestore,
@@ -18,6 +21,7 @@ import { firebaseConfig } from './firebase-config.local.js';
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const persistenceReady = setPersistence(auth, browserLocalPersistence);
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -39,6 +43,30 @@ function inviteIsUsable(invite) {
   return true;
 }
 
+async function touchUser(user) {
+  const userRef = doc(db, 'users', user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email,
+      username: cleanUsername(user.displayName || ''),
+      displayName: user.displayName || '',
+      role: 'member',
+      disabled: false,
+      createdAt: serverTimestamp(),
+      lastSeenAt: serverTimestamp()
+    }, { merge: true });
+  } else {
+    const data = userSnap.data();
+    if (data.disabled === true) throw new Error('USER_DISABLED');
+    await setDoc(userRef, { lastSeenAt: serverTimestamp() }, { merge: true });
+  }
+
+  return user;
+}
+
 async function findInvite(code) {
   if (!code) return null;
 
@@ -58,31 +86,14 @@ async function findInvite(code) {
 }
 
 export async function loginWithEmail({ email, password }) {
+  await persistenceReady;
   const credential = await signInWithEmailAndPassword(auth, normalizeEmail(email), password);
-  const userRef = doc(db, 'users', credential.user.uid);
-  const userSnap = await getDoc(userRef);
-
-  if (!userSnap.exists()) {
-    await setDoc(userRef, {
-      uid: credential.user.uid,
-      email: credential.user.email,
-      username: cleanUsername(credential.user.displayName || ''),
-      displayName: credential.user.displayName || '',
-      role: 'member',
-      disabled: false,
-      createdAt: serverTimestamp(),
-      lastSeenAt: serverTimestamp()
-    }, { merge: true });
-  } else {
-    const data = userSnap.data();
-    if (data.disabled === true) throw new Error('USER_DISABLED');
-    await setDoc(userRef, { lastSeenAt: serverTimestamp() }, { merge: true });
-  }
-
-  return credential.user;
+  return touchUser(credential.user);
 }
 
 export async function registerWithEmail({ username, email, password, passwordRepeat, inviteCode }) {
+  await persistenceReady;
+
   const cleanName = cleanUsername(username);
   const cleanEmail = normalizeEmail(email);
   const code = cleanInviteCode(inviteCode);
@@ -129,6 +140,23 @@ export async function registerWithEmail({ username, email, password, passwordRep
   });
 
   return credential.user;
+}
+
+export function watchAuthState(callback) {
+  return onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      callback(null);
+      return;
+    }
+
+    try {
+      await persistenceReady;
+      callback(await touchUser(user));
+    } catch (error) {
+      console.warn('[UCMU] auth state rejected:', error);
+      callback(null);
+    }
+  });
 }
 
 export function authReady() {
