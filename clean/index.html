@@ -27,10 +27,8 @@
       document.body.appendChild(s);
     };
 
-    // ALWAYS load core
     load('./app.js?v=stable');
 
-    // ONLY web/mobile extras
     if (!isDesktop) {
       load('./keyboard.js');
       load('./drag.js');
@@ -39,8 +37,8 @@
     }
 
     if (isDesktop) {
-      window.setTimeout(() => document.body.classList.add('desktop-boot-done'), 2600);
-      window.setTimeout(() => document.getElementById('desktopBoot')?.remove(), 3400);
+      window.setTimeout(() => document.body.classList.add('desktop-boot-done'), 1450);
+      window.setTimeout(() => document.getElementById('desktopBoot')?.remove(), 1750);
     }
   </script>
 </body>
