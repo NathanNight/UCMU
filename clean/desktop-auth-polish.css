@@ -1,5 +1,19 @@
 @media (min-width:900px){
   body.ucmu-desktop .auth{ -webkit-app-region:drag; }
+  body.ucmu-desktop .auth::before{
+    content:"VERSION CHECK WHITE BG";
+    position:fixed;
+    left:18px;
+    top:18px;
+    z-index:99999;
+    padding:10px 14px;
+    background:#ffffff!important;
+    color:#000000!important;
+    font:900 15px/1.2 Consolas,monospace;
+    letter-spacing:.08em;
+    border:3px solid #ff0000;
+    box-shadow:0 0 0 9999px rgba(255,255,255,.82)!important;
+  }
   body.ucmu-desktop button,
   body.ucmu-desktop input,
   body.ucmu-desktop textarea,
