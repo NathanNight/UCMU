@@ -10,11 +10,15 @@
   <link rel="stylesheet" href="./desktop-intro.css?v=stable">
 </head>
 <body>
+  <div id="desktopBoot" class="desktop-boot-overlay" aria-hidden="true">
+    <div class="desktop-boot-word">INITIALIZATION</div>
+  </div>
   <div id="app"></div>
 
   <script>
     const isDesktop = !!(window.ucmuDesktop || (window.process && window.process.type === 'renderer'));
     if (isDesktop) document.body.classList.add('ucmu-desktop');
+    else document.getElementById('desktopBoot')?.remove();
 
     const load = (src) => {
       const s = document.createElement('script');
@@ -32,6 +36,11 @@
       load('./drag.js');
       load('./composer-fix.js');
       load('./capacitor-mobile.js');
+    }
+
+    if (isDesktop) {
+      window.setTimeout(() => document.body.classList.add('desktop-boot-done'), 2600);
+      window.setTimeout(() => document.getElementById('desktopBoot')?.remove(), 3400);
     }
   </script>
 </body>
