@@ -1,4 +1,6 @@
 .logo{transition:opacity 1.35s var(--ease),filter 1.35s var(--ease),transform 1.45s var(--ease)}
+.logo:before{opacity:0!important;transition:opacity .7s ease}
+.world.logoGlowOn .logo:before{opacity:1!important}
 .world.logoOn .logo{animation:none}
 .wash{transition:opacity .85s ease}
 
@@ -7,9 +9,12 @@
 .grid:before,.grid:after{content:none!important}
 
 .tileWave{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:1;mix-blend-mode:screen}
-.tileWave i{position:absolute;width:52px;height:52px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.13);box-shadow:0 0 18px rgba(255,255,255,.42),0 0 26px rgba(255,55,55,.32),inset 0 0 18px rgba(255,255,255,.18);opacity:0;filter:blur(1px);transform:scale(.55)}
-.world.tilesOn .tileWave i{animation:softTile .52s ease-out forwards}
-.tileWave i:nth-child(1){left:calc(50% - 208px);top:calc(45% - 156px);animation-delay:.00s}.tileWave i:nth-child(2){left:calc(50% - 156px);top:calc(45% - 104px);animation-delay:.07s}.tileWave i:nth-child(3){left:calc(50% - 104px);top:calc(45% - 52px);animation-delay:.14s}.tileWave i:nth-child(4){left:calc(50% - 52px);top:45%;animation-delay:.21s}.tileWave i:nth-child(5){left:50%;top:calc(45% + 52px);animation-delay:.28s}.tileWave i:nth-child(6){left:calc(50% + 52px);top:calc(45% + 104px);animation-delay:.35s}.tileWave i:nth-child(7){left:calc(50% + 104px);top:calc(45% + 156px);animation-delay:.42s}.tileWave i:nth-child(8){left:calc(50% + 156px);top:calc(45% + 208px);animation-delay:.49s}.tileWave i:nth-child(9){left:calc(50% + 208px);top:calc(45% + 260px);animation-delay:.56s}
+.tileWave i{position:absolute;width:52px;height:52px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);box-shadow:0 0 16px rgba(255,255,255,.38),0 0 24px rgba(255,55,55,.28),inset 0 0 18px rgba(255,255,255,.16);opacity:0;filter:blur(1px);transform:scale(.58)}
+.world.tilesOn .tileWave i{animation:softTile .48s ease-out forwards}
+.tileWave i:nth-child(1){left:calc(50% - 182px);top:calc(45% - 182px);animation-delay:.00s}
+.tileWave i:nth-child(2){left:calc(50% - 234px);top:calc(45% - 130px);animation-delay:.08s}.tileWave i:nth-child(3){left:calc(50% - 182px);top:calc(45% - 130px);animation-delay:.08s}.tileWave i:nth-child(4){left:calc(50% - 130px);top:calc(45% - 130px);animation-delay:.08s}
+.tileWave i:nth-child(5){left:calc(50% - 234px);top:calc(45% - 78px);animation-delay:.16s}.tileWave i:nth-child(6){left:calc(50% - 182px);top:calc(45% - 78px);animation-delay:.16s}.tileWave i:nth-child(7){left:calc(50% - 130px);top:calc(45% - 78px);animation-delay:.16s}.tileWave i:nth-child(8){left:calc(50% - 78px);top:calc(45% - 78px);animation-delay:.16s}.tileWave i:nth-child(9){left:calc(50% - 26px);top:calc(45% - 78px);animation-delay:.16s}
+.tileWave i:nth-child(10){left:calc(50% - 130px);top:calc(45% - 26px);animation-delay:.24s}.tileWave i:nth-child(11){left:calc(50% - 78px);top:calc(45% - 26px);animation-delay:.24s}.tileWave i:nth-child(12){left:calc(50% - 26px);top:calc(45% - 26px);animation-delay:.24s}.tileWave i:nth-child(13){left:calc(50% + 26px);top:calc(45% - 26px);animation-delay:.24s}.tileWave i:nth-child(14){left:calc(50% + 78px);top:calc(45% - 26px);animation-delay:.24s}.tileWave i:nth-child(15){left:calc(50% + 130px);top:calc(45% - 26px);animation-delay:.24s}.tileWave i:nth-child(16){left:calc(50% + 182px);top:calc(45% - 26px);animation-delay:.24s}
 
 .input{color:#b9c0c0!important;-webkit-text-fill-color:#b9c0c0!important}
 .input::placeholder{color:#858d8d!important;-webkit-text-fill-color:#858d8d!important}
@@ -23,7 +28,7 @@
 
 .bar i{width:38px;height:6px;background:radial-gradient(circle,#ff3030 0 2px,transparent 2.4px);background-size:10px 6px;background-repeat:repeat-x;box-shadow:0 0 10px rgba(255,0,0,.28);animation:modemDots .85s steps(1) infinite}
 
-@keyframes softTile{0%{opacity:0;filter:blur(7px);transform:scale(.35)}28%{opacity:1;filter:blur(1px);transform:scale(1.04)}48%{opacity:.25;transform:scale(.96)}68%{opacity:.92;transform:scale(1)}100%{opacity:0;filter:blur(4px);transform:scale(1.12)}}
+@keyframes softTile{0%{opacity:0;filter:blur(7px);transform:scale(.35)}30%{opacity:1;filter:blur(1px);transform:scale(1.05)}55%{opacity:.24;transform:scale(.96)}76%{opacity:.86;transform:scale(1)}100%{opacity:0;filter:blur(4px);transform:scale(1.1)}}
 @keyframes modemDots{0%,100%{opacity:.35;filter:brightness(.7)}12%{opacity:1;filter:brightness(1.4)}25%{opacity:.55;filter:brightness(.8)}38%{opacity:1;filter:brightness(1.6)}55%{opacity:.28;filter:brightness(.65)}70%{opacity:.95;filter:brightness(1.35)}}
 @keyframes gridBoot{0%{opacity:0}10%{opacity:.34}16%{opacity:.08}26%{opacity:.58}40%{opacity:.22}58%{opacity:.50}100%{opacity:.58}}
 @keyframes fieldBoot{0%{opacity:0;filter:blur(8px);transform:translateY(8px)}22%{opacity:1;filter:blur(0);transform:translateY(0)}38%{opacity:.22}54%{opacity:1}70%{opacity:.28}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
