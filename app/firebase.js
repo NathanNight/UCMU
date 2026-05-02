@@ -18,6 +18,8 @@ import {
   collection,
   addDoc,
   arrayUnion,
+  arrayRemove,
+  runTransaction,
   onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.local.js';
@@ -115,6 +117,7 @@ export async function createChatRecord({ title, color = '#d71920', avatarUrl = '
     memberRoles: { [user.uid]: 'owner' },
     memberCount: 1,
     lastMessageText: '',
+    deleted: false,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
@@ -142,6 +145,41 @@ export async function createFolderRecord({ title, color = '#d71920' }) {
     lastSeenAt: serverTimestamp()
   }, { merge: true });
   return { ...folder, kind: 'folder' };
+}
+
+export async function leaveChatRecord(chatId) {
+  await persistenceReady;
+  const user = requireUser();
+  if (!chatId) throw new Error('CHAT_ID_REQUIRED');
+  const chatRef = doc(db, 'chats', chatId);
+
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(chatRef);
+    if (!snap.exists()) throw new Error('CHAT_NOT_FOUND');
+    const data = snap.data() || {};
+    const members = Array.isArray(data.members) ? data.members : [];
+    const nextMembers = members.filter((uid) => uid !== user.uid);
+    const nextRoles = { ...(data.memberRoles || {}) };
+    delete nextRoles[user.uid];
+
+    if (nextMembers.length <= 0) {
+      tx.update(chatRef, {
+        members: [],
+        memberRoles: {},
+        memberCount: 0,
+        deleted: true,
+        deletedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      tx.update(chatRef, {
+        members: arrayRemove(user.uid),
+        memberRoles: nextRoles,
+        memberCount: nextMembers.length,
+        updatedAt: serverTimestamp()
+      });
+    }
+  });
 }
 
 export function watchSidebarRecords(callback) {
@@ -178,18 +216,23 @@ export function watchSidebarRecords(callback) {
     }, (error) => console.error('[UCMU] folders watch failed:', error));
 
     unsubChats = onSnapshot(collection(db, 'chats'), (snap) => {
-      chats = snap.docs.map((chatDoc) => {
-        const data = chatDoc.data() || {};
-        return {
-          id: chatDoc.id,
-          title: data.title || data.name || 'Чат',
-          color: data.color || '#d71920',
-          avatarUrl: data.avatarUrl || '',
-          lastMessageText: data.lastMessageText || data.lastMessage || '',
-          memberCount: data.memberCount || (Array.isArray(data.members) ? data.members.length : 0),
-          kind: 'chat'
-        };
-      });
+      chats = snap.docs
+        .map((chatDoc) => {
+          const data = chatDoc.data() || {};
+          return {
+            id: chatDoc.id,
+            title: data.title || data.name || 'Чат',
+            color: data.color || '#d71920',
+            avatarUrl: data.avatarUrl || '',
+            lastMessageText: data.lastMessageText || data.lastMessage || '',
+            memberCount: data.memberCount || (Array.isArray(data.members) ? data.members.length : 0),
+            members: Array.isArray(data.members) ? data.members : [],
+            deleted: data.deleted === true,
+            kind: 'chat'
+          };
+        })
+        .filter((chat) => !chat.deleted)
+        .filter((chat) => chat.members.length === 0 || chat.members.includes(user.uid) || chat.memberCount === 0);
       emit();
     }, (error) => console.error('[UCMU] chats watch failed:', error));
   });
@@ -282,6 +325,7 @@ export function authReady() {
 window.UCMUFirebase = {
   createChatRecord,
   createFolderRecord,
+  leaveChatRecord,
   watchSidebarRecords,
   getCurrentUser: () => auth.currentUser
 };
