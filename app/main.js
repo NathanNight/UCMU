@@ -4,6 +4,10 @@ const sleep = (m) => new Promise((resolve) => setTimeout(resolve, m));
 let bootDone = false;
 let authOpened = false;
 
+function byId(id) {
+  return document.getElementById(id);
+}
+
 function fitApp() {
   const baseW = 1180;
   const baseH = 820;
@@ -15,6 +19,7 @@ addEventListener('resize', fitApp, { passive: true });
 fitApp();
 
 async function type(element, text, delay) {
+  if (!element) return;
   element.textContent = '';
   element.classList.add('typing');
   for (const char of text) {
@@ -25,6 +30,7 @@ async function type(element, text, delay) {
 }
 
 async function blink(element) {
+  if (!element) return;
   element.classList.add('blink', 'blinkText');
   await sleep(620);
   element.classList.remove('blink', 'blinkText');
@@ -37,7 +43,7 @@ async function typeBlink(element, text, delay) {
 }
 
 async function ringsSeq() {
-  world.classList.add('ringsOn');
+  byId('world')?.classList.add('ringsOn');
   const sequence = ['.r3', '.n2', '.r4', '.n1', '.r2', '.n3'];
   for (const selector of sequence) {
     const element = document.querySelector(selector);
@@ -47,11 +53,11 @@ async function ringsSeq() {
 }
 
 function wireChatShell() {
-  railToggle?.addEventListener('click', () => document.querySelector('.screen')?.classList.toggle('railCollapsed'));
-  profileOpen?.addEventListener('click', () => profileCard?.classList.add('open'));
-  profileClose?.addEventListener('click', () => profileCard?.classList.remove('open'));
-  messageInput?.addEventListener('input', () => {
-    messageInput.closest('.composer')?.classList.toggle('hasText', messageInput.value.trim().length > 0);
+  byId('railToggle')?.addEventListener('click', () => document.querySelector('.screen')?.classList.toggle('railCollapsed'));
+  byId('profileOpen')?.addEventListener('click', () => byId('profileCard')?.classList.add('open'));
+  byId('profileClose')?.addEventListener('click', () => byId('profileCard')?.classList.remove('open'));
+  byId('messageInput')?.addEventListener('input', () => {
+    byId('messageInput')?.closest('.composer')?.classList.toggle('hasText', byId('messageInput').value.trim().length > 0);
   });
 }
 
@@ -61,17 +67,23 @@ async function authorizedSequence(user, fast = false) {
 
   while (!bootDone) await sleep(60);
 
-  world.classList.add('authStage');
+  const worldNode = byId('world');
+  const authNode = byId('authPass');
+  const name = user.displayName || user.email || 'user';
+
+  worldNode?.classList.add('authStage');
   await sleep(fast ? 160 : 420);
-  authPass.textContent = '';
-  await type(authPass, 'AUTHORIZED', fast ? 16 : 34);
+  if (authNode) authNode.textContent = '';
+  await type(authNode, 'AUTHORIZED', fast ? 16 : 34);
   await sleep(70);
-  await blink(authPass);
+  await blink(authNode);
   await sleep(140);
-  chatUser.textContent = (user.displayName || user.email || 'AUTHORIZED').toUpperCase();
-  sideUser.textContent = user.displayName || user.email || 'user';
-  profileName.textContent = user.displayName || user.email || 'user';
-  world.classList.add('authorized');
+
+  byId('chatUser') && (byId('chatUser').textContent = name.toUpperCase());
+  byId('sideUser') && (byId('sideUser').textContent = name);
+  byId('profileName') && (byId('profileName').textContent = name);
+
+  worldNode?.classList.add('authorized');
 }
 
 function authErrorText(error) {
@@ -115,16 +127,16 @@ const AuthScreen = {
   },
 
   init() {
-    this.p = panel;
-    this.f = fields;
-    this.s = submit;
-    this.e = error;
+    this.p = byId('panel');
+    this.f = byId('fields');
+    this.s = byId('submit');
+    this.e = byId('error');
 
     document.querySelectorAll('[data-mode]').forEach((button) => {
       button.onclick = () => this.set(button.dataset.mode);
     });
 
-    form.onsubmit = (event) => this.submit(event);
+    byId('form').onsubmit = (event) => this.submit(event);
     this.render();
     this.p.style.setProperty('--panel-h', panelHeights[this.mode] + 'px');
     this.setStatus(authReady() ? 'ОЖИДАНИЕ ВВОДА.' : 'FIREBASE НЕ НАСТРОЕН.', !authReady());
@@ -226,29 +238,29 @@ async function boot() {
   wireChatShell();
   AuthScreen.init();
   await sleep(120);
-  await type(initText, 'INIT SYSTEM', 30);
+  await type(byId('initText'), 'INIT SYSTEM', 30);
   await sleep(80);
-  await blink(initText);
+  await blink(byId('initText'));
   await sleep(80);
-  init.classList.add('done');
-  world.classList.add('show');
+  byId('init')?.classList.add('done');
+  byId('world')?.classList.add('show');
   await sleep(220);
-  world.classList.add('logoOn');
+  byId('world')?.classList.add('logoOn');
   await sleep(360);
-  world.classList.add('logoGlowOn');
-  world.classList.add('active');
+  byId('world')?.classList.add('logoGlowOn');
+  byId('world')?.classList.add('active');
   await sleep(140);
-  world.classList.add('gridOn');
-  world.classList.add('hudOn');
+  byId('world')?.classList.add('gridOn');
+  byId('world')?.classList.add('hudOn');
   await sleep(180);
   await ringsSeq();
   await sleep(120);
-  world.classList.add('titleOn');
-  typeBlink(titleMain, 'CHAT', 28);
+  byId('world')?.classList.add('titleOn');
+  typeBlink(byId('titleMain'), 'CHAT', 28);
   await sleep(70);
-  typeBlink(titleSub, 'SECURE COMMUNICATIONS', 10);
+  typeBlink(byId('titleSub'), 'SECURE COMMUNICATIONS', 10);
   await sleep(220);
-  world.classList.add('formOn');
+  byId('world')?.classList.add('formOn');
   bootDone = true;
 }
 
