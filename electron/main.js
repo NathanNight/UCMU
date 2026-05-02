@@ -49,6 +49,8 @@ function createWindow() {
     backgroundColor: '#020303',
     frame: false,
     titleBarStyle: 'hidden',
+    resizable: true,
+    movable: true,
     show: false,
     webPreferences: {
       preload: getPreloadPath(),
