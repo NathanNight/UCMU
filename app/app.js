@@ -8,17 +8,27 @@ const TextFx = {
   async type(element, text, delay = 54) {
     if (!element) return;
     element.textContent = '';
+    element.classList.add('typing');
+
     for (const char of text) {
       element.textContent += char;
       await Timing.sleep(delay);
     }
+
+    element.classList.remove('typing');
   },
 
   async blinkThreeTimes(element) {
     if (!element) return;
-    element.classList.add('is-blinking');
+    element.classList.add('is-blinking', 'blink-text');
     await Timing.sleep(1080);
-    element.classList.remove('is-blinking');
+    element.classList.remove('is-blinking', 'blink-text');
+  },
+
+  async typeAndBlink(element, text, delay = 42) {
+    await this.type(element, text, delay);
+    await Timing.sleep(90);
+    await this.blinkThreeTimes(element);
   }
 };
 
@@ -119,8 +129,34 @@ const StartScreen = {
     init?.classList.add('is-hidden');
     scene?.classList.add('is-visible');
 
+    await Timing.sleep(180);
+    scene?.classList.add('has-logo');
+
+    await Timing.sleep(520);
+    scene?.classList.add('has-top');
+    await Timing.sleep(90);
+    scene?.classList.add('has-line');
+
+    await Timing.sleep(200);
+    await Promise.all([
+      TextFx.typeAndBlink(document.querySelector('[data-type="topLeft"]'), 'U.C.M.U TERMINAL', 24),
+      TextFx.typeAndBlink(document.querySelector('[data-type="topRight"]'), 'SECURE LINE', 24)
+    ]);
+
+    scene?.classList.add('has-grid');
+    await Timing.sleep(240);
+    scene?.classList.add('has-red', 'has-frame');
+
+    await Timing.sleep(220);
+    scene?.classList.add('has-title');
+    await TextFx.typeAndBlink(document.querySelector('[data-type="chatTitle"]'), 'CHAT', 54);
+    await TextFx.typeAndBlink(document.querySelector('[data-type="chatSubtitle"]'), 'SECURE COMMUNICATIONS', 18);
+
+    await Timing.sleep(140);
+    scene?.classList.add('has-holo');
+
     await Timing.sleep(360);
-    scene?.classList.add('is-built');
+    scene?.classList.add('has-form');
   }
 };
 
