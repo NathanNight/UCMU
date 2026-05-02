@@ -1,0 +1,26 @@
+.init{transition:opacity .62s ease,filter .62s ease,transform .62s var(--ease)}
+.init.done{filter:blur(14px);transform:scale(.99)}
+
+.logo{transition:opacity 1.65s var(--ease),filter 1.65s var(--ease),transform 1.75s var(--ease)}
+.logo:before{transition:opacity 1.05s ease!important}
+.wash{transition:opacity 1.2s ease!important}
+.grid{transition:opacity 1.05s ease,transform 1.1s var(--ease)!important}
+.hud{transition:opacity .85s ease,filter .85s ease!important}
+.hud i{transition:transform .95s var(--ease)!important}
+.title{transition:opacity .78s ease,filter .78s ease,transform .78s var(--ease)!important}
+.rings{transition:opacity .78s ease,filter .78s ease!important}
+.ring,.node{transition:opacity .48s ease,filter .48s ease!important}
+
+.panel{transition:opacity .72s var(--ease),filter .72s var(--ease),transform .72s var(--ease),height .58s var(--ease)!important}
+.bar{animation:formPartSmooth .34s var(--ease) forwards!important;animation-delay:.00s!important}
+.tabs{animation:formPartSmooth .34s var(--ease) forwards!important;animation-delay:.08s!important}
+.field{animation:fieldBootSmooth .42s var(--ease) forwards!important}
+.field:nth-child(1){animation-delay:.14s!important}.field:nth-child(2){animation-delay:.22s!important}.field:nth-child(3){animation-delay:.30s!important}.field:nth-child(4){animation-delay:.38s!important}.field:nth-child(5){animation-delay:.46s!important}
+.submit{animation:submitBootSmooth .38s var(--ease) forwards!important;animation-delay:.58s!important}
+
+.logoShine{animation-duration:10.5s!important;opacity:0}
+.scan{opacity:.12!important}
+
+@keyframes formPartSmooth{0%{opacity:0;filter:blur(10px);transform:translateY(10px)}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
+@keyframes fieldBootSmooth{0%{opacity:0;filter:blur(10px);transform:translateY(10px)}35%{opacity:.8;filter:blur(1px);transform:translateY(2px)}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
+@keyframes submitBootSmooth{0%{opacity:0;filter:blur(10px);transform:translateY(12px)}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
