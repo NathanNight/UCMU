@@ -5,14 +5,14 @@ const fs = require('fs');
 const isDev = process.argv.includes('--dev');
 
 function firstExistingPath(paths) {
-  return paths.find((p) => fs.existsSync(p));
+  return paths.find((candidatePath) => fs.existsSync(candidatePath));
 }
 
-function getCleanIndexPath() {
+function getAppIndexPath() {
   return firstExistingPath([
-    path.join(__dirname, '..', 'clean', 'index.html'),
-    path.join(app.getAppPath(), 'clean', 'index.html'),
-    path.join(process.cwd(), 'clean', 'index.html')
+    path.join(__dirname, '..', 'app', 'index.html'),
+    path.join(app.getAppPath(), 'app', 'index.html'),
+    path.join(process.cwd(), 'app', 'index.html')
   ]);
 }
 
@@ -24,11 +24,16 @@ function getPreloadPath() {
   ]) || path.join(__dirname, 'preload.js');
 }
 
-async function loadCleanApp(win) {
-  const indexPath = getCleanIndexPath();
+async function loadUcmuApp(win) {
+  const indexPath = getAppIndexPath();
 
   if (!indexPath) {
-    console.error('[UCMU] clean/index.html not found');
+    console.error('[UCMU] app/index.html not found');
+    win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
+      <body style="margin:0;background:#020303;color:#fff;font-family:Consolas,monospace;display:grid;place-items:center;height:100vh">
+        <div>U.C.M.U APP ERROR<br><br>app/index.html not found</div>
+      </body>
+    `)}`);
     return;
   }
 
@@ -65,8 +70,8 @@ function createWindow() {
     win.show();
   });
 
-  loadCleanApp(win).catch((error) => {
-    console.error('[UCMU] loadCleanApp failed:', error);
+  loadUcmuApp(win).catch((error) => {
+    console.error('[UCMU] loadUcmuApp failed:', error);
     win.show();
   });
 
