@@ -6,6 +6,7 @@
   let ctxMenu;
   let dragging = null;
   let pending = null;
+  let sidebarUnsub = null;
 
   function syncModalState() {
     const hasOpen = Boolean($('.modalWindow.open'));
@@ -44,35 +45,99 @@
     syncModalState();
   }
 
-  function makeCardIcon(color, label, isFolder) {
+  function modalError(modal, text) {
+    let node = $('.modalError', modal);
+    if (!node) {
+      node = document.createElement('div');
+      node.className = 'modalError';
+      modal.appendChild(node);
+    }
+    node.textContent = text;
+    node.classList.add('show');
+  }
+
+  function makeCardIcon(color, label, isFolder, avatarUrl = '') {
     const icon = document.createElement('span');
     icon.className = isFolder ? 'cardIcon realFolderIcon' : 'cardIcon folderIcon';
-    icon.style.setProperty('--folder-color', color);
-    icon.textContent = label;
+    icon.style.setProperty('--folder-color', color || '#d71920');
+    if (avatarUrl) {
+      const img = document.createElement('img');
+      img.src = avatarUrl;
+      img.alt = '';
+      icon.appendChild(img);
+    } else {
+      icon.textContent = label;
+    }
     return icon;
   }
 
-  function addCard({ title, subtitle, color, kind }) {
-    const list = $('#chatList');
-    if (!list) return;
+  function makeCard({ id, title, subtitle, color, kind, local = false, count = 0, avatarUrl = '' }) {
     const card = document.createElement('button');
     card.type = 'button';
-    card.className = kind === 'folder' ? 'chatCard folderCard' : 'chatCard localChatCard';
+    card.className = kind === 'folder' ? 'chatCard folderCard' : 'chatCard';
     card.dataset.kind = kind;
-    card.dataset.local = 'true';
-    card.dataset.count = '0';
-    const icon = makeCardIcon(color, kind === 'folder' ? '▰' : title.slice(0, 1).toUpperCase(), kind === 'folder');
+    card.dataset.id = id || '';
+    card.dataset.local = local ? 'true' : 'false';
+    card.dataset.count = String(count || 0);
+    const icon = makeCardIcon(color, kind === 'folder' ? '▰' : String(title || 'Ч').slice(0, 1).toUpperCase(), kind === 'folder', avatarUrl);
     const text = document.createElement('span');
     text.className = 'cardText';
     text.innerHTML = '<b></b><em></em>';
-    text.querySelector('b').textContent = title;
-    text.querySelector('em').textContent = subtitle;
+    text.querySelector('b').textContent = title || (kind === 'folder' ? 'Папка' : 'Чат');
+    text.querySelector('em').textContent = subtitle || '';
     const time = document.createElement('time');
-    time.textContent = 'сейчас';
+    time.textContent = kind === 'folder' ? '' : 'сейчас';
     card.append(icon, text, time);
-    list.prepend(card);
-    card.classList.add('newCardPulse');
-    setTimeout(() => card.classList.remove('newCardPulse'), 650);
+    return card;
+  }
+
+  function renderSidebar({ folders = [], chats = [] }) {
+    const list = $('#chatList');
+    if (!list) return;
+    const activeId = $('.chatCard.active', list)?.dataset.id;
+    list.innerHTML = '';
+
+    folders.forEach((folder) => {
+      const count = Array.isArray(folder.chatIds) ? folder.chatIds.length : Number(folder.count || 0);
+      list.appendChild(makeCard({
+        id: folder.id,
+        title: folder.title,
+        subtitle: `папка · ${count}`,
+        color: folder.color,
+        kind: 'folder',
+        count
+      }));
+    });
+
+    chats.forEach((chat) => {
+      list.appendChild(makeCard({
+        id: chat.id,
+        title: chat.title,
+        subtitle: chat.lastMessageText || 'чат',
+        color: chat.color,
+        kind: 'chat',
+        avatarUrl: chat.avatarUrl || ''
+      }));
+    });
+
+    if (activeId) {
+      const restored = $(`.chatCard[data-id="${CSS.escape(activeId)}"]`, list);
+      if (restored) restored.classList.add('active');
+    }
+  }
+
+  async function waitForFirebase() {
+    for (let i = 0; i < 80; i++) {
+      if (window.UCMUFirebase?.createChatRecord && window.UCMUFirebase?.watchSidebarRecords) return window.UCMUFirebase;
+      await wait(100);
+    }
+    throw new Error('FIREBASE_BRIDGE_NOT_READY');
+  }
+
+  async function setupFirestoreSidebar() {
+    const api = await waitForFirebase();
+    if (sidebarUnsub) sidebarUnsub();
+    sidebarUnsub = api.watchSidebarRecords(renderSidebar);
   }
 
   function activateChat(card) {
@@ -100,24 +165,38 @@
       openModal($('#chatModal'), 'CREATE CHAT');
     }, true);
 
-    $('#folderCreate')?.addEventListener('click', (e) => {
+    $('#folderCreate')?.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopImmediatePropagation();
+      const modal = $('#folderModal');
       const nameInput = $('#folderName');
       const name = nameInput?.value.trim() || 'Новая папка';
-      addCard({ title: name, subtitle: 'папка · 0', color: colorFor('folder'), kind: 'folder' });
-      if (nameInput) nameInput.value = '';
-      closeModal();
+      try {
+        const api = await waitForFirebase();
+        await api.createFolderRecord({ title: name, color: colorFor('folder') });
+        if (nameInput) nameInput.value = '';
+        closeModal();
+      } catch (error) {
+        modalError(modal, 'НЕ УДАЛОСЬ СОЗДАТЬ ПАПКУ');
+        console.error('[UCMU] folder create failed:', error);
+      }
     }, true);
 
-    $('#chatCreate')?.addEventListener('click', (e) => {
+    $('#chatCreate')?.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopImmediatePropagation();
+      const modal = $('#chatModal');
       const nameInput = $('#newChatName');
       const name = nameInput?.value.trim() || 'Новый чат';
-      addCard({ title: name, subtitle: 'чат создан', color: colorFor('chat'), kind: 'chat' });
-      if (nameInput) nameInput.value = '';
-      closeModal();
+      try {
+        const api = await waitForFirebase();
+        await api.createChatRecord({ title: name, color: colorFor('chat'), avatarUrl: '' });
+        if (nameInput) nameInput.value = '';
+        closeModal();
+      } catch (error) {
+        modalError(modal, 'НЕ УДАЛОСЬ СОЗДАТЬ ЧАТ');
+        console.error('[UCMU] chat create failed:', error);
+      }
     }, true);
 
     document.addEventListener('click', (e) => {
@@ -178,10 +257,9 @@
       e.stopImmediatePropagation();
       target = card;
       const isFolder = card.dataset.kind === 'folder' || card.classList.contains('folderCard');
-      const isLocal = card.dataset.local === 'true';
       ctxMenu.innerHTML = isFolder
         ? '<button data-action="delete">Удалить папку</button>'
-        : `<button data-action="leave">Выйти из чата</button>${isLocal ? '<button data-action="delete">Удалить чат</button>' : ''}`;
+        : '<button data-action="leave">Выйти из чата</button><button data-action="delete">Удалить чат</button>';
       ctxMenu.style.left = `${e.clientX}px`;
       ctxMenu.style.top = `${e.clientY}px`;
       ctxMenu.classList.add('open');
@@ -370,6 +448,7 @@
     setupContextMenu();
     setupActivation();
     setupDrag();
+    setupFirestoreSidebar().catch((error) => console.error('[UCMU] sidebar watch failed:', error));
     syncModalState();
   });
 })();
