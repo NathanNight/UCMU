@@ -14,7 +14,10 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  serverTimestamp
+  serverTimestamp,
+  collection,
+  addDoc,
+  arrayUnion
 } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.local.js';
 
@@ -33,6 +36,11 @@ function cleanUsername(username) {
 
 function cleanInviteCode(inviteCode) {
   return String(inviteCode || '').trim();
+}
+
+function cleanTitle(title, fallback) {
+  const value = String(title || '').trim();
+  return value || fallback;
 }
 
 function inviteIsUsable(invite) {
@@ -55,6 +63,7 @@ async function touchUser(user) {
       displayName: user.displayName || '',
       role: 'member',
       disabled: false,
+      folders: [],
       createdAt: serverTimestamp(),
       lastSeenAt: serverTimestamp()
     }, { merge: true });
@@ -83,6 +92,54 @@ async function findInvite(code) {
   }
 
   return null;
+}
+
+function requireUser() {
+  const user = auth.currentUser;
+  if (!user) throw new Error('AUTH_REQUIRED');
+  return user;
+}
+
+export async function createChatRecord({ title, color = '#d71920', avatarUrl = '' }) {
+  await persistenceReady;
+  const user = requireUser();
+  const chatRef = await addDoc(collection(db, 'chats'), {
+    title: cleanTitle(title, 'Новый чат'),
+    color,
+    avatarUrl,
+    type: 'chat',
+    createdBy: user.uid,
+    members: [user.uid],
+    memberRoles: { [user.uid]: 'owner' },
+    memberCount: 1,
+    lastMessageText: '',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  return {
+    id: chatRef.id,
+    title: cleanTitle(title, 'Новый чат'),
+    color,
+    avatarUrl,
+    kind: 'chat'
+  };
+}
+
+export async function createFolderRecord({ title, color = '#d71920' }) {
+  await persistenceReady;
+  const user = requireUser();
+  const folder = {
+    id: crypto.randomUUID ? crypto.randomUUID() : `folder_${Date.now()}`,
+    title: cleanTitle(title, 'Новая папка'),
+    color,
+    chatIds: [],
+    createdAtMs: Date.now()
+  };
+  await setDoc(doc(db, 'users', user.uid), {
+    folders: arrayUnion(folder),
+    lastSeenAt: serverTimestamp()
+  }, { merge: true });
+  return { ...folder, kind: 'folder' };
 }
 
 export async function loginWithEmail({ email, password }) {
@@ -121,6 +178,7 @@ export async function registerWithEmail({ username, email, password, passwordRep
     email: cleanEmail,
     role: 'member',
     disabled: false,
+    folders: [],
     inviteCode: code,
     createdAt: serverTimestamp(),
     lastSeenAt: serverTimestamp()
@@ -162,3 +220,9 @@ export function watchAuthState(callback) {
 export function authReady() {
   return true;
 }
+
+window.UCMUFirebase = {
+  createChatRecord,
+  createFolderRecord,
+  getCurrentUser: () => auth.currentUser
+};
