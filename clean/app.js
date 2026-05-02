@@ -13,7 +13,7 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;
 const uid = p => p + '_' + Math.random().toString(36).slice(2,9);
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 const isDesktopShell = () => document.body.classList.contains('ucmu-desktop') || !!window.ucmuDesktop;
-async function waitDesktopBoot(){ if(isDesktopShell()) await sleep(3150); }
+async function waitDesktopBoot(){ if(isDesktopShell()) await sleep(1720); }
 
 let fb = null;
 let authIntroPlayed = false;
