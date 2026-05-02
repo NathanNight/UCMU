@@ -1,183 +1,55 @@
-/* === DESKTOP INTRO LAYER === */
+/* === STABLE DESKTOP BOOT === */
 
-@media (min-width:900px){
-  body.ucmu-desktop{
-    background:#000!important;
-  }
-
-  body.ucmu-desktop .auth{
-    padding:0!important;
-    background:#000!important;
-  }
-
-  /* first seconds: pure black, no red spots/grid/frame */
-  body.ucmu-desktop .auth-bg{
-    background:#000!important;
-    animation:desktopBgWake 1.8s ease forwards 2.35s;
-  }
-
-  body.ucmu-desktop .auth::before,
-  body.ucmu-desktop .auth-film,
-  body.ucmu-desktop .auth-scan{
-    opacity:0!important;
-    animation:desktopAtmosphereIn 1.2s ease forwards 2.7s!important;
-  }
-
-  /* tactical grid appears only after INITIALIZATION */
-  body.ucmu-desktop .auth-bg::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    z-index:2;
-    pointer-events:none;
-    opacity:0;
-    background:
-      linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),
-      linear-gradient(rgba(215,25,32,.045) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(215,25,32,.04) 1px,transparent 1px);
-    background-size:64px 64px,64px 64px,256px 256px,256px 256px;
-    mask-image:radial-gradient(circle at 50% 54%,#000 0 58%,transparent 84%);
-    animation:desktopGridIn 1.8s ease forwards 2.65s;
-  }
-
-  /* frame also after boot text */
-  body.ucmu-desktop .auth-bg::before{
-    content:"";
-    position:absolute;
-    inset:22px;
-    z-index:3;
-    pointer-events:none;
-    border:1px solid rgba(255,255,255,.07);
-    box-shadow:
-      inset 0 0 0 1px rgba(215,25,32,.035),
-      inset 0 0 42px rgba(215,25,32,.035),
-      0 0 44px rgba(215,25,32,.055);
-    opacity:0;
-    animation:desktopFrameIn 1.4s ease forwards 2.75s;
-  }
-
-  body.ucmu-desktop .auth-stage{
-    width:min(720px,100vw)!important;
-    height:100dvh!important;
-    max-height:100dvh!important;
-    overflow:hidden!important;
-    filter:none!important;
-  }
-
-  /* stop top sticking: whole intro block is centered lower */
-  body.ucmu-desktop .auth-inner{
-    width:430px!important;
-    height:932px!important;
-    top:54%!important;
-    transform:translate(-50%,-50%) scale(min(calc(100vw / 430),calc(100dvh / 932),1))!important;
-    transform-origin:center!important;
-  }
-
-  body.ucmu-desktop .home-topbar{top:68px!important}
-  body.ucmu-desktop .home-top-line{top:96px!important}
-  body.ucmu-desktop .home-logo{top:126px!important;transition-delay:2.7s!important}
-  body.ucmu-desktop .home-title{top:406px!important}
-  body.ucmu-desktop .home-subtitle{top:452px!important}
-  body.ucmu-desktop .home-holo{top:486px!important}
-  body.ucmu-desktop .auth-form{top:656px!important}
-  body.ucmu-desktop .auth-form.register{top:566px!important}
-
-  /* INITIALIZATION: white, center screen, only visible object */
-  body.ucmu-desktop .auth-stage::before{
-    content:"INITIALIZATION";
-    position:absolute;
-    top:50%;
-    left:50%;
-    z-index:50;
-    transform:translate(-50%,-50%);
-    width:0;
-    max-width:245px;
-    overflow:hidden;
-    white-space:nowrap;
-    color:rgba(255,255,255,.92);
-    border-right:2px solid rgba(255,255,255,.7);
-    font-size:12px;
-    font-weight:900;
-    letter-spacing:.34em;
-    text-shadow:0 0 18px rgba(255,255,255,.32);
-    opacity:0;
-    animation:
-      desktopInitType 1.55s steps(14,end) forwards .18s,
-      desktopInitOut .55s ease forwards 2.05s,
-      desktopCaret .68s steps(2,end) infinite;
-  }
-
-  /* hide all intro objects until after text */
-  body.ucmu-desktop .home-topbar,
-  body.ucmu-desktop .home-top-line,
-  body.ucmu-desktop .home-logo,
-  body.ucmu-desktop .home-title,
-  body.ucmu-desktop .home-subtitle,
-  body.ucmu-desktop .home-holo,
-  body.ucmu-desktop .auth-form{
-    animation-delay:2.6s!important;
-  }
-
-  /* cascade rings first, then normal motion */
-  body.ucmu-desktop .home-holo .holo-glow,
-  body.ucmu-desktop .home-holo .holo-core,
-  body.ucmu-desktop .holo-plane-base .c1,
-  body.ucmu-desktop .holo-plane-base .c2,
-  body.ucmu-desktop .holo-plane-base .c3,
-  body.ucmu-desktop .holo-plane-base .c4,
-  body.ucmu-desktop .holo-plane-rise .c1,
-  body.ucmu-desktop .holo-plane-rise .c2,
-  body.ucmu-desktop .holo-plane-rise .c3,
-  body.ucmu-desktop .holo-plane-rise .c4{
-    opacity:0;
-  }
-
-  body.ucmu-desktop .home-holo.built-static .holo-glow{animation:desktopRingBlink .9s steps(1,end) forwards 2.75s, ringGlowPulse 5.8s ease-in-out infinite 3.8s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-core{animation:desktopRingBlink .9s steps(1,end) forwards 2.92s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c3{animation:desktopRingBlink .9s steps(1,end) forwards 3.05s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c1{animation:desktopRingBlink .9s steps(1,end) forwards 3.16s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c4{animation:desktopRingBlink .9s steps(1,end) forwards 3.27s!important}
-  body.ucmu-desktop .home-holo.built-static .holo-plane-base .c2{animation:desktopRingBlink .9s steps(1,end) forwards 3.38s!important}
-
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c1{animation:desktopRingBlink .65s steps(1,end) forwards 3.55s, holoSpin 15s linear infinite 4.2s!important}
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c2{animation:desktopRingBlink .65s steps(1,end) forwards 3.66s, holoLiftA 14s linear infinite 4.2s!important}
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c3{animation:desktopRingBlink .65s steps(1,end) forwards 3.78s, holoLiftB 12.2s linear infinite reverse 4.2s!important}
-  body.ucmu-desktop .home-holo.built-dynamic .holo-plane-rise .c4{animation:desktopRingBlink .65s steps(1,end) forwards 3.90s, holoLiftC 10.4s linear infinite 4.2s!important}
-
-  body.ucmu-desktop .home-logo-glow{
-    background:radial-gradient(circle,rgba(255,70,70,.30) 0%,rgba(255,18,18,.15) 36%,rgba(255,0,0,.055) 56%,transparent 76%)!important;
-  }
+.desktop-boot-overlay{
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:999999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  animation:bootFadeOut .5s ease forwards 2.6s;
 }
 
-@keyframes desktopInitType{
-  0%{width:0;opacity:0}
-  8%{opacity:1}
-  100%{width:245px;opacity:1}
+.desktop-boot-word{
+  color:#fff;
+  font-size:12px;
+  letter-spacing:.35em;
+  white-space:nowrap;
+  overflow:hidden;
+  border-right:2px solid rgba(255,255,255,.7);
+  width:0;
+  animation:
+    bootType 1.6s steps(14,end) forwards .2s,
+    bootCaret .7s steps(2,end) infinite;
 }
-@keyframes desktopInitOut{
-  to{opacity:0;filter:blur(8px);transform:translate(-50%,-50%) scale(.96)}
-}
-@keyframes desktopCaret{50%{border-color:transparent}}
 
-@keyframes desktopBgWake{
-  to{
-    background:
-      radial-gradient(circle at 50% 30%,rgba(215,25,32,.14),transparent 26%),
-      radial-gradient(circle at 16% 72%,rgba(255,255,255,.04),transparent 25%),
-      radial-gradient(circle at 84% 70%,rgba(215,25,32,.07),transparent 24%),
-      linear-gradient(180deg,#061010,#010202 62%,#050000);
-  }
+@keyframes bootType{to{width:240px}}
+@keyframes bootCaret{50%{border-color:transparent}}
+@keyframes bootFadeOut{to{opacity:0}}
+
+/* layout fix */
+body.ucmu-desktop .auth-inner{
+  top:52%!important;
+  transform:translate(-50%,-50%) scale(min(calc(100vw / 430),calc(100dvh / 932),1))!important;
 }
-@keyframes desktopAtmosphereIn{to{opacity:1}}
-@keyframes desktopGridIn{from{opacity:0;filter:blur(8px)}to{opacity:.34;filter:blur(0)}}
-@keyframes desktopFrameIn{from{opacity:0;filter:blur(10px);transform:scale(.985)}to{opacity:1;filter:blur(0);transform:scale(1)}}
-@keyframes desktopRingBlink{
-  0%{opacity:0;filter:blur(6px)}
-  18%{opacity:1;filter:blur(0)}
-  32%{opacity:.15}
-  46%{opacity:1}
-  62%{opacity:.22}
-  78%{opacity:1}
-  100%{opacity:1}
+
+/* positions */
+body.ucmu-desktop .home-logo{top:120px!important}
+body.ucmu-desktop .home-title{top:390px!important}
+body.ucmu-desktop .home-holo{top:440px!important}
+body.ucmu-desktop .auth-form{top:620px!important}
+
+/* grid */
+body.ucmu-desktop .auth-bg::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:64px 64px;
+  opacity:.3;
 }
