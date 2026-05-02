@@ -12,7 +12,7 @@
 .hud{width:min(760px,calc(100vw - 44px))}
 .hud div{gap:88px}
 .hud span:nth-child(2){position:relative;color:#ff4b4b;text-shadow:0 0 10px rgba(255,0,0,.36)}
-.hud span:nth-child(2):after{content:"";position:absolute;right:-18px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#ff3030;box-shadow:0 0 8px rgba(255,45,45,.95),0 0 18px rgba(255,0,0,.5);animation:hudDot .9s ease-in-out infinite}
+.hud span:nth-child(2):after{content:"";position:absolute;left:-18px;right:auto;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#ff3030;box-shadow:0 0 8px rgba(255,45,45,.95),0 0 18px rgba(255,0,0,.5);animation:hudDot .9s ease-in-out infinite}
 
 .input{color:#b9c0c0!important;-webkit-text-fill-color:#b9c0c0!important}
 .input::placeholder{color:#858d8d!important;-webkit-text-fill-color:#858d8d!important}
@@ -30,4 +30,4 @@
 @keyframes modemDots{0%,100%{opacity:.35;filter:brightness(.7)}12%{opacity:1;filter:brightness(1.4)}25%{opacity:.55;filter:brightness(.8)}38%{opacity:1;filter:brightness(1.6)}55%{opacity:.28;filter:brightness(.65)}70%{opacity:.95;filter:brightness(1.35)}}
 @keyframes gridBoot{0%{opacity:0}10%{opacity:.34}16%{opacity:.08}26%{opacity:.58}40%{opacity:.22}58%{opacity:.50}100%{opacity:.58}}
 @keyframes fieldBoot{0%{opacity:0;filter:blur(8px);transform:translateY(8px)}22%{opacity:1;filter:blur(0);transform:translateY(0)}38%{opacity:.22}54%{opacity:1}70%{opacity:.28}100%{opacity:1;filter:blur(0);transform:translateY(0)}}
-@media(max-width:700px){.hud div{gap:32px}.hud span:nth-child(2):after{right:-14px}}
+@media(max-width:700px){.hud div{gap:32px}.hud span:nth-child(2):after{left:-14px;right:auto}}
