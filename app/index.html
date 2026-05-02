@@ -9,7 +9,7 @@
     html,body,#app{width:100%;height:100%;margin:0;background:#020303;color:#f4f7f6;overflow:hidden}
     body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
   </style>
-  <link rel="stylesheet" href="./styles.css?v=app-stage1-20260502-1">
+  <link rel="stylesheet" href="./styles.css?v=app-stage1-20260502-2">
 </head>
 <body>
   <main id="app" class="ucmu-app" data-app>
@@ -20,27 +20,34 @@
 
       <div class="start__scene" data-scene>
         <div class="scene-bg" aria-hidden="true">
-          <div class="scene-bg__radial"></div>
+          <div class="scene-bg__red"></div>
           <div class="scene-bg__grid"></div>
           <div class="scene-bg__scan"></div>
         </div>
 
         <div class="scene-frame" aria-hidden="true"></div>
 
-        <header class="scene-top" data-scene-item>
-          <span>U.C.M.U TERMINAL</span>
-          <i></i>
-          <span>SECURE LINE</span>
+        <header class="scene-top" data-topbar>
+          <div class="scene-top__labels">
+            <span data-type="topLeft"></span>
+            <span class="scene-top__secure"><i></i><b data-type="topRight"></b></span>
+          </div>
+          <div class="scene-top__line" aria-hidden="true"></div>
         </header>
 
         <section class="hero" aria-label="U.C.M.U authorization screen">
-          <div class="hero__logo-wrap" data-scene-item>
+          <div class="hero__logo-wrap" data-logo>
             <div class="hero__logo-glow" aria-hidden="true"></div>
             <img class="hero__logo" src="../assets/logo.webp" alt="U.C.M.U">
             <div class="hero__logo-shine" aria-hidden="true"></div>
           </div>
 
-          <div class="hero__holo" data-scene-item aria-hidden="true">
+          <div class="hero__titles" data-title-block>
+            <div class="hero__title" data-type="chatTitle"></div>
+            <div class="hero__subtitle" data-type="chatSubtitle"></div>
+          </div>
+
+          <div class="hero__holo" data-holo aria-hidden="true">
             <div class="holo__glow"></div>
             <div class="holo__core"></div>
             <div class="holo__plane holo__plane--base">
@@ -61,7 +68,7 @@
           </div>
         </section>
 
-        <section class="auth-card" data-auth data-scene-item aria-label="Авторизация">
+        <section class="auth-card" data-auth aria-label="Авторизация">
           <div class="auth-card__head">
             <span data-auth-title>IDENTITY CHECK</span>
             <i></i>
@@ -83,6 +90,6 @@
     </section>
   </main>
 
-  <script type="module" src="./app.js?v=app-stage1-20260502-1"></script>
+  <script type="module" src="./app.js?v=app-stage1-20260502-2"></script>
 </body>
 </html>
