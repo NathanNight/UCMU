@@ -5,7 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#020303">
   <title>U.C.M.U App Boot</title>
-  <link rel="stylesheet" href="./styles.css">
+  <style>
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #020303;
+      color: #eef4f2;
+    }
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .app-shell, .boot {
+      width: 100vw;
+      height: 100vh;
+      background: #020303;
+    }
+    .boot {
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .boot__center {
+      opacity: 0;
+    }
+    .boot__terminal {
+      position: absolute;
+      left: clamp(18px, 6vw, 72px);
+      top: clamp(18px, 7vh, 68px);
+      color: #eef4f2;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: clamp(16px, 3.8vw, 28px);
+      letter-spacing: 0.11em;
+    }
+  </style>
+  <link rel="stylesheet" href="./styles.css?v=boot-20260502-2">
 </head>
 <body>
   <main id="app" class="app-shell">
@@ -40,6 +76,6 @@
     </section>
   </main>
 
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=boot-20260502-2"></script>
 </body>
 </html>
