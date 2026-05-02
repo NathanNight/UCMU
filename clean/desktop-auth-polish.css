@@ -6,12 +6,17 @@
     --stage-h:min(calc(100dvh - 104px),932px);
   }
 
+  body.ucmu-desktop .auth-stage,
+  body.ucmu-desktop .auth-inner{
+    overflow:visible!important;
+    clip-path:none!important;
+  }
+
   body.ucmu-desktop .auth-stage{
     width:var(--stage-w);
     height:var(--stage-h);
     max-width:430px;
     max-height:932px;
-    overflow:visible!important;
   }
 
   body.ucmu-desktop button,
@@ -23,11 +28,11 @@
 
   body.ucmu-desktop .auth-form{
     top:auto!important;
-    bottom:86px!important;
-    height:228px!important;
+    bottom:74px!important;
+    height:286px!important;
     min-height:0!important;
-    overflow:hidden!important;
-    z-index:5!important;
+    overflow:visible!important;
+    z-index:9!important;
     transform-origin:center bottom!important;
     transition:height .34s cubic-bezier(.16,1,.24,1), opacity .22s ease, transform .22s ease!important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 22px rgba(0,0,0,.42),0 0 5px rgba(255,0,0,.03)!important;
@@ -35,8 +40,8 @@
 
   body.ucmu-desktop .auth-form.register{
     top:auto!important;
-    bottom:86px!important;
-    height:362px!important;
+    bottom:74px!important;
+    height:424px!important;
     min-height:0!important;
   }
 
@@ -44,8 +49,9 @@
   body.ucmu-desktop .auth-form::after{ display:none!important; }
 
   body.ucmu-desktop .home-holo{
-    top:404px!important;
-    z-index:2!important;
+    top:388px!important;
+    z-index:4!important;
+    height:190px!important;
     transform:translateX(-50%) scale(1)!important;
     filter:drop-shadow(0 0 16px rgba(255,0,0,.42)) drop-shadow(0 0 34px rgba(255,0,0,.18));
   }
