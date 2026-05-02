@@ -32,7 +32,6 @@
   body.ucmu-desktop{background:#000!important}
   body.ucmu-desktop .auth{padding:0!important;background:#000!important}
 
-  /* сначала чернота; фон включается в последнюю очередь */
   body.ucmu-desktop .auth-bg{
     background:#000!important;
     animation:desktopBgWake 1.7s ease forwards 3.05s;
@@ -45,7 +44,6 @@
     animation:desktopAtmosphereIn 1.15s ease forwards 3.25s!important;
   }
 
-  /* сетка красиво появляется ближе к концу */
   body.ucmu-desktop .auth-bg::after{
     content:"";
     position:absolute;
@@ -63,7 +61,6 @@
     animation:desktopGridIn 1.45s cubic-bezier(.16,1,.24,1) forwards 3.35s;
   }
 
-  /* рамка после сетки */
   body.ucmu-desktop .auth-bg::before{
     content:"";
     position:absolute;
@@ -84,7 +81,6 @@
     filter:none!important;
   }
 
-  /* не липнет к верху и не режется снизу */
   body.ucmu-desktop .auth-inner{
     width:430px!important;
     height:932px!important;
@@ -95,8 +91,19 @@
 
   body.ucmu-desktop .home-topbar{top:54px!important}
   body.ucmu-desktop .home-top-line{top:82px!important}
-  body.ucmu-desktop .home-logo{top:112px!important;opacity:0!important;filter:blur(18px)!important;transform:translateX(-50%) scale(.86)!important;transition:none!important}
-  body.ucmu-desktop .home-logo.built{animation:desktopLogoReveal 1.15s cubic-bezier(.16,1,.24,1) forwards .08s!important}
+
+  /* logo: hidden by normal properties, revealed by keyframes */
+  body.ucmu-desktop .home-logo{
+    top:112px!important;
+    opacity:0;
+    filter:blur(18px);
+    transform:translateX(-50%) scale(.86)!important;
+    transition:none!important;
+  }
+  body.ucmu-desktop .home-logo.built{
+    animation:desktopLogoReveal 1.15s cubic-bezier(.16,1,.24,1) forwards .08s!important;
+  }
+
   body.ucmu-desktop .home-title{top:382px!important}
   body.ucmu-desktop .home-subtitle{top:428px!important}
   body.ucmu-desktop .home-holo{top:462px!important}
@@ -107,7 +114,7 @@
     background:radial-gradient(circle,rgba(255,70,70,.30) 0%,rgba(255,18,18,.14) 36%,rgba(255,0,0,.05) 56%,transparent 76%)!important;
   }
 
-  /* кольца: гарантированно видимы и раньше */
+  /* rings: no !important on opacity, so keyframes can actually reveal them */
   body.ucmu-desktop .home-holo .holo-glow,
   body.ucmu-desktop .home-holo .holo-core,
   body.ucmu-desktop .holo-plane-base .c1,
@@ -117,7 +124,7 @@
   body.ucmu-desktop .holo-plane-rise .c1,
   body.ucmu-desktop .holo-plane-rise .c2,
   body.ucmu-desktop .holo-plane-rise .c3,
-  body.ucmu-desktop .holo-plane-rise .c4{opacity:0!important}
+  body.ucmu-desktop .holo-plane-rise .c4{opacity:0}
 
   body.ucmu-desktop .home-holo.built-static .holo-glow{animation:desktopRingBlink .75s steps(1,end) forwards 1.00s,ringGlowPulse 5.8s ease-in-out infinite 2.3s!important}
   body.ucmu-desktop .home-holo.built-static .holo-core{animation:desktopRingBlink .75s steps(1,end) forwards 1.12s!important}
@@ -144,11 +151,11 @@
 @keyframes desktopGridIn{from{opacity:0;filter:blur(10px);transform:scale(1.04)}to{opacity:.38;filter:blur(0);transform:scale(1)}}
 @keyframes desktopFrameIn{from{opacity:0;filter:blur(10px);transform:scale(.985)}to{opacity:1;filter:blur(0);transform:scale(1)}}
 @keyframes desktopRingBlink{
-  0%{opacity:0!important;filter:blur(8px)}
-  18%{opacity:1!important;filter:blur(0)}
-  32%{opacity:.10!important}
-  46%{opacity:1!important}
-  62%{opacity:.22!important}
-  78%{opacity:1!important}
-  100%{opacity:1!important}
+  0%{opacity:0;filter:blur(8px)}
+  18%{opacity:1;filter:blur(0)}
+  32%{opacity:.10}
+  46%{opacity:1}
+  62%{opacity:.22}
+  78%{opacity:1}
+  100%{opacity:1}
 }
