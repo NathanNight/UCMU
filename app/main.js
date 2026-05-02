@@ -45,6 +45,14 @@ async function typeBlink(element, text, delay) {
   await blink(element);
 }
 
+async function bootWindowTitle(root, selector, text) {
+  const node = root?.querySelector(selector);
+  if (!node) return;
+  await type(node, text, 22);
+  await sleep(40);
+  await blink(node);
+}
+
 async function ringsSeq() {
   byId('world')?.classList.add('ringsOn');
   const sequence = ['.r3', '.n2', '.r4', '.n1', '.r2', '.n3'];
@@ -53,6 +61,33 @@ async function ringsSeq() {
     if (element) element.classList.add('show');
     await sleep(85 + Math.random() * 95);
   }
+}
+
+function getSortableItems(list) {
+  return [...list.querySelectorAll('.chatCard, .chatPlaceholder')];
+}
+
+function snapshotItems(list) {
+  return new Map(getSortableItems(list).map((item) => [item, item.getBoundingClientRect()]));
+}
+
+function animateListFrom(before) {
+  before.forEach((oldBox, item) => {
+    if (!item.isConnected) return;
+    const newBox = item.getBoundingClientRect();
+    const dx = oldBox.left - newBox.left;
+    const dy = oldBox.top - newBox.top;
+    if (!dx && !dy) return;
+    item.style.transition = 'none';
+    item.style.transform = `translate(${dx}px, ${dy}px)`;
+    item.getBoundingClientRect();
+    item.style.transition = 'transform .22s cubic-bezier(.22,1,.36,1)';
+    item.style.transform = '';
+    window.setTimeout(() => {
+      item.style.transition = '';
+      item.style.transform = '';
+    }, 240);
+  });
 }
 
 function getDragAfterElement(container, y) {
@@ -93,7 +128,7 @@ function startPointerDrag(event, card, list) {
     ghost,
     offsetX: event.clientX - rect.left,
     offsetY: event.clientY - rect.top,
-    hasMovedSlot: false
+    currentBefore: null
   };
 }
 
@@ -105,9 +140,13 @@ function movePointerDrag(event) {
   dragState.ghost.style.top = `${event.clientY - dragState.offsetY}px`;
 
   const after = getDragAfterElement(dragState.list, event.clientY);
+  if (after === dragState.currentBefore) return;
+
+  const before = snapshotItems(dragState.list);
   if (!after) dragState.list.appendChild(dragState.placeholder);
   else dragState.list.insertBefore(dragState.placeholder, after);
-  dragState.hasMovedSlot = true;
+  dragState.currentBefore = after;
+  animateListFrom(before);
 }
 
 function endPointerDrag() {
@@ -145,9 +184,22 @@ function setModalOpen(isOpen) {
   byId('modalDimmer')?.classList.toggle('open', Boolean(isOpen));
 }
 
+function closeModal(modal) {
+  modal?.classList.remove('open');
+  setModalOpen(false);
+}
+
+async function openModal(modal, titleSelector, titleText) {
+  if (!modal) return;
+  setModalOpen(true);
+  modal.classList.add('open');
+  await bootWindowTitle(modal, titleSelector, titleText);
+}
+
 function wireChatShell() {
   const screen = document.querySelector('.screen');
   const profileCard = byId('profileCard');
+  const folderModal = byId('folderModal');
   const input = byId('messageInput');
 
   byId('railToggle')?.addEventListener('click', (event) => {
@@ -156,24 +208,36 @@ function wireChatShell() {
     screen?.classList.toggle('railCollapsed');
   });
 
+  byId('folderOpen')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openModal(folderModal, '.modalTitle', 'CREATE FOLDER');
+  });
+
   document.addEventListener('click', (event) => {
     const avatarHit = event.target.closest?.('#profileOpen .avatar');
-    const closeHit = event.target.closest?.('#profileClose');
+    const closeHit = event.target.closest?.('#profileClose, #folderClose');
+    const modalHit = event.target.closest?.('.profileCard.open, .folderModal.open');
+    const modalOpen = document.querySelector('.profileCard.open, .folderModal.open');
 
     if (avatarHit) {
       event.preventDefault();
       event.stopPropagation();
       const shouldOpen = !profileCard?.classList.contains('open');
-      profileCard?.classList.toggle('open', shouldOpen);
-      setModalOpen(shouldOpen);
+      if (shouldOpen) openModal(profileCard, null, '');
+      else closeModal(profileCard);
       return;
     }
 
     if (closeHit) {
       event.preventDefault();
       event.stopPropagation();
-      profileCard?.classList.remove('open');
-      setModalOpen(false);
+      closeModal(closeHit.closest('.profileCard, .folderModal'));
+      return;
+    }
+
+    if (modalOpen && !modalHit && !event.target.closest('#folderOpen')) {
+      closeModal(modalOpen);
     }
   });
 
