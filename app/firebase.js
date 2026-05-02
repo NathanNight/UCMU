@@ -17,7 +17,10 @@ import {
   serverTimestamp,
   collection,
   addDoc,
-  arrayUnion
+  arrayUnion,
+  query,
+  where,
+  onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.local.js';
 
@@ -103,8 +106,9 @@ function requireUser() {
 export async function createChatRecord({ title, color = '#d71920', avatarUrl = '' }) {
   await persistenceReady;
   const user = requireUser();
+  const clean = cleanTitle(title, 'Новый чат');
   const chatRef = await addDoc(collection(db, 'chats'), {
-    title: cleanTitle(title, 'Новый чат'),
+    title: clean,
     color,
     avatarUrl,
     type: 'chat',
@@ -118,7 +122,7 @@ export async function createChatRecord({ title, color = '#d71920', avatarUrl = '
   });
   return {
     id: chatRef.id,
-    title: cleanTitle(title, 'Новый чат'),
+    title: clean,
     color,
     avatarUrl,
     kind: 'chat'
@@ -140,6 +144,63 @@ export async function createFolderRecord({ title, color = '#d71920' }) {
     lastSeenAt: serverTimestamp()
   }, { merge: true });
   return { ...folder, kind: 'folder' };
+}
+
+export function watchSidebarRecords(callback) {
+  let unsubUser = null;
+  let unsubChats = null;
+  let folders = [];
+  let chats = [];
+
+  function emit() {
+    callback({ folders, chats });
+  }
+
+  function cleanupLive() {
+    if (unsubUser) unsubUser();
+    if (unsubChats) unsubChats();
+    unsubUser = null;
+    unsubChats = null;
+    folders = [];
+    chats = [];
+  }
+
+  const unsubAuth = onAuthStateChanged(auth, async (user) => {
+    cleanupLive();
+    if (!user) {
+      emit();
+      return;
+    }
+
+    await persistenceReady;
+    unsubUser = onSnapshot(doc(db, 'users', user.uid), (snap) => {
+      const data = snap.data() || {};
+      folders = Array.isArray(data.folders) ? data.folders.map((folder) => ({ ...folder, kind: 'folder' })) : [];
+      emit();
+    });
+
+    const chatsQuery = query(collection(db, 'chats'), where('members', 'array-contains', user.uid));
+    unsubChats = onSnapshot(chatsQuery, (snap) => {
+      chats = snap.docs.map((chatDoc) => {
+        const data = chatDoc.data() || {};
+        return {
+          id: chatDoc.id,
+          title: data.title || 'Чат',
+          color: data.color || '#d71920',
+          avatarUrl: data.avatarUrl || '',
+          lastMessageText: data.lastMessageText || '',
+          memberCount: data.memberCount || 0,
+          kind: 'chat'
+        };
+      });
+      emit();
+    });
+  });
+
+  return () => {
+    cleanupLive();
+    unsubAuth();
+  };
 }
 
 export async function loginWithEmail({ email, password }) {
@@ -224,5 +285,6 @@ export function authReady() {
 window.UCMUFirebase = {
   createChatRecord,
   createFolderRecord,
+  watchSidebarRecords,
   getCurrentUser: () => auth.currentUser
 };
