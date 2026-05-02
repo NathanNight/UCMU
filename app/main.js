@@ -4,8 +4,7 @@ const sleep = (m) => new Promise((resolve) => setTimeout(resolve, m));
 let bootDone = false;
 let authOpened = false;
 let chatBooted = false;
-let draggedCard = null;
-let dragPlaceholder = null;
+let dragState = null;
 
 function byId(id) {
   return document.getElementById(id);
@@ -56,7 +55,7 @@ async function ringsSeq() {
 }
 
 function getDragAfterElement(container, y) {
-  const cards = [...container.querySelectorAll('.chatCard:not(.dragging)')];
+  const cards = [...container.querySelectorAll('.chatCard:not(.dragSource)')];
   return cards.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
     const offset = y - box.top - box.height / 2;
@@ -65,23 +64,71 @@ function getDragAfterElement(container, y) {
   }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
 }
 
-function animateCardIntoPlaceholder(card, placeholder) {
-  const from = card.getBoundingClientRect();
-  placeholder.replaceWith(card);
-  card.classList.remove('dragHidden');
-  const to = card.getBoundingClientRect();
-  card.style.transform = `translate(${from.left - to.left}px, ${from.top - to.top}px)`;
-  card.style.opacity = '0.45';
-  requestAnimationFrame(() => {
-    card.classList.add('settling');
-    card.style.transform = 'translate(0, 0)';
-    card.style.opacity = '1';
-  });
+function startPointerDrag(event, card, list) {
+  if (event.button !== 0) return;
+  if (event.target.closest('button,input')) return;
+
+  event.preventDefault();
+  card.setPointerCapture?.(event.pointerId);
+
+  const rect = card.getBoundingClientRect();
+  const placeholder = document.createElement('div');
+  placeholder.className = 'chatPlaceholder';
+  placeholder.innerHTML = '<span>+</span>';
+  placeholder.style.height = `${rect.height}px`;
+  card.after(placeholder);
+
+  const ghost = card.cloneNode(true);
+  ghost.className = 'chatCard dragFloat';
+  ghost.style.width = `${rect.width}px`;
+  ghost.style.height = `${rect.height}px`;
+  ghost.style.left = `${rect.left}px`;
+  ghost.style.top = `${rect.top}px`;
+  document.body.appendChild(ghost);
+
+  card.classList.add('dragSource');
+  dragState = {
+    card,
+    list,
+    placeholder,
+    ghost,
+    offsetX: event.clientX - rect.left,
+    offsetY: event.clientY - rect.top,
+    lastX: event.clientX,
+    lastY: event.clientY
+  };
+}
+
+function movePointerDrag(event) {
+  if (!dragState) return;
+  event.preventDefault();
+
+  dragState.lastX = event.clientX;
+  dragState.lastY = event.clientY;
+  dragState.ghost.style.left = `${event.clientX - dragState.offsetX}px`;
+  dragState.ghost.style.top = `${event.clientY - dragState.offsetY}px`;
+
+  const after = getDragAfterElement(dragState.list, event.clientY);
+  if (!after) dragState.list.appendChild(dragState.placeholder);
+  else dragState.list.insertBefore(dragState.placeholder, after);
+}
+
+function endPointerDrag() {
+  if (!dragState) return;
+
+  const { card, placeholder, ghost } = dragState;
+  const target = placeholder.getBoundingClientRect();
+
+  ghost.style.left = `${target.left}px`;
+  ghost.style.top = `${target.top}px`;
+  ghost.classList.add('dropSettle');
+
   window.setTimeout(() => {
-    card.classList.remove('dragging', 'settling');
-    card.style.transform = '';
-    card.style.opacity = '';
-  }, 260);
+    placeholder.replaceWith(card);
+    card.classList.remove('dragSource');
+    ghost.remove();
+    dragState = null;
+  }, 230);
 }
 
 function wireChatDrag() {
@@ -89,45 +136,13 @@ function wireChatDrag() {
   if (!list) return;
 
   list.querySelectorAll('.chatCard').forEach((card) => {
-    card.addEventListener('dragstart', (event) => {
-      draggedCard = card;
-      dragPlaceholder = document.createElement('div');
-      dragPlaceholder.className = 'chatPlaceholder';
-      dragPlaceholder.innerHTML = '<span>+</span>';
-      card.after(dragPlaceholder);
-      card.classList.add('dragging');
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', 'chat-card');
-      const ghost = card.cloneNode(true);
-      ghost.className = 'dragGhost';
-      ghost.style.width = `${card.offsetWidth}px`;
-      ghost.style.height = `${card.offsetHeight}px`;
-      document.body.appendChild(ghost);
-      event.dataTransfer.setDragImage(ghost, 24, 24);
-      requestAnimationFrame(() => {
-        card.classList.add('dragHidden');
-        ghost.remove();
-      });
-    });
-
-    card.addEventListener('dragend', () => {
-      if (dragPlaceholder && draggedCard) {
-        animateCardIntoPlaceholder(draggedCard, dragPlaceholder);
-      } else {
-        draggedCard?.classList.remove('dragging', 'dragHidden');
-      }
-      draggedCard = null;
-      dragPlaceholder = null;
-    });
+    card.removeAttribute('draggable');
+    card.addEventListener('pointerdown', (event) => startPointerDrag(event, card, list));
   });
 
-  list.addEventListener('dragover', (event) => {
-    event.preventDefault();
-    if (!dragPlaceholder || !draggedCard) return;
-    const after = getDragAfterElement(list, event.clientY);
-    if (!after) list.appendChild(dragPlaceholder);
-    else list.insertBefore(dragPlaceholder, after);
-  });
+  window.addEventListener('pointermove', movePointerDrag, { passive: false });
+  window.addEventListener('pointerup', endPointerDrag);
+  window.addEventListener('pointercancel', endPointerDrag);
 }
 
 function wireChatShell() {
