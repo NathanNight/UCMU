@@ -55,9 +55,7 @@ async function ringsSeq() {
 
 function wireChatShell() {
   const screen = document.querySelector('.screen');
-  const profileButton = byId('profileOpen');
   const profileCard = byId('profileCard');
-  const profileClose = byId('profileClose');
   const input = byId('messageInput');
 
   byId('railToggle')?.addEventListener('click', (event) => {
@@ -66,16 +64,22 @@ function wireChatShell() {
     screen?.classList.toggle('railCollapsed');
   });
 
-  profileButton?.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    profileCard?.classList.toggle('open');
-  });
+  document.addEventListener('click', (event) => {
+    const profileHit = event.target.closest?.('#profileOpen, #profileOpen *');
+    const closeHit = event.target.closest?.('#profileClose');
 
-  profileClose?.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    profileCard?.classList.remove('open');
+    if (profileHit) {
+      event.preventDefault();
+      event.stopPropagation();
+      profileCard?.classList.toggle('open');
+      return;
+    }
+
+    if (closeHit) {
+      event.preventDefault();
+      event.stopPropagation();
+      profileCard?.classList.remove('open');
+    }
   });
 
   input?.addEventListener('input', () => {
@@ -94,6 +98,7 @@ async function bootChatInterface(user, fast = false) {
   const search = byId('chatSearch');
 
   worldNode?.classList.add('authorized');
+  await sleep(fast ? 120 : 260);
   worldNode?.classList.add('chatBoot');
 
   await sleep(fast ? 80 : 220);
