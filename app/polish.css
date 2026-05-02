@@ -1,0 +1,21 @@
+.logo{transition:opacity 1.05s var(--ease),filter 1.05s var(--ease),transform 1.12s var(--ease)}
+.world.logoOn .logo{animation:none}
+
+.grid{opacity:0;background:radial-gradient(circle,rgba(255,92,92,.42) 0 1.2px,transparent 1.55px),linear-gradient(rgba(255,255,255,.042) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.038) 1px,transparent 1px),linear-gradient(rgba(215,25,32,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(215,25,32,.07) 1px,transparent 1px);background-size:104px 104px,52px 52px,52px 52px,156px 156px,156px 156px;mask-image:radial-gradient(circle at 50% 45%,rgba(0,0,0,.22) 0 20%,rgba(0,0,0,.58) 33%,#000 58%,transparent 84%)}
+.world.gridOn .grid{animation:gridBoot 1.2s steps(1) 1;opacity:.46}
+
+.grid:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 0 18%,rgba(255,75,75,.28) 18.2%,transparent 19.2% 34%,rgba(255,255,255,.20) 34.2%,transparent 35.2% 50%,rgba(255,75,75,.22) 50.2%,transparent 51.2% 67%,rgba(255,255,255,.16) 67.2%,transparent 68.2% 100%);background-size:360px 360px;opacity:0;animation:gridDiagonalBits 1.6s steps(1) 1 .15s}
+
+.input{color:#b9c0c0!important;-webkit-text-fill-color:#b9c0c0!important}
+.input::placeholder{color:#858d8d!important;-webkit-text-fill-color:#858d8d!important}
+.tab,.submit,.bar{color:#d7dddd}
+
+.field{animation:fieldIn .20s var(--ease) forwards}
+.field:nth-child(2){animation-delay:.018s}.field:nth-child(3){animation-delay:.036s}.field:nth-child(4){animation-delay:.054s}.field:nth-child(5){animation-delay:.072s}
+.panel.switching .fields{transition:.16s var(--ease)}
+
+.bar i{width:38px;height:6px;background:radial-gradient(circle,#ff3030 0 2px,transparent 2.4px);background-size:10px 6px;background-repeat:repeat-x;box-shadow:0 0 10px rgba(255,0,0,.28);animation:modemDots .85s steps(1) infinite}
+
+@keyframes modemDots{0%,100%{opacity:.35;filter:brightness(.7)}12%{opacity:1;filter:brightness(1.4)}25%{opacity:.55;filter:brightness(.8)}38%{opacity:1;filter:brightness(1.6)}55%{opacity:.28;filter:brightness(.65)}70%{opacity:.95;filter:brightness(1.35)}}
+@keyframes gridBoot{0%{opacity:0}8%{opacity:.32}13%{opacity:.08}22%{opacity:.46}35%{opacity:.18}48%{opacity:.42}100%{opacity:.46}}
+@keyframes gridDiagonalBits{0%{opacity:0;transform:translate(-90px,-90px)}12%{opacity:.45}20%{opacity:.08}34%{opacity:.38;transform:translate(-40px,-40px)}48%{opacity:.12}62%{opacity:.32;transform:translate(0,0)}78%,100%{opacity:0;transform:translate(40px,40px)}}
