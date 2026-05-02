@@ -1,19 +1,14 @@
 @media (min-width:900px){
-  body.ucmu-desktop .auth{ -webkit-app-region:drag; }
-  body.ucmu-desktop .auth::before{
-    content:"VERSION CHECK WHITE BG";
-    position:fixed;
-    left:18px;
-    top:18px;
-    z-index:99999;
-    padding:10px 14px;
-    background:#ffffff!important;
-    color:#000000!important;
-    font:900 15px/1.2 Consolas,monospace;
-    letter-spacing:.08em;
-    border:3px solid #ff0000;
-    box-shadow:0 0 0 9999px rgba(255,255,255,.82)!important;
+  body.ucmu-desktop .auth{
+    -webkit-app-region:drag;
+    padding:40px 32px 52px;
   }
+
+  body.ucmu-desktop .auth-stage{
+    width:min(calc(100vw - 96px),calc((100dvh - 92px) * 430 / 932),430px);
+    height:min(calc(100dvh - 92px),calc((100vw - 96px) * 932 / 430),932px);
+  }
+
   body.ucmu-desktop button,
   body.ucmu-desktop input,
   body.ucmu-desktop textarea,
@@ -21,8 +16,8 @@
   body.ucmu-desktop .auth-form *,
   body.ucmu-desktop .pass-eye{ -webkit-app-region:no-drag; }
 
-  body.ucmu-desktop .auth-form{ top:620px!important; }
-  body.ucmu-desktop .auth-form.register{ top:540px!important; }
+  body.ucmu-desktop .auth-form{ top:592px!important; }
+  body.ucmu-desktop .auth-form.register{ top:512px!important; }
 
   body.ucmu-desktop .home-logo::before,
   body.ucmu-desktop .home-logo::after{
