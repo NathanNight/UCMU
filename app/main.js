@@ -46,6 +46,15 @@ async function ringsSeq() {
   }
 }
 
+function wireChatShell() {
+  railToggle?.addEventListener('click', () => document.querySelector('.screen')?.classList.toggle('railCollapsed'));
+  profileOpen?.addEventListener('click', () => profileCard?.classList.add('open'));
+  profileClose?.addEventListener('click', () => profileCard?.classList.remove('open'));
+  messageInput?.addEventListener('input', () => {
+    messageInput.closest('.composer')?.classList.toggle('hasText', messageInput.value.trim().length > 0);
+  });
+}
+
 async function authorizedSequence(user, fast = false) {
   if (authOpened) return;
   authOpened = true;
@@ -60,6 +69,8 @@ async function authorizedSequence(user, fast = false) {
   await blink(authPass);
   await sleep(140);
   chatUser.textContent = (user.displayName || user.email || 'AUTHORIZED').toUpperCase();
+  sideUser.textContent = user.displayName || user.email || 'user';
+  profileName.textContent = user.displayName || user.email || 'user';
   world.classList.add('authorized');
 }
 
@@ -212,6 +223,7 @@ watchAuthState((user) => {
 });
 
 async function boot() {
+  wireChatShell();
   AuthScreen.init();
   await sleep(120);
   await type(initText, 'INIT SYSTEM', 30);
