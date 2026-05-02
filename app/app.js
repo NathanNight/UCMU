@@ -5,7 +5,7 @@ const Timing = {
 };
 
 const TextFx = {
-  async type(element, text, delay = 54) {
+  async type(element, text, delay = 22) {
     if (!element) return;
     element.textContent = '';
     element.classList.add('typing');
@@ -18,17 +18,17 @@ const TextFx = {
     element.classList.remove('typing');
   },
 
-  async blinkThreeTimes(element) {
+  async blink(element) {
     if (!element) return;
     element.classList.add('is-blinking', 'blink-text');
-    await Timing.sleep(660);
+    await Timing.sleep(620);
     element.classList.remove('is-blinking', 'blink-text');
   },
 
-  async typeAndBlink(element, text, delay = 18) {
+  async typeAndBlink(element, text, delay = 14) {
     await this.type(element, text, delay);
-    await Timing.sleep(24);
-    await this.blinkThreeTimes(element);
+    await Timing.sleep(20);
+    await this.blink(element);
   }
 };
 
@@ -50,11 +50,10 @@ const AuthScreen = {
   },
 
   init() {
-    this.card = document.querySelector('[data-auth]');
+    this.panel = document.querySelector('[data-auth]');
     this.form = document.querySelector('[data-auth-form]');
     this.fieldsNode = document.querySelector('[data-auth-fields]');
     this.submitNode = document.querySelector('[data-auth-submit]');
-    this.hintNode = document.querySelector('[data-auth-hint]');
     this.errorNode = document.querySelector('[data-auth-error]');
     this.tabs = Array.from(document.querySelectorAll('[data-auth-mode]'));
 
@@ -80,10 +79,9 @@ const AuthScreen = {
     if (!this.fieldsNode) return;
 
     const isRegister = this.mode === 'register';
-    this.card?.classList.toggle('is-register', isRegister);
+    this.panel?.classList.toggle('is-register', isRegister);
     this.tabs.forEach(button => button.classList.toggle('is-active', button.dataset.authMode === this.mode));
     this.submitNode.textContent = isRegister ? 'ЗАРЕГИСТРИРОВАТЬСЯ' : 'ВОЙТИ';
-    this.hintNode.textContent = isRegister ? '@username будет именем в чате.' : 'Secure communications access point.';
     this.showError('');
 
     this.fieldsNode.innerHTML = this.fields[this.mode].map(field => this.fieldTemplate(field)).join('');
@@ -112,42 +110,40 @@ const AuthScreen = {
   }
 };
 
-const StartScreen = {
-  async init() {
+const ClassifiedIntro = {
+  async start() {
     const init = document.querySelector('[data-init]');
     const initText = document.querySelector('[data-init-text]');
-    const scene = document.querySelector('[data-scene]');
+    const world = document.querySelector('[data-world]');
 
     AuthScreen.init();
 
-    await Timing.sleep(120);
-    await TextFx.type(initText, 'INIT SYSTEM', 34);
-    await Timing.sleep(70);
-    await TextFx.blinkThreeTimes(initText);
-    await Timing.sleep(45);
+    await Timing.sleep(100);
+    await TextFx.type(initText, 'INIT SYSTEM', 28);
+    await Timing.sleep(55);
+    await TextFx.blink(initText);
+    await Timing.sleep(30);
 
     init?.classList.add('is-hidden');
-    scene?.classList.add('is-visible');
+    world?.classList.add('is-visible');
 
-    await Timing.sleep(70);
-    scene?.classList.add('has-logo');
+    await Timing.sleep(60);
+    world?.classList.add('is-logo');
 
     await Timing.sleep(120);
-    scene?.classList.add('has-top', 'has-line', 'has-grid', 'has-red', 'has-frame');
+    world?.classList.add('is-armed', 'is-hud', 'is-rings');
 
-    TextFx.typeAndBlink(document.querySelector('[data-type="topLeft"]'), 'U.C.M.U TERMINAL', 10);
-    TextFx.typeAndBlink(document.querySelector('[data-type="topRight"]'), 'SECURE LINE', 10);
+    TextFx.typeAndBlink(document.querySelector('[data-title-main]'), 'CHAT', 26);
+    TextFx.typeAndBlink(document.querySelector('[data-title-sub]'), 'SECURE COMMUNICATIONS', 8);
 
-    await Timing.sleep(140);
-    scene?.classList.add('has-title', 'has-holo');
-    TextFx.typeAndBlink(document.querySelector('[data-type="chatTitle"]'), 'CHAT', 24);
-    TextFx.typeAndBlink(document.querySelector('[data-type="chatSubtitle"]'), 'SECURE COMMUNICATIONS', 8);
+    await Timing.sleep(180);
+    world?.classList.add('is-title');
 
-    await Timing.sleep(300);
-    scene?.classList.add('has-form');
+    await Timing.sleep(260);
+    world?.classList.add('is-form');
   }
 };
 
 window.addEventListener('DOMContentLoaded', () => {
-  StartScreen.init();
+  ClassifiedIntro.start();
 });
