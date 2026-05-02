@@ -6,83 +6,80 @@
   <meta name="theme-color" content="#020303">
   <title>U.C.M.U Chat</title>
   <style>
-    html,body,#app{width:100%;height:100%;margin:0;background:#020303;color:#f4f7f6;overflow:hidden}
-    body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+    :root{--bg:#020303;--text:#f4f7f6;--red:#d71920;--red2:#65070b;--ease:cubic-bezier(.16,1,.24,1)}
+    *{box-sizing:border-box}html,body,#app{width:100%;height:100%;margin:0;background:var(--bg);color:var(--text);overflow:hidden}body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}button,input{font:inherit;color:inherit}button{border:0;cursor:pointer;background:none}input{border:0;outline:0}
+    .screen{position:relative;width:100%;height:100%;overflow:hidden;background:#020303}.init{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#000;transition:opacity .32s ease,filter .32s ease,transform .32s var(--ease)}.init.done{opacity:0;filter:blur(10px);transform:scale(.985);pointer-events:none}.initText{min-width:13ch;color:#fff;font-family:Consolas,"Cascadia Mono",monospace;font-size:clamp(15px,2.3vw,23px);font-weight:900;letter-spacing:.28em;text-align:center;text-shadow:0 0 18px rgba(255,255,255,.34)}.initText:after{content:"";display:inline-block;width:.55em;height:1em;margin-left:.18em;transform:translateY(.15em);background:#fff;animation:caret .62s steps(1) infinite}.initText.blink:after{display:none}.initText.blink{animation:blink .1s steps(1) 6}
+    .world{position:absolute;inset:0;opacity:0;transition:opacity .2s ease}.world.show{opacity:1}.bg,.wash,.grid,.scan,.noise{position:absolute;inset:0;pointer-events:none}.bg{background:#020303}.wash{opacity:0;background:radial-gradient(circle at 50% 24%,rgba(215,25,32,.35),transparent 31%),radial-gradient(circle at 50% 76%,rgba(255,255,255,.055),transparent 34%),radial-gradient(circle at 8% 82%,rgba(215,25,32,.18),transparent 25%),radial-gradient(circle at 92% 74%,rgba(215,25,32,.16),transparent 23%),linear-gradient(180deg,#071010,#010202 62%,#070000);transition:opacity .45s ease}.world.active .wash{opacity:1}.grid{opacity:0;background:linear-gradient(135deg,rgba(255,255,255,.11) 1px,transparent 1px),linear-gradient(45deg,rgba(215,25,32,.18) 1px,transparent 1px),linear-gradient(rgba(215,25,32,.085) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:54px 54px,54px 54px,162px 162px,162px 162px;transform:translate(-50px,-50px) skew(-2deg);filter:drop-shadow(0 0 12px rgba(215,25,32,.16));transition:opacity .34s ease,transform .5s var(--ease)}.world.active .grid{opacity:.68;transform:translate(0,0) skew(-2deg)}.noise{opacity:.12;background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.16) 0 1px,transparent 1.4px),radial-gradient(circle at 70% 60%,rgba(255,255,255,.10) 0 1px,transparent 1.4px);background-size:120px 120px,170px 170px}.scan{opacity:.17;background:repeating-linear-gradient(0deg,rgba(255,255,255,.052) 0 1px,transparent 1px 4px)}.scan:after{content:"";position:absolute;left:0;right:0;top:-180px;height:160px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.10),transparent);animation:scanMove 4.4s linear infinite}
+    .topHud{position:absolute;z-index:5;top:clamp(20px,5vh,48px);left:50%;width:min(650px,calc(100vw - 44px));transform:translateX(-50%);display:flex;align-items:center;gap:14px;font-family:Consolas,"Cascadia Mono",monospace;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:rgba(244,247,246,.72);opacity:0;filter:blur(8px);transition:opacity .3s ease,filter .3s ease}.world.hud .topHud{opacity:1;filter:blur(0)}.topHud i{height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),rgba(255,68,68,.95),rgba(255,255,255,.2),transparent);box-shadow:0 0 14px rgba(255,0,0,.25)}
+    .side{position:absolute;z-index:4;top:50%;display:grid;gap:15px;transform:translateY(-50%);font-family:Consolas,"Cascadia Mono",monospace;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:rgba(244,247,246,.62);opacity:0;filter:blur(8px);transition:opacity .3s ease,filter .3s ease}.world.hud .side{opacity:1;filter:blur(0)}.side.left{left:clamp(14px,3vw,42px)}.side.right{right:clamp(14px,3vw,42px);text-align:right}.side span{border-left:2px solid rgba(215,25,32,.65);padding-left:9px}.side.right span{border-left:0;border-right:2px solid rgba(215,25,32,.65);padding-left:0;padding-right:9px}
+    .stage{position:relative;z-index:3;width:min(430px,100vw);height:100dvh;min-height:690px;max-height:932px;margin:auto}.logo{position:absolute;left:50%;top:clamp(62px,9vh,86px);width:clamp(220px,49vw,285px);aspect-ratio:1;opacity:0;filter:blur(34px) brightness(.35);transform:translateX(-50%) scale(.70);transition:opacity .55s var(--ease),filter .6s var(--ease),transform .64s var(--ease)}.world.logoOn .logo{opacity:1;filter:blur(0) brightness(1);transform:translateX(-50%) scale(1)}.logo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 22px rgba(255,0,0,.30)) drop-shadow(0 0 2px rgba(255,255,255,.45))}.logo:before{content:"";position:absolute;inset:-22px;border-radius:50%;background:radial-gradient(circle,rgba(255,70,70,.38),rgba(215,25,32,.15) 42%,transparent 73%);animation:aura 3.8s ease-in-out infinite}
+    .title{position:absolute;left:20px;right:20px;top:clamp(315px,39vh,350px);text-align:center;opacity:0;filter:blur(8px);transform:translateY(10px);transition:opacity .28s ease,filter .28s ease,transform .28s var(--ease)}.world.titleOn .title{opacity:1;filter:blur(0);transform:none}.titleMain{min-height:1.05em;font-size:clamp(36px,8vw,42px);line-height:1;font-weight:300;letter-spacing:.22em;color:#fff;text-shadow:0 0 1px rgba(255,255,255,.95),0 0 12px rgba(255,255,255,.68),0 0 22px rgba(255,90,90,.3),0 0 40px rgba(255,0,0,.24)}.titleSub{min-height:1.2em;margin-top:10px;color:#ff5050;font-size:12px;font-weight:800;letter-spacing:.34em;text-shadow:0 0 12px rgba(255,0,0,.28)}.typing:after{content:"_";margin-left:3px;color:#ff5a5a;animation:caret .62s steps(1) infinite}.blinkText{animation:blink .1s steps(1) 6}
+    .rings{position:absolute;left:50%;top:clamp(365px,48vh,420px);width:390px;height:170px;transform:translateX(-50%);opacity:0;filter:blur(10px);transition:opacity .28s ease,filter .28s ease}.world.ringsOn .rings{opacity:1;filter:blur(0);animation:flick .45s steps(1) 1}.ring,.node{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);border-radius:50%}.ring{border:1px solid rgba(255,72,72,.62);box-shadow:0 0 10px rgba(255,0,0,.2),inset 0 0 5px rgba(255,55,55,.08);transform:translate(-50%,-50%) perspective(540px) rotateX(67deg);animation:ringBlink .9s steps(1) infinite}.r1{width:326px;height:326px}.r2{width:262px;height:262px;border-style:dashed;animation-delay:.1s}.r3{width:198px;height:198px;animation-delay:.2s}.r4{width:132px;height:132px;border-style:dashed;animation-delay:.28s}.node{width:7px;height:7px;background:#ff5757;box-shadow:0 0 7px rgba(255,90,90,.9),0 0 18px rgba(255,0,0,.34)}.n1{left:78%;top:50%}.n2{left:29%;top:34%;width:5px;height:5px}.n3{left:58%;top:73%;width:5px;height:5px}
+    .panel{position:absolute;z-index:7;left:50%;bottom:clamp(18px,4vh,42px);width:min(330px,calc(100vw - 56px));min-height:194px;padding:11px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(180deg,rgba(16,20,22,.70),rgba(5,7,8,.88));backdrop-filter:blur(18px);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 38px rgba(0,0,0,.48),0 0 32px rgba(255,0,0,.12);opacity:0;filter:blur(18px);transform:translateX(-50%) translateY(24px) scale(.98);transition:opacity .34s var(--ease),filter .38s var(--ease),transform .38s var(--ease),min-height .24s var(--ease)}.world.formOn .panel{opacity:1;filter:blur(0);transform:translateX(-50%) translateY(0) scale(1)}.panel.register{min-height:318px}.panelBar{height:22px;display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;border-bottom:1px solid rgba(255,255,255,.08);font-size:9px;font-weight:900;letter-spacing:.18em;color:rgba(255,255,255,.72);text-transform:uppercase}.panelBar i{width:36px;height:4px;background:repeating-linear-gradient(90deg,rgba(255,70,70,.9) 0 5px,transparent 5px 10px);box-shadow:0 0 12px rgba(255,0,0,.25);animation:bars .9s steps(1) infinite}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}.tab{height:32px;border:1px solid rgba(255,255,255,.10);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));font-size:13px;font-weight:900;color:#fff}.tab.active{background:linear-gradient(135deg,rgba(184,23,29,.75),rgba(79,7,8,.75));border-color:rgba(255,85,85,.48);box-shadow:0 0 14px rgba(255,0,0,.13)}.form{display:grid;gap:6px}.fields{display:grid;gap:6px}.field{position:relative}.input{width:100%;height:34px;padding:0 10px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(180deg,rgba(42,45,49,.72),rgba(22,24,27,.78));box-shadow:inset 0 1px 0 rgba(255,255,255,.06);color:#fff;-webkit-text-fill-color:#fff;caret-color:#ff5a5a;font-size:13px}.input:focus{border-color:rgba(255,80,80,.65);box-shadow:0 0 0 3px rgba(255,0,0,.10),inset 0 1px 0 rgba(255,255,255,.12)}.input::placeholder{color:rgba(235,240,242,.46);-webkit-text-fill-color:rgba(235,240,242,.46)}.submit{height:36px;margin-top:1px;border:1px solid rgba(255,85,85,.72);background:linear-gradient(135deg,#b8171d,#4f0708);box-shadow:0 0 22px rgba(255,0,0,.16),inset 0 1px 0 rgba(255,255,255,.20);font-size:12px;font-weight:900;letter-spacing:.10em;color:#fff}.error{min-height:15px;color:#ff646b;font-size:11px}.eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:28px;height:26px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.28);color:rgba(255,255,255,.86)}.field.password .input{padding-right:42px}
+    @keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.08}}@keyframes scanMove{to{transform:translateY(110vh)}}@keyframes aura{0%,100%{opacity:.72;transform:scale(.95)}50%{opacity:1;transform:scale(1.05)}}@keyframes flick{0%{opacity:.18}14%{opacity:1}29%{opacity:.2}43%{opacity:1}62%{opacity:.45}100%{opacity:1}}@keyframes ringBlink{0%,84%,100%{opacity:1}85%,91%{opacity:.20}}@keyframes bars{0%,100%{opacity:.55}12%{opacity:1}16%{opacity:.2}22%{opacity:1}48%{opacity:.42}52%{opacity:1}}
+    @media(max-width:700px){.side{display:none}.topHud{font-size:9px}.logo{top:76px;width:min(66vw,260px)}.title{top:342px}.rings{top:410px;scale:.92}.panel{bottom:20px;width:min(324px,calc(100vw - 48px))}.panel.register{bottom:12px}}
+    @media(max-height:720px){.topHud{top:18px}.logo{top:40px;width:180px}.title{top:238px}.titleMain{font-size:30px}.titleSub{font-size:10px;margin-top:7px}.rings{top:286px;scale:.72}.panel{bottom:8px}.panel.register{min-height:292px}.tab{height:30px}.input{height:30px}.submit{height:32px}}
   </style>
-  <link rel="stylesheet" href="./styles.css?v=cinematic-classified-1">
 </head>
 <body>
-  <main id="app" class="ucmu-app">
-    <section class="classified" data-screen>
-      <div class="init-gate" data-init>
-        <div class="init-gate__text" data-init-text></div>
-      </div>
-
-      <div class="classified__world" data-world>
-        <div class="bg" aria-hidden="true">
-          <div class="bg__wash"></div>
-          <div class="bg__grid"></div>
-          <div class="bg__noise"></div>
-          <div class="bg__scan"></div>
-        </div>
-
-        <div class="hud hud--top" aria-hidden="true">
-          <span>U.C.M.U / BLACK CHANNEL</span>
-          <i></i>
-          <span>ACCESS NODE 07</span>
-        </div>
-
-        <div class="hud hud--left" aria-hidden="true">
-          <span>AUTH</span><span>BIOMETRIC</span><span>LINK</span><span>READY</span>
-        </div>
-
-        <div class="hud hud--right" aria-hidden="true">
-          <span>TRACE 00</span><span>FIRESTORE</span><span>SECURE</span>
-        </div>
-
-        <section class="core">
-          <div class="core__logo" data-logo>
-            <div class="core__logo-aura"></div>
-            <img src="../assets/logo.webp" alt="U.C.M.U">
-          </div>
-
-          <div class="core__rings" aria-hidden="true">
-            <i class="ring ring--1"></i>
-            <i class="ring ring--2"></i>
-            <i class="ring ring--3"></i>
-            <i class="ring ring--4"></i>
-            <b class="node node--1"></b>
-            <b class="node node--2"></b>
-            <b class="node node--3"></b>
-          </div>
-
-          <div class="core__title">
-            <div class="core__title-main" data-title-main></div>
-            <div class="core__title-sub" data-title-sub></div>
-          </div>
+  <main id="app">
+    <section class="screen">
+      <div class="init" id="init"><div class="initText" id="initText"></div></div>
+      <div class="world" id="world">
+        <div class="bg"><div class="wash"></div><div class="grid"></div><div class="noise"></div><div class="scan"></div></div>
+        <div class="topHud"><span>U.C.M.U / BLACK CHANNEL</span><i></i><span>ACCESS NODE 07</span></div>
+        <div class="side left"><span>AUTH</span><span>BIOMETRIC</span><span>LINK</span><span>READY</span></div>
+        <div class="side right"><span>TRACE 00</span><span>FIRESTORE</span><span>SECURE</span></div>
+        <section class="stage">
+          <div class="logo"><img src="../assets/logo.webp" alt="U.C.M.U"></div>
+          <div class="title"><div class="titleMain" id="titleMain"></div><div class="titleSub" id="titleSub"></div></div>
+          <div class="rings"><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="ring r4"></i><b class="node n1"></b><b class="node n2"></b><b class="node n3"></b></div>
         </section>
-
-        <section class="auth-panel" data-auth>
-          <div class="auth-panel__bar">
-            <span>IDENTITY CHECK</span>
-            <i></i>
-          </div>
-
-          <div class="auth-tabs">
-            <button class="auth-tabs__btn is-active" type="button" data-auth-mode="login">Вход</button>
-            <button class="auth-tabs__btn" type="button" data-auth-mode="register">Регистрация</button>
-          </div>
-
-          <form class="auth-form" data-auth-form>
-            <div class="auth-form__fields" data-auth-fields></div>
-            <div class="auth-form__error" data-auth-error></div>
-            <button class="auth-form__submit" type="submit" data-auth-submit>ВОЙТИ</button>
-          </form>
+        <section class="panel" id="panel">
+          <div class="panelBar"><span>IDENTITY CHECK</span><i></i></div>
+          <div class="tabs"><button class="tab active" type="button" data-mode="login">Вход</button><button class="tab" type="button" data-mode="register">Регистрация</button></div>
+          <form class="form" id="form"><div class="fields" id="fields"></div><div class="error" id="error"></div><button class="submit" id="submit" type="submit">ВОЙТИ</button></form>
         </section>
       </div>
     </section>
   </main>
+  <script>
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    async function type(el, text, delay=20){ el.textContent=''; el.classList.add('typing'); for(const ch of text){ el.textContent+=ch; await sleep(delay); } el.classList.remove('typing'); }
+    async function blink(el){ el.classList.add('blink','blinkText'); await sleep(620); el.classList.remove('blink','blinkText'); }
+    async function typeBlink(el,text,delay=14){ await type(el,text,delay); await sleep(20); await blink(el); }
 
-  <script type="module" src="./app.js?v=cinematic-classified-1"></script>
+    const auth = {
+      mode:'login',
+      sets:{
+        login:[['email','email','Email','email'],['password','password','Пароль','current-password',true]],
+        register:[['username','text','@username','username'],['email','email','Email','email'],['password','password','Пароль','new-password',true],['passwordRepeat','password','Повтор пароля','new-password',true],['inviteCode','text','Invite code','off']]
+      },
+      init(){
+        this.panel=document.getElementById('panel'); this.fields=document.getElementById('fields'); this.submit=document.getElementById('submit'); this.error=document.getElementById('error');
+        document.querySelectorAll('[data-mode]').forEach(btn=>btn.onclick=()=>this.set(btn.dataset.mode));
+        document.getElementById('form').onsubmit=e=>{e.preventDefault();this.error.textContent='Firebase подключим следующим шагом.'};
+        this.render();
+      },
+      set(mode){this.mode=mode;this.render();},
+      render(){
+        const reg=this.mode==='register'; this.panel.classList.toggle('register',reg); this.submit.textContent=reg?'ЗАРЕГИСТРИРОВАТЬСЯ':'ВОЙТИ'; this.error.textContent='';
+        document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===this.mode));
+        this.fields.innerHTML=this.sets[this.mode].map(([id,type,ph,ac,pw])=>`<label class="field ${pw?'password':''}"><input class="input" id="${id}" type="${type}" placeholder="${ph}" autocomplete="${ac}">${pw?'<button class="eye" type="button">◉</button>':''}</label>`).join('');
+        this.fields.querySelectorAll('.eye').forEach(b=>b.onclick=()=>{const i=b.parentElement.querySelector('input');i.type=i.type==='password'?'text':'password'});
+      }
+    };
+
+    async function boot(){
+      auth.init();
+      const init=document.getElementById('init'), initText=document.getElementById('initText'), world=document.getElementById('world');
+      await sleep(100); await type(initText,'INIT SYSTEM',28); await sleep(55); await blink(initText); await sleep(30);
+      init.classList.add('done'); world.classList.add('show'); await sleep(60);
+      world.classList.add('logoOn'); await sleep(120); world.classList.add('active','hud','ringsOn');
+      typeBlink(document.getElementById('titleMain'),'CHAT',26); typeBlink(document.getElementById('titleSub'),'SECURE COMMUNICATIONS',8);
+      await sleep(180); world.classList.add('titleOn'); await sleep(260); world.classList.add('formOn');
+    }
+    boot();
+  </script>
 </body>
 </html>
