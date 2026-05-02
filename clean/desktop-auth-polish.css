@@ -1,12 +1,16 @@
 @media (min-width:900px){
   body.ucmu-desktop .auth{
     -webkit-app-region:drag;
-    padding:40px 32px 52px;
+    padding:34px 36px 44px;
+    --stage-w:min(calc(100vw - 96px),calc((100dvh - 86px) * 430 / 932),456px);
+    --stage-h:min(calc(100dvh - 86px),calc((100vw - 96px) * 932 / 430),988px);
   }
 
   body.ucmu-desktop .auth-stage{
-    width:min(calc(100vw - 96px),calc((100dvh - 92px) * 430 / 932),430px);
-    height:min(calc(100dvh - 92px),calc((100vw - 96px) * 932 / 430),932px);
+    width:var(--stage-w);
+    height:var(--stage-h);
+    max-width:456px;
+    max-height:988px;
   }
 
   body.ucmu-desktop button,
@@ -16,8 +20,13 @@
   body.ucmu-desktop .auth-form *,
   body.ucmu-desktop .pass-eye{ -webkit-app-region:no-drag; }
 
-  body.ucmu-desktop .auth-form{ top:592px!important; }
-  body.ucmu-desktop .auth-form.register{ top:512px!important; }
+  body.ucmu-desktop .auth-form{
+    top:610px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 24px rgba(0,0,0,.42),0 0 8px rgba(255,0,0,.04)!important;
+  }
+  body.ucmu-desktop .auth-form.register{ top:502px!important; }
+  body.ucmu-desktop .auth-form::before,
+  body.ucmu-desktop .auth-form::after{ display:none!important; }
 
   body.ucmu-desktop .home-logo::before,
   body.ucmu-desktop .home-logo::after{
@@ -48,7 +57,7 @@
 
   body.auth-error-pulse .home-logo img{ animation:logoErrorFlash .62s steps(1,end) both; }
   body.auth-error-pulse .home-logo-glow{ animation:logoErrorGlow .62s ease both!important; }
-  body.auth-error-pulse .auth-form{ animation:authGlitchShake .34s steps(2,end) both; border-color:rgba(255,70,70,.9)!important; box-shadow:0 0 36px rgba(255,0,0,.28), inset 0 1px 0 rgba(255,255,255,.16)!important; }
+  body.auth-error-pulse .auth-form{ animation:authGlitchShake .34s steps(2,end) both; border-color:rgba(255,70,70,.9)!important; box-shadow:0 0 22px rgba(255,0,0,.18), inset 0 1px 0 rgba(255,255,255,.16)!important; }
   body.auth-error-pulse .auth-error{ animation:errorTextGlitch .42s steps(2,end) both; }
 }
 
