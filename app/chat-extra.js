@@ -100,20 +100,19 @@ function flip(before, list) {
     el.style.transition = 'none';
     el.style.transform = `translate(${dx}px,${dy}px)`;
     el.offsetHeight;
-    el.style.transition = 'transform .24s cubic-bezier(.22,1,.36,1)';
+    el.style.transition = 'transform .28s cubic-bezier(.22,1,.36,1)';
     el.style.transform = '';
-    setTimeout(() => { el.style.transition = ''; el.style.transform = ''; }, 260);
+    setTimeout(() => { el.style.transition = ''; el.style.transform = ''; }, 300);
   });
 }
 function setupDragOverride() {
   let st = null;
+  let pending = null;
   const list = $('#chatList');
   if (!list) return;
-  document.addEventListener('pointerdown', (e) => {
-    const card = e.target.closest('.chatCard');
-    if (!card || !list.contains(card) || e.target.closest('input,textarea,select,a')) return;
-    e.preventDefault(); e.stopImmediatePropagation();
-    const box = card.getBoundingClientRect();
+
+  function beginDrag(e, pendingState) {
+    const { card, box, startX, startY } = pendingState;
     const ph = document.createElement('div');
     ph.className = 'chatPlaceholder';
     ph.innerHTML = '<span>+</span>';
@@ -126,11 +125,28 @@ function setupDragOverride() {
     ghost.style.left = `${box.left}px`;
     ghost.style.top = `${box.top}px`;
     document.body.appendChild(ghost);
-    st = { card, ph, ghost, ox: e.clientX - box.left, oy: e.clientY - box.top, after: null };
+    st = { card, ph, ghost, ox: startX - box.left, oy: startY - box.top, after: null };
+    pending = null;
+  }
+
+  document.addEventListener('pointerdown', (e) => {
+    const card = e.target.closest('.chatCard');
+    if (!card || !list.contains(card) || e.target.closest('input,textarea,select,a')) return;
+    pending = { card, box: card.getBoundingClientRect(), startX: e.clientX, startY: e.clientY };
   }, true);
+
   document.addEventListener('pointermove', (e) => {
+    if (pending && !st) {
+      const dx = e.clientX - pending.startX;
+      const dy = e.clientY - pending.startY;
+      if (Math.hypot(dx, dy) < 7) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      beginDrag(e, pending);
+    }
     if (!st) return;
     e.preventDefault();
+    e.stopImmediatePropagation();
     st.ghost.style.left = `${e.clientX - st.ox}px`;
     st.ghost.style.top = `${e.clientY - st.oy}px`;
     const cards = [...list.querySelectorAll('.chatCard')];
@@ -145,13 +161,19 @@ function setupDragOverride() {
     st.after = after;
     flip(before, list);
   }, { passive: false, capture: true });
-  document.addEventListener('pointerup', () => {
+
+  document.addEventListener('pointerup', (e) => {
+    pending = null;
     if (!st) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
     const target = st.ph.getBoundingClientRect();
-    st.ghost.style.transition = 'left .26s cubic-bezier(.22,1,.36,1), top .26s cubic-bezier(.22,1,.36,1)';
+    st.ghost.style.transition = 'left .30s cubic-bezier(.22,1,.36,1), top .30s cubic-bezier(.22,1,.36,1)';
     st.ghost.style.left = `${target.left}px`;
     st.ghost.style.top = `${target.top}px`;
-    setTimeout(() => { st.ph.replaceWith(st.card); st.ghost.remove(); st = null; }, 260);
+    setTimeout(() => { st.ph.replaceWith(st.card); st.ghost.remove(); st = null; }, 300);
   }, true);
+
+  document.addEventListener('pointercancel', () => { pending = null; }, true);
 }
 setTimeout(() => { setupModalControls(); setupDragOverride(); }, 0);
