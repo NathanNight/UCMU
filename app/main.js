@@ -65,6 +65,25 @@ function getDragAfterElement(container, y) {
   }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
 }
 
+function animateCardIntoPlaceholder(card, placeholder) {
+  const from = card.getBoundingClientRect();
+  placeholder.replaceWith(card);
+  card.classList.remove('dragHidden');
+  const to = card.getBoundingClientRect();
+  card.style.transform = `translate(${from.left - to.left}px, ${from.top - to.top}px)`;
+  card.style.opacity = '0.45';
+  requestAnimationFrame(() => {
+    card.classList.add('settling');
+    card.style.transform = 'translate(0, 0)';
+    card.style.opacity = '1';
+  });
+  window.setTimeout(() => {
+    card.classList.remove('dragging', 'settling');
+    card.style.transform = '';
+    card.style.opacity = '';
+  }, 260);
+}
+
 function wireChatDrag() {
   const list = byId('chatList');
   if (!list) return;
@@ -79,14 +98,24 @@ function wireChatDrag() {
       card.classList.add('dragging');
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', 'chat-card');
-      requestAnimationFrame(() => card.classList.add('dragHidden'));
+      const ghost = card.cloneNode(true);
+      ghost.className = 'dragGhost';
+      ghost.style.width = `${card.offsetWidth}px`;
+      ghost.style.height = `${card.offsetHeight}px`;
+      document.body.appendChild(ghost);
+      event.dataTransfer.setDragImage(ghost, 24, 24);
+      requestAnimationFrame(() => {
+        card.classList.add('dragHidden');
+        ghost.remove();
+      });
     });
 
     card.addEventListener('dragend', () => {
       if (dragPlaceholder && draggedCard) {
-        dragPlaceholder.replaceWith(draggedCard);
+        animateCardIntoPlaceholder(draggedCard, dragPlaceholder);
+      } else {
+        draggedCard?.classList.remove('dragging', 'dragHidden');
       }
-      draggedCard?.classList.remove('dragging', 'dragHidden');
       draggedCard = null;
       dragPlaceholder = null;
     });
