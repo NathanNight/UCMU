@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#020303">
   <title>U.C.M.U Chat Clean</title>
-  <link rel="stylesheet" href="./styles.css?v=stable">
-  <link rel="stylesheet" href="./intro.css?v=stable">
-  <link rel="stylesheet" href="./desktop-intro.css?v=stable">
+  <link rel="stylesheet" href="./styles.css?v=desktop-boot-20260502-1">
+  <link rel="stylesheet" href="./intro.css?v=desktop-boot-20260502-1">
+  <link rel="stylesheet" href="./desktop-intro.css?v=desktop-boot-20260502-1">
 </head>
 <body>
   <div id="desktopBoot" class="desktop-boot-overlay" aria-hidden="true">
@@ -27,13 +27,13 @@
       document.body.appendChild(s);
     };
 
-    load('./app.js?v=stable');
+    load('./app.js?v=desktop-boot-20260502-1');
 
     if (!isDesktop) {
-      load('./keyboard.js');
-      load('./drag.js');
-      load('./composer-fix.js');
-      load('./capacitor-mobile.js');
+      load('./keyboard.js?v=desktop-boot-20260502-1');
+      load('./drag.js?v=desktop-boot-20260502-1');
+      load('./composer-fix.js?v=desktop-boot-20260502-1');
+      load('./capacitor-mobile.js?v=desktop-boot-20260502-1');
     }
 
     if (isDesktop) {
