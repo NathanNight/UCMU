@@ -4,6 +4,8 @@ const sleep = (m) => new Promise((resolve) => setTimeout(resolve, m));
 let bootDone = false;
 let authOpened = false;
 let chatBooted = false;
+let draggedCard = null;
+let dragPlaceholder = null;
 
 function byId(id) {
   return document.getElementById(id);
@@ -53,6 +55,52 @@ async function ringsSeq() {
   }
 }
 
+function getDragAfterElement(container, y) {
+  const cards = [...container.querySelectorAll('.chatCard:not(.dragging)')];
+  return cards.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset, element: child };
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+}
+
+function wireChatDrag() {
+  const list = byId('chatList');
+  if (!list) return;
+
+  list.querySelectorAll('.chatCard').forEach((card) => {
+    card.addEventListener('dragstart', (event) => {
+      draggedCard = card;
+      dragPlaceholder = document.createElement('div');
+      dragPlaceholder.className = 'chatPlaceholder';
+      dragPlaceholder.innerHTML = '<span>+</span>';
+      card.after(dragPlaceholder);
+      card.classList.add('dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', 'chat-card');
+      requestAnimationFrame(() => card.classList.add('dragHidden'));
+    });
+
+    card.addEventListener('dragend', () => {
+      if (dragPlaceholder && draggedCard) {
+        dragPlaceholder.replaceWith(draggedCard);
+      }
+      draggedCard?.classList.remove('dragging', 'dragHidden');
+      draggedCard = null;
+      dragPlaceholder = null;
+    });
+  });
+
+  list.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    if (!dragPlaceholder || !draggedCard) return;
+    const after = getDragAfterElement(list, event.clientY);
+    if (!after) list.appendChild(dragPlaceholder);
+    else list.insertBefore(dragPlaceholder, after);
+  });
+}
+
 function wireChatShell() {
   const screen = document.querySelector('.screen');
   const profileCard = byId('profileCard');
@@ -65,10 +113,10 @@ function wireChatShell() {
   });
 
   document.addEventListener('click', (event) => {
-    const profileHit = event.target.closest?.('#profileOpen, #profileOpen *');
+    const avatarHit = event.target.closest?.('#profileOpen .avatar');
     const closeHit = event.target.closest?.('#profileClose');
 
-    if (profileHit) {
+    if (avatarHit) {
       event.preventDefault();
       event.stopPropagation();
       profileCard?.classList.toggle('open');
@@ -85,6 +133,8 @@ function wireChatShell() {
   input?.addEventListener('input', () => {
     input.closest('.composer')?.classList.toggle('hasText', input.value.trim().length > 0);
   });
+
+  wireChatDrag();
 }
 
 async function bootChatInterface(user, fast = false) {
