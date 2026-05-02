@@ -34,7 +34,7 @@
   </div>
   <div id="app"></div>
   <script>
-    if (window.process && window.process.type === 'renderer') {
+    if (window.ucmuDesktop || (window.process && window.process.type === 'renderer')) {
       document.body.classList.add('ucmu-desktop');
     }
   </script>
