@@ -7,6 +7,12 @@
   let dragging = null;
   let pending = null;
 
+  function syncModalState() {
+    const hasOpen = Boolean($('.modalWindow.open'));
+    $('#modalDimmer')?.classList.toggle('open', hasOpen);
+    $('#messenger')?.classList.toggle('modalActive', hasOpen);
+  }
+
   function colorFor(target) {
     return $(`.colorSwatches[data-target="${target}"] .swatch.active`)?.dataset.color || '#d71920';
   }
@@ -28,16 +34,14 @@
     if (!modal) return;
     $$('.modalWindow.open').forEach((m) => m.classList.remove('open'));
     modal.classList.add('open');
-    $('#modalDimmer')?.classList.add('open');
-    $('#messenger')?.classList.add('modalActive');
     $$('.modalItem', modal).forEach((el, i) => el.style.setProperty('--delay', `${90 + i * 70}ms`));
+    syncModalState();
     typeTitle(modal, title);
   }
 
   function closeModal() {
     $$('.modalWindow.open').forEach((m) => m.classList.remove('open'));
-    $('#modalDimmer')?.classList.remove('open');
-    $('#messenger')?.classList.remove('modalActive');
+    syncModalState();
   }
 
   function makeCardIcon(color, label, isFolder) {
@@ -126,18 +130,40 @@
     }, true);
 
     document.addEventListener('pointerdown', (e) => {
-      if ($('.modalWindow.open') && e.target.closest('.modalWindow')) e.stopPropagation();
+      if (e.target.closest('.modalWindow')) {
+        e.stopImmediatePropagation();
+        return;
+      }
+      if (e.target.id === 'modalDimmer') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closeModal();
+      }
     }, true);
 
     document.addEventListener('click', (e) => {
+      if (e.target.closest('.modalWindow')) {
+        e.stopImmediatePropagation();
+        syncModalState();
+        return;
+      }
       if (e.target.closest('.modalClose')) {
         e.preventDefault();
         e.stopImmediatePropagation();
         closeModal();
         return;
       }
-      if ($('.modalWindow.open') && !e.target.closest('.modalWindow') && !e.target.closest('#folderOpen') && !e.target.closest('#chatOpen') && !e.target.closest('#profileOpen .avatar')) closeModal();
+      if (e.target.id === 'modalDimmer') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closeModal();
+        return;
+      }
+      setTimeout(syncModalState, 0);
     }, true);
+
+    const observer = new MutationObserver(syncModalState);
+    $$('.modalWindow').forEach((m) => observer.observe(m, { attributes: true, attributeFilter: ['class'] }));
   }
 
   function setupContextMenu() {
@@ -223,7 +249,6 @@
   }
   function addChatToFolder(chatCard, folderCard) {
     if (!chatCard || !folderCard || chatCard === folderCard || chatCard.classList.contains('folderCard')) return false;
-    const title = $('.cardText b', chatCard)?.textContent || 'чат';
     const count = Number(folderCard.dataset.count || 0) + 1;
     folderCard.dataset.count = String(count);
     const em = $('.cardText em', folderCard);
@@ -345,5 +370,6 @@
     setupContextMenu();
     setupActivation();
     setupDrag();
+    syncModalState();
   });
 })();
