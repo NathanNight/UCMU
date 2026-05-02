@@ -7,8 +7,8 @@
   body.ucmu-desktop .auth-form *,
   body.ucmu-desktop .pass-eye{ -webkit-app-region:no-drag; }
 
-  body.ucmu-desktop .auth-form{ top:662px!important; }
-  body.ucmu-desktop .auth-form.register{ top:582px!important; }
+  body.ucmu-desktop .auth-form{ top:620px!important; }
+  body.ucmu-desktop .auth-form.register{ top:540px!important; }
 
   body.ucmu-desktop .home-logo::before,
   body.ucmu-desktop .home-logo::after{
