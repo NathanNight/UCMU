@@ -10,28 +10,42 @@
   <meta name="apple-mobile-web-app-title" content="U.C.M.U">
   <meta name="application-name" content="U.C.M.U">
   <meta name="format-detection" content="telephone=no">
-  <title>U.C.M.U Chat Clean v14 Capacitor</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=14">
+  <title>U.C.M.U Chat Clean v15 Desktop Intro</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=15">
   <link rel="icon" href="../assets/logo.webp" type="image/webp">
   <link rel="apple-touch-icon" href="../assets/logo.webp">
-  <link rel="stylesheet" href="./styles.css?v=14">
-  <link rel="stylesheet" href="./intro.css?v=14">
-  <link rel="stylesheet" href="./intro-fixes.css?v=14">
-  <link rel="stylesheet" href="./keyboard.css?v=14">
-  <link rel="stylesheet" href="./drag.css?v=14">
-  <link rel="stylesheet" href="./composer-fix.css?v=14">
+  <link rel="stylesheet" href="./styles.css?v=15">
+  <link rel="stylesheet" href="./intro.css?v=15">
+  <link rel="stylesheet" href="./intro-fixes.css?v=15">
+  <link rel="stylesheet" href="./keyboard.css?v=15">
+  <link rel="stylesheet" href="./drag.css?v=15">
+  <link rel="stylesheet" href="./composer-fix.css?v=15">
+  <link rel="stylesheet" href="./desktop-intro.css?v=15">
 </head>
 <body>
+  <div class="desktop-boot-left"></div>
+  <div class="desktop-boot-right"></div>
+  <div class="desktop-boot-code">
+    <span>INIT UCMU TERMINAL</span>
+    <span>AUTH SECURE LAYER</span>
+    <span>LINK ESTABLISHED</span>
+    <span>READY USER ACCESS</span>
+  </div>
   <div id="app"></div>
-  <script type="module" src="./app.js?v=14"></script>
-  <script type="module" src="./keyboard.js?v=14"></script>
-  <script type="module" src="./drag.js?v=14"></script>
-  <script type="module" src="./composer-fix.js?v=14"></script>
-  <script type="module" src="./capacitor-mobile.js?v=14"></script>
+  <script>
+    if (window.process && window.process.type === 'renderer') {
+      document.body.classList.add('ucmu-desktop');
+    }
+  </script>
+  <script type="module" src="./app.js?v=15"></script>
+  <script type="module" src="./keyboard.js?v=15"></script>
+  <script type="module" src="./drag.js?v=15"></script>
+  <script type="module" src="./composer-fix.js?v=15"></script>
+  <script type="module" src="./capacitor-mobile.js?v=15"></script>
   <script>
     if ('serviceWorker' in navigator && !window.Capacitor) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=14').catch(console.warn);
+        navigator.serviceWorker.register('./sw.js?v=15').catch(console.warn);
       });
     }
   </script>
