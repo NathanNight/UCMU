@@ -9,87 +9,80 @@
     html,body,#app{width:100%;height:100%;margin:0;background:#020303;color:#f4f7f6;overflow:hidden}
     body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
   </style>
-  <link rel="stylesheet" href="./styles.css?v=app-stage1-20260502-5">
+  <link rel="stylesheet" href="./styles.css?v=cinematic-classified-1">
 </head>
 <body>
-  <main id="app" class="ucmu-app" data-app>
-    <section class="start" data-start-screen>
-      <div class="start__init" data-init>
-        <div class="start__init-text" data-init-text></div>
+  <main id="app" class="ucmu-app">
+    <section class="classified" data-screen>
+      <div class="init-gate" data-init>
+        <div class="init-gate__text" data-init-text></div>
       </div>
 
-      <div class="start__scene" data-scene>
-        <div class="scene-bg" aria-hidden="true">
-          <div class="scene-bg__red"></div>
-          <div class="scene-bg__grid"></div>
-          <div class="scene-bg__scan"></div>
+      <div class="classified__world" data-world>
+        <div class="bg" aria-hidden="true">
+          <div class="bg__wash"></div>
+          <div class="bg__grid"></div>
+          <div class="bg__noise"></div>
+          <div class="bg__scan"></div>
         </div>
 
-        <div class="scene-frame" aria-hidden="true"></div>
+        <div class="hud hud--top" aria-hidden="true">
+          <span>U.C.M.U / BLACK CHANNEL</span>
+          <i></i>
+          <span>ACCESS NODE 07</span>
+        </div>
 
-        <header class="scene-top" data-topbar>
-          <div class="scene-top__labels">
-            <span data-type="topLeft"></span>
-            <span class="scene-top__secure"><i></i><b data-type="topRight"></b></span>
-          </div>
-          <div class="scene-top__line" aria-hidden="true"></div>
-        </header>
+        <div class="hud hud--left" aria-hidden="true">
+          <span>AUTH</span><span>BIOMETRIC</span><span>LINK</span><span>READY</span>
+        </div>
 
-        <section class="hero" aria-label="U.C.M.U authorization screen">
-          <div class="hero__logo-wrap" data-logo>
-            <div class="hero__logo-glow" aria-hidden="true"></div>
-            <img class="hero__logo" src="../assets/logo.webp" alt="U.C.M.U">
-            <div class="hero__logo-shine" aria-hidden="true"></div>
-          </div>
+        <div class="hud hud--right" aria-hidden="true">
+          <span>TRACE 00</span><span>FIRESTORE</span><span>SECURE</span>
+        </div>
 
-          <div class="hero__titles" data-title-block>
-            <div class="hero__title" data-type="chatTitle"></div>
-            <div class="hero__subtitle" data-type="chatSubtitle"></div>
+        <section class="core">
+          <div class="core__logo" data-logo>
+            <div class="core__logo-aura"></div>
+            <img src="../assets/logo.webp" alt="U.C.M.U">
           </div>
 
-          <div class="hero__holo" data-holo aria-hidden="true">
-            <div class="holo__glow"></div>
-            <div class="holo__core"></div>
-            <div class="holo__plane holo__plane--base">
-              <i class="holo__ring holo__ring--1"></i>
-              <i class="holo__ring holo__ring--2"></i>
-              <i class="holo__ring holo__ring--3"></i>
-              <i class="holo__ring holo__ring--4"></i>
-              <b class="holo__dot holo__dot--1"></b>
-              <b class="holo__dot holo__dot--2"></b>
-              <b class="holo__dot holo__dot--3"></b>
-            </div>
-            <div class="holo__plane holo__plane--motion">
-              <i class="holo__ring holo__ring--1"></i>
-              <i class="holo__ring holo__ring--2"></i>
-              <i class="holo__ring holo__ring--3"></i>
-              <i class="holo__ring holo__ring--4"></i>
-            </div>
+          <div class="core__rings" aria-hidden="true">
+            <i class="ring ring--1"></i>
+            <i class="ring ring--2"></i>
+            <i class="ring ring--3"></i>
+            <i class="ring ring--4"></i>
+            <b class="node node--1"></b>
+            <b class="node node--2"></b>
+            <b class="node node--3"></b>
+          </div>
+
+          <div class="core__title">
+            <div class="core__title-main" data-title-main></div>
+            <div class="core__title-sub" data-title-sub></div>
           </div>
         </section>
 
-        <section class="auth-card" data-auth aria-label="Авторизация">
-          <div class="auth-card__head">
-            <span data-auth-title>IDENTITY CHECK</span>
+        <section class="auth-panel" data-auth>
+          <div class="auth-panel__bar">
+            <span>IDENTITY CHECK</span>
             <i></i>
           </div>
 
-          <div class="auth-tabs" role="tablist" aria-label="Режим авторизации">
-            <button class="auth-tabs__button is-active" type="button" data-auth-mode="login">Вход</button>
-            <button class="auth-tabs__button" type="button" data-auth-mode="register">Регистрация</button>
+          <div class="auth-tabs">
+            <button class="auth-tabs__btn is-active" type="button" data-auth-mode="login">Вход</button>
+            <button class="auth-tabs__btn" type="button" data-auth-mode="register">Регистрация</button>
           </div>
 
           <form class="auth-form" data-auth-form>
             <div class="auth-form__fields" data-auth-fields></div>
             <div class="auth-form__error" data-auth-error></div>
             <button class="auth-form__submit" type="submit" data-auth-submit>ВОЙТИ</button>
-            <div class="auth-form__hint" data-auth-hint>Secure communications access point.</div>
           </form>
         </section>
       </div>
     </section>
   </main>
 
-  <script type="module" src="./app.js?v=app-stage1-20260502-5"></script>
+  <script type="module" src="./app.js?v=cinematic-classified-1"></script>
 </body>
 </html>
