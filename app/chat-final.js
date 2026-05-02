@@ -7,6 +7,7 @@
   let dragging = null;
   let pending = null;
   let sidebarUnsub = null;
+  let initialized = false;
 
   function syncModalState() {
     const hasOpen = Boolean($('.modalWindow.open'));
@@ -127,7 +128,7 @@
   }
 
   async function waitForFirebase() {
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 120; i++) {
       if (window.UCMUFirebase?.createChatRecord && window.UCMUFirebase?.watchSidebarRecords) return window.UCMUFirebase;
       await wait(100);
     }
@@ -153,49 +154,59 @@
   }
 
   function setupModals() {
-    $('#folderOpen')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      openModal($('#folderModal'), 'CREATE FOLDER');
-    }, true);
-
-    $('#chatOpen')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      openModal($('#chatModal'), 'CREATE CHAT');
-    }, true);
-
-    $('#folderCreate')?.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      const modal = $('#folderModal');
-      const nameInput = $('#folderName');
-      const name = nameInput?.value.trim() || 'Новая папка';
-      try {
-        const api = await waitForFirebase();
-        await api.createFolderRecord({ title: name, color: colorFor('folder') });
-        if (nameInput) nameInput.value = '';
-        closeModal();
-      } catch (error) {
-        modalError(modal, 'НЕ УДАЛОСЬ СОЗДАТЬ ПАПКУ');
-        console.error('[UCMU] folder create failed:', error);
+    document.addEventListener('click', (e) => {
+      const folderBtn = e.target.closest('#folderOpen');
+      if (folderBtn) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openModal($('#folderModal'), 'CREATE FOLDER');
+        return;
+      }
+      const chatBtn = e.target.closest('#chatOpen');
+      if (chatBtn) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openModal($('#chatModal'), 'CREATE CHAT');
+        return;
       }
     }, true);
 
-    $('#chatCreate')?.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      const modal = $('#chatModal');
-      const nameInput = $('#newChatName');
-      const name = nameInput?.value.trim() || 'Новый чат';
-      try {
-        const api = await waitForFirebase();
-        await api.createChatRecord({ title: name, color: colorFor('chat'), avatarUrl: '' });
-        if (nameInput) nameInput.value = '';
-        closeModal();
-      } catch (error) {
-        modalError(modal, 'НЕ УДАЛОСЬ СОЗДАТЬ ЧАТ');
-        console.error('[UCMU] chat create failed:', error);
+    document.addEventListener('click', async (e) => {
+      const folderCreate = e.target.closest('#folderCreate');
+      if (folderCreate) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const modal = $('#folderModal');
+        const nameInput = $('#folderName');
+        const name = nameInput?.value.trim() || 'Новая папка';
+        try {
+          const api = await waitForFirebase();
+          await api.createFolderRecord({ title: name, color: colorFor('folder') });
+          if (nameInput) nameInput.value = '';
+          closeModal();
+        } catch (error) {
+          modalError(modal, 'НЕ УДАЛОСЬ СОЗДАТЬ ПАПКУ');
+          console.error('[UCMU] folder create failed:', error);
+        }
+        return;
+      }
+
+      const chatCreate = e.target.closest('#chatCreate');
+      if (chatCreate) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const modal = $('#chatModal');
+        const nameInput = $('#newChatName');
+        const name = nameInput?.value.trim() || 'Новый чат';
+        try {
+          const api = await waitForFirebase();
+          await api.createChatRecord({ title: name, color: colorFor('chat'), avatarUrl: '' });
+          if (nameInput) nameInput.value = '';
+          closeModal();
+        } catch (error) {
+          modalError(modal, 'НЕ УДАЛОСЬ СОЗДАТЬ ЧАТ');
+          console.error('[UCMU] chat create failed:', error);
+        }
       }
     }, true);
 
@@ -443,12 +454,25 @@
     }, true);
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
+  function initFinalChat() {
+    if (initialized) return;
+    if (!$('#chatList') || !$('#folderOpen') || !$('#chatOpen')) {
+      setTimeout(initFinalChat, 120);
+      return;
+    }
+    initialized = true;
+    console.info('[UCMU] chat-final initialized');
     setupModals();
     setupContextMenu();
     setupActivation();
     setupDrag();
     setupFirestoreSidebar().catch((error) => console.error('[UCMU] sidebar watch failed:', error));
     syncModalState();
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initFinalChat);
+  } else {
+    initFinalChat();
+  }
 })();
