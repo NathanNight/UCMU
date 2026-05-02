@@ -56,7 +56,7 @@ async function ringsSeq() {
 }
 
 function getDragAfterElement(container, y) {
-  const cards = [...container.querySelectorAll('.chatCard:not(.dragSource)')];
+  const cards = [...container.querySelectorAll('.chatCard')];
   return cards.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
     const offset = y - box.top - box.height / 2;
@@ -76,7 +76,7 @@ function startPointerDrag(event, card, list) {
   placeholder.className = 'chatPlaceholder';
   placeholder.innerHTML = '<span>+</span>';
   placeholder.style.height = `${rect.height}px`;
-  card.after(placeholder);
+  card.replaceWith(placeholder);
 
   const ghost = card.cloneNode(true);
   ghost.className = 'chatCard dragFloat';
@@ -86,14 +86,14 @@ function startPointerDrag(event, card, list) {
   ghost.style.top = `${rect.top}px`;
   document.body.appendChild(ghost);
 
-  card.classList.add('dragSource');
   dragState = {
     card,
     list,
     placeholder,
     ghost,
     offsetX: event.clientX - rect.left,
-    offsetY: event.clientY - rect.top
+    offsetY: event.clientY - rect.top,
+    hasMovedSlot: false
   };
 }
 
@@ -107,6 +107,7 @@ function movePointerDrag(event) {
   const after = getDragAfterElement(dragState.list, event.clientY);
   if (!after) dragState.list.appendChild(dragState.placeholder);
   else dragState.list.insertBefore(dragState.placeholder, after);
+  dragState.hasMovedSlot = true;
 }
 
 function endPointerDrag() {
@@ -121,7 +122,6 @@ function endPointerDrag() {
 
   window.setTimeout(() => {
     placeholder.replaceWith(card);
-    card.classList.remove('dragSource');
     ghost.remove();
     dragState = null;
   }, 230);
